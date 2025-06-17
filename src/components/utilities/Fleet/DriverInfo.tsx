@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router";
-import { CardContent } from "@/components/ui/card";
+import { Link } from "react-router";
 import { Button } from "@/components/ui/button";
 import Image from "@/components/ui/image";
 import driver1 from "@/FolderToDelete/driver1.jpg";
@@ -36,7 +35,6 @@ interface DriverDetailsProps {
 
 export const DriverInfo: React.FC<DriverDetailsProps> = ({ driver }) => {
   const [status, setStatus] = useState<DriverStatus>(driver.status);
-  const navigate = useNavigate();
 
   const handleAssign = () => {
     if (status === "assigned") {

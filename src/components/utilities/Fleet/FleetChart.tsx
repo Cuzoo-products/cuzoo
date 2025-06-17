@@ -23,8 +23,8 @@ declare type ChartData = { month: string; revenue: number; trips: number }[];
 
 function FleetChart({ chartData }: { chartData: ChartData }) {
   return (
-    <div className="my-20">
-      <ChartContainer config={chartConfig} className="max-h-[400px] w-full">
+    <div>
+      <ChartContainer config={chartConfig} className="max-h-[340px] w-full">
         <BarChart accessibilityLayer data={chartData}>
           <CartesianGrid vertical={false} />
           <XAxis
