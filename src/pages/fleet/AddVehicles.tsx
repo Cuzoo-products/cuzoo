@@ -74,11 +74,11 @@ function AddVehicles() {
         <h3 className="!font-bold text-3xl">Add Vehicle</h3>
         <p>Add to your fleet of vehicles</p>
       </div>
-      <div className="bg-secondary w-3/4 mx-auto py-10 rounded-2xl mb-10">
+      <div className="bg-secondary md:w-3/4 mx-auto py-10 rounded-2xl mb-10">
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
-            className="w-3/4 lg:w-2/3 space-y-6 mx-auto"
+            className="w-4/5 md:w-3/4 lg:w-2/3 space-y-6 mx-auto"
           >
             <FormField
               control={form.control}

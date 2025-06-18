@@ -65,11 +65,11 @@ function Dashboard() {
       </div>
       <FleetSectionCard />
 
-      <div className="md:flex my-20 space-x-3">
-        <div className="flex-9/12 border border-line-1 bg-secondary rounded-lg p-5">
+      <div className="lg:flex my-20 space-y-5 lg:space-y-0 lg:space-x-3">
+        <div className="lg:flex-9/12 border border-line-1 bg-secondary rounded-lg p-5">
           <FleetChart chartData={chartData} />
         </div>
-        <div className="flex-3/12 border border-line-1 bg-secondary rounded-lg p-3">
+        <div className="lg:flex-3/12 border border-line-1 bg-secondary rounded-lg p-3">
           <h3 className="font-bold text-center">Top Performing Drives</h3>
           <PerformingDrivers data={performingDriverData} />
         </div>

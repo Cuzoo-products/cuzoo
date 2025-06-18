@@ -10,6 +10,9 @@ import DriverDetails from "@/pages/fleet/DriverDetails";
 import AddDriver from "@/pages/fleet/AddDriver";
 import AddVehicles from "@/pages/fleet/AddVehicles";
 import Fleets from "@/pages/fleet/Fleets";
+import EditDriver from "@/pages/fleet/EditDriver";
+import VehicleDetails from "@/pages/fleet/VehicleDetails";
+import EditVehicle from "@/pages/fleet/EditVehicle";
 
 export const routes = createBrowserRouter([
   {
@@ -56,6 +59,18 @@ export const routes = createBrowserRouter([
       {
         path: "fleets",
         element: <Fleets />,
+      },
+      {
+        path: "drivers/:id/edit",
+        element: <EditDriver />,
+      },
+      {
+        path: "fleets/:id",
+        element: <VehicleDetails />,
+      },
+      {
+        path: "fleets/:id/edit",
+        element: <EditVehicle />,
       },
     ],
   },

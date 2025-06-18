@@ -30,6 +30,13 @@ const mockDriver: Driver = {
   ],
 };
 
+const vehicles = [
+  { label: "Toyota (EKY 321 XV)", value: "1" },
+  { label: "Nissan (SKU 241 Xy)", value: "2" },
+  { label: "Toyota (IKJ 121 UV)", value: "3" },
+  { label: "Nissan (JJJ 221 XY)", value: "4" },
+];
+
 function DriverDetails() {
   //   const { id } = useParams();
 
@@ -39,7 +46,7 @@ function DriverDetails() {
         <h3 className="!font-bold text-3xl">John Doe</h3>
         <p>Manage John Doe bio & details</p>
       </div>
-      <DriverInfo driver={mockDriver} />
+      <DriverInfo driver={mockDriver} availableVehicle={vehicles} />
     </div>
   );
 }

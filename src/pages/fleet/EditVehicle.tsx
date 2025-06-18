@@ -12,7 +12,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { AddDriverFormSchema } from "@/lib/zodVaildation";
+import { AddVehicleFormSchema } from "@/lib/zodVaildation";
 import {
   Select,
   SelectContent,
@@ -35,38 +35,54 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
+import car from "@/FolderToDelete/car.jpg";
+import Image from "@/components/ui/image";
 
-const vehicles = [
-  { label: "Toyota (EKY 321 XV)", value: "1" },
-  { label: "Nissan (SKU 241 Xy)", value: "2" },
-  { label: "Toyota (IKJ 121 UV)", value: "3" },
-  { label: "Nissan (JJJ 221 XY)", value: "4" },
+const drivers = [
+  { label: "John Doe", value: "1" },
+  { label: "Jane Doe", value: "2" },
+  { label: "Barry White", value: "3" },
+  { label: "David Olushegun", value: "4" },
+  { label: "MurFy Doe", value: "5" },
+  { label: "Emma John", value: "6" },
+  { label: "Victor kenzy", value: "7" },
+  { label: "Tolu Jame", value: "8" },
+  { label: "Larry Blue", value: "9" },
 ] as const;
 
-function AddDriver() {
-  const form = useForm<z.infer<typeof AddDriverFormSchema>>({
-    resolver: zodResolver(AddDriverFormSchema),
+function EditVehicle() {
+  const form = useForm<z.infer<typeof AddVehicleFormSchema>>({
+    resolver: zodResolver(AddVehicleFormSchema),
     defaultValues: {
-      FullName: "",
-      DoB: "",
-      Gender: "",
-      ContactNumber: "",
-      HomeAddress: "",
-      EmergencyContactInformation: "",
-      DriverLicence: "",
-      AssignVehicle: "",
+      VehicleType: "Car",
+      Make: "Toyata",
+      Model: "Yaris",
+      Year: "2015",
+      Color: "Red",
+      LicensePlateNumber: "EKY 322 XU",
+      AssignedDriver: "3",
+      VehicleStatus: "Available",
+      VehicleImage: car,
     },
   });
 
-  function onSubmit(data: z.infer<typeof AddDriverFormSchema>) {
+  const watchedFile = form.watch("VehicleImage");
+
+  const previewUrl = watchedFile
+    ? typeof watchedFile === "string"
+      ? watchedFile
+      : URL.createObjectURL(watchedFile)
+    : null;
+
+  function onSubmit(data: z.infer<typeof AddVehicleFormSchema>) {
     console.log(data);
   }
 
   return (
     <div className="@container/main">
       <div className="my-6">
-        <h3 className="!font-bold text-3xl">Drivers</h3>
-        <p>Add to your list of drivers</p>
+        <h3 className="!font-bold text-3xl">Add Vehicle</h3>
+        <p>Add to your fleet of vehicles</p>
       </div>
       <div className="bg-secondary md:w-3/4 mx-auto py-10 rounded-2xl mb-10">
         <Form {...form}>
@@ -76,55 +92,21 @@ function AddDriver() {
           >
             <FormField
               control={form.control}
-              name="FullName"
+              name="VehicleType"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Full Name</FormLabel>
-                  <FormControl>
-                    <Input
-                      className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
-                      placeholder="John Doe"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage className="text-red-600" />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="DoB"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Date of Birth</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="date"
-                      className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage className="text-red-600" />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="Gender"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Gender</FormLabel>
+                  <FormLabel>Vehicle Type</FormLabel>
                   <FormControl>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <SelectTrigger className="h-11 w-full border-[#d6d6d6]">
-                        <SelectValue placeholder="Select gender" />
+                        <SelectValue placeholder="Select Vehicle type" />
                       </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Male">Male</SelectItem>
-                        <SelectItem value="Female">Female</SelectItem>
-                        <SelectItem value="Other">Other</SelectItem>
+                      <SelectContent className="bg-background border-0 shadow-accent shadow-sm">
+                        <SelectItem value="Car">Car</SelectItem>
+                        <SelectItem value="Truck">Truck</SelectItem>
+                        <SelectItem value="Van">Van</SelectItem>
+                        <SelectItem value="Bus">Bus</SelectItem>
+                        <SelectItem value="Motorcycle">Motorcycle</SelectItem>
                       </SelectContent>
                     </Select>
                   </FormControl>
@@ -135,14 +117,31 @@ function AddDriver() {
 
             <FormField
               control={form.control}
-              name="ContactNumber"
+              name="Make"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Contact Number</FormLabel>
+                  <FormLabel>Make</FormLabel>
                   <FormControl>
                     <Input
-                      type="tel"
-                      placeholder="08012345678"
+                      className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
+                      placeholder="Toyota"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage className="text-red-600" />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="Model"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Model</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Corolla, F-150"
                       className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
                       {...field}
                     />
@@ -154,13 +153,15 @@ function AddDriver() {
 
             <FormField
               control={form.control}
-              name="HomeAddress"
+              name="Year"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Home Address</FormLabel>
+                  <FormLabel>Year</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="123 Main St, Lagos"
+                      type="number"
+                      min="1"
+                      placeholder="2005"
                       className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
                       {...field}
                     />
@@ -172,13 +173,13 @@ function AddDriver() {
 
             <FormField
               control={form.control}
-              name="EmergencyContactInformation"
+              name="Color"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Emergency Contact Info</FormLabel>
+                  <FormLabel>Year</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="Jane Doe - 08012345679"
+                      placeholder="red"
                       className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
                       {...field}
                     />
@@ -190,10 +191,39 @@ function AddDriver() {
 
             <FormField
               control={form.control}
-              name="DriverLicence"
+              name="LicensePlateNumber"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Driver's License (Image)</FormLabel>
+                  <FormLabel>License Plate Number</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="EKY 345 XV"
+                      className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage className="text-red-600" />
+                </FormItem>
+              )}
+            />
+
+            {previewUrl && (
+              <div>
+                <h3>Vehicle Image</h3>
+                <Image
+                  source={previewUrl}
+                  alt="Driver's License"
+                  className="w-40 h-auto rounded"
+                />
+              </div>
+            )}
+
+            <FormField
+              control={form.control}
+              name="VehicleImage"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Change Vehicle Image</FormLabel>
                   <FormControl>
                     <Input
                       type="file"
@@ -209,10 +239,36 @@ function AddDriver() {
 
             <FormField
               control={form.control}
-              name="AssignVehicle"
+              name="VehicleStatus"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Vehicle Status</FormLabel>
+                  <FormControl>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <SelectTrigger className="h-11 w-full border-[#d6d6d6]">
+                        <SelectValue placeholder="Select Vehicle Status" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-background border-0 shadow-accent shadow-sm">
+                        <SelectItem value="Available">Available</SelectItem>
+                        <SelectItem value="In Use">In Use</SelectItem>
+                        <SelectItem value="Under Maintenance">
+                          Under Maintenance
+                        </SelectItem>
+                        <SelectItem value="Disabled">Disabled</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormMessage className="text-red-600" />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="AssignedDriver"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel>Assign Vehicle</FormLabel>
+                  <FormLabel>Assign Driver</FormLabel>
                   <Popover>
                     <PopoverTrigger asChild>
                       <FormControl>
@@ -225,10 +281,10 @@ function AddDriver() {
                           )}
                         >
                           {field.value
-                            ? vehicles.find(
-                                (vehicle) => vehicle.value === field.value
+                            ? drivers.find(
+                                (driver) => driver.value === field.value
                               )?.label
-                            : "Select vehicles"}
+                            : "Select drivers"}
                           <ChevronsUpDown className="opacity-50" />
                         </Button>
                       </FormControl>
@@ -236,25 +292,25 @@ function AddDriver() {
                     <PopoverContent className="w-full bg-background border-0 shadow-accent shadow-sm p-0">
                       <Command>
                         <CommandInput
-                          placeholder="Search vehicles..."
+                          placeholder="Search driver..."
                           className="h-9"
                         />
                         <CommandList>
-                          <CommandEmpty>No vehicle found.</CommandEmpty>
+                          <CommandEmpty>No driver found.</CommandEmpty>
                           <CommandGroup>
-                            {vehicles.map((vehicle) => (
+                            {drivers.map((driver) => (
                               <CommandItem
-                                value={vehicle.label}
-                                key={vehicle.value}
+                                value={driver.label}
+                                key={driver.value}
                                 onSelect={() => {
-                                  form.setValue("AssignVehicle", vehicle.value);
+                                  form.setValue("AssignedDriver", driver.value);
                                 }}
                               >
-                                {vehicle.label}
+                                {driver.label}
                                 <Check
                                   className={cn(
                                     "ml-auto",
-                                    vehicle.value === field.value
+                                    driver.value === field.value
                                       ? "opacity-100"
                                       : "opacity-0"
                                   )}
@@ -284,4 +340,4 @@ function AddDriver() {
   );
 }
 
-export default AddDriver;
+export default EditVehicle;

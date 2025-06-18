@@ -18,6 +18,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { Link } from "react-router";
 
@@ -66,6 +67,12 @@ const items = [
 ];
 
 export default function FleetSideBar() {
+  const { isMobile, toggleSidebar } = useSidebar();
+  const handleSideBarOnMoble = () => {
+    if (!isMobile) return;
+    toggleSidebar();
+  };
+
   return (
     <Sidebar collapsible="icon">
       <SidebarContent>
@@ -79,7 +86,7 @@ export default function FleetSideBar() {
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    <Link to={item.url}>
+                    <Link onClick={handleSideBarOnMoble} to={item.url}>
                       <item.icon />
                       <span>{item.title}</span>
                     </Link>

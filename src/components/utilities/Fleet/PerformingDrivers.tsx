@@ -6,7 +6,10 @@ function PerformingDrivers({ data }: { data: PerformingDriverData[] }) {
   return (
     <>
       {data.map((items) => (
-        <div className="flex items-center space-x-3 border-b border-b-line-1 py-3">
+        <div
+          key={items.id}
+          className="flex items-center space-x-3 border-b border-b-line-1 py-3"
+        >
           <Avatar className="size-10">
             <AvatarImage src={items.imageUrl} />
             <AvatarFallback className="border-1">

@@ -35,6 +35,8 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
+import Image from "@/components/ui/image";
+import driversl from "@/FolderToDelete/driversl.jpg";
 
 const vehicles = [
   { label: "Toyota (EKY 321 XV)", value: "1" },
@@ -43,20 +45,28 @@ const vehicles = [
   { label: "Nissan (JJJ 221 XY)", value: "4" },
 ] as const;
 
-function AddDriver() {
+function EditDriver() {
   const form = useForm<z.infer<typeof AddDriverFormSchema>>({
     resolver: zodResolver(AddDriverFormSchema),
     defaultValues: {
-      FullName: "",
-      DoB: "",
-      Gender: "",
-      ContactNumber: "",
-      HomeAddress: "",
-      EmergencyContactInformation: "",
-      DriverLicence: "",
-      AssignVehicle: "",
+      FullName: "John Doe",
+      DoB: "2005-01-01",
+      Gender: "Male",
+      ContactNumber: "+234812345678",
+      HomeAddress: "No. 64, Surulere Street, Lagos state",
+      EmergencyContactInformation: "+234812345678",
+      DriverLicence: driversl,
+      AssignVehicle: "4",
     },
   });
+
+  const watchedFile = form.watch("DriverLicence");
+
+  const previewUrl = watchedFile
+    ? typeof watchedFile === "string"
+      ? watchedFile
+      : URL.createObjectURL(watchedFile)
+    : null;
 
   function onSubmit(data: z.infer<typeof AddDriverFormSchema>) {
     console.log(data);
@@ -65,8 +75,8 @@ function AddDriver() {
   return (
     <div className="@container/main">
       <div className="my-6">
-        <h3 className="!font-bold text-3xl">Drivers</h3>
-        <p>Add to your list of drivers</p>
+        <h3 className="!font-bold text-3xl">Edit Jonn Doe</h3>
+        <p>make changes to john doe's details</p>
       </div>
       <div className="bg-secondary md:w-3/4 mx-auto py-10 rounded-2xl mb-10">
         <Form {...form}>
@@ -188,12 +198,23 @@ function AddDriver() {
               )}
             />
 
+            {previewUrl && (
+              <div>
+                <h3>Driver Licence</h3>
+                <Image
+                  source={previewUrl}
+                  alt="Driver's License"
+                  className="w-40 h-auto rounded"
+                />
+              </div>
+            )}
+
             <FormField
               control={form.control}
               name="DriverLicence"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Driver's License (Image)</FormLabel>
+                  <FormLabel>Change Driver's License (Image)</FormLabel>
                   <FormControl>
                     <Input
                       type="file"
@@ -284,4 +305,4 @@ function AddDriver() {
   );
 }
 
-export default AddDriver;
+export default EditDriver;
