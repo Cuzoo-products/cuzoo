@@ -81,8 +81,8 @@ function EditVehicle() {
   return (
     <div className="@container/main">
       <div className="my-6">
-        <h3 className="!font-bold text-3xl">Add Vehicle</h3>
-        <p>Add to your fleet of vehicles</p>
+        <h3 className="!font-bold text-3xl">Edit Vehicle</h3>
+        <p>Edit this vehicle</p>
       </div>
       <div className="bg-secondary md:w-3/4 mx-auto py-10 rounded-2xl mb-10">
         <Form {...form}>
