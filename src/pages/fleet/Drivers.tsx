@@ -33,7 +33,12 @@ const data: DriverData[] = [
 
 function Drivers() {
   return (
-    <div className="container mx-auto py-10">
+    <div className="@container/main">
+      <div className="my-6">
+        <h3 className="!font-bold text-3xl">Drivers</h3>
+        <p>Manage all drivers data and information</p>
+      </div>
+
       <DataTable columns={columns} data={data} />
     </div>
   );

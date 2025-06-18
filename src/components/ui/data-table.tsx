@@ -54,13 +54,13 @@ export function DataTable<TData, TValue>({
 
   return (
     <div>
-      <div className="flex items-center py-4">
-        <div className="flex items-center py-4">
+      <div className="flex items-center mb-5">
+        <div className="flex items-center">
           <Input
             value={globalFilter as string}
             onChange={(e) => table.setGlobalFilter(String(e.target.value))}
             placeholder="Search..."
-            className="max-w-sm"
+            className="max-w-md bg-secondary"
           />
         </div>
         <DataTableViewOptions table={table} />

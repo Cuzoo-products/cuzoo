@@ -30,12 +30,12 @@ const items = [
   },
   {
     title: "Fleets",
-    url: "#",
+    url: "fleets",
     icon: Truck,
   },
   {
     title: "Add Vehicle",
-    url: "#",
+    url: "add_vehicle",
     icon: Plus,
   },
   {

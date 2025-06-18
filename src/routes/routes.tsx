@@ -8,6 +8,8 @@ import Maps from "@/pages/fleet/Maps";
 import Drivers from "@/pages/fleet/Drivers";
 import DriverDetails from "@/pages/fleet/DriverDetails";
 import AddDriver from "@/pages/fleet/AddDriver";
+import AddVehicles from "@/pages/fleet/AddVehicles";
+import Fleets from "@/pages/fleet/Fleets";
 
 export const routes = createBrowserRouter([
   {
@@ -16,7 +18,7 @@ export const routes = createBrowserRouter([
     errorElement: <NotFoundPage />,
   },
   {
-    path: "/fleet-registration",
+    path: "/leet-registrationf",
     element: <Registration />,
   },
   {
@@ -46,6 +48,14 @@ export const routes = createBrowserRouter([
       {
         path: "add_driver",
         element: <AddDriver />,
+      },
+      {
+        path: "add_vehicle",
+        element: <AddVehicles />,
+      },
+      {
+        path: "fleets",
+        element: <Fleets />,
       },
     ],
   },

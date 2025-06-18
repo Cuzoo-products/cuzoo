@@ -59,13 +59,17 @@ const performingDriverData: PerformingDriverData[] = [
 function Dashboard() {
   return (
     <div className="@container/main">
+      <div className="my-6">
+        <h3 className="!font-bold text-3xl">Dashboard</h3>
+        <p>Hello, Tobiloba Ibrahim</p>
+      </div>
       <FleetSectionCard />
 
       <div className="md:flex my-20 space-x-3">
-        <div className="flex-9/12 border border-line-1 rounded-lg p-5">
+        <div className="flex-9/12 border border-line-1 bg-secondary rounded-lg p-5">
           <FleetChart chartData={chartData} />
         </div>
-        <div className="flex-3/12 border border-line-1 rounded-lg p-3">
+        <div className="flex-3/12 border border-line-1 bg-secondary rounded-lg p-3">
           <h3 className="font-bold text-center">Top Performing Drives</h3>
           <PerformingDrivers data={performingDriverData} />
         </div>

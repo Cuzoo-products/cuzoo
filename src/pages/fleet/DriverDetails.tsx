@@ -33,7 +33,15 @@ const mockDriver: Driver = {
 function DriverDetails() {
   //   const { id } = useParams();
 
-  return <DriverInfo driver={mockDriver} />;
+  return (
+    <div className="@container/main">
+      <div className="my-6">
+        <h3 className="!font-bold text-3xl">John Doe</h3>
+        <p>Manage John Doe bio & details</p>
+      </div>
+      <DriverInfo driver={mockDriver} />
+    </div>
+  );
 }
 
 export default DriverDetails;

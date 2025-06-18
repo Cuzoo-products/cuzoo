@@ -22,7 +22,7 @@ export function DataTableViewOptions<TData>({
         <Button
           variant="outline"
           size="sm"
-          className="ml-auto hidden h-8 lg:flex border-0 shadow-accent-foreground"
+          className="ml-auto h-8 flex border-0 shadow-accent-foreground"
         >
           <Settings2 />
           View

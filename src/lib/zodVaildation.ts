@@ -47,4 +47,25 @@ export const AddDriverFormSchema = z.object({
         message: "A valid driver’s license image is required",
       }
     ),
+  AssignVehicle: z.string().optional(),
+});
+
+export const AddVehicleFormSchema = z.object({
+  VehicleType: z.string().min(1, "Please select a vehicle type"),
+  Make: z.string().min(1, "Make is required"),
+  Model: z.string().min(1, "Model is required"),
+  Year: z
+    .string()
+    .min(4, "Enter a valid year")
+    .regex(/^\d{4}$/, "Year must be a 4-digit number"),
+  Color: z.string().min(1, "Color is required"),
+  LicensePlateNumber: z.string().min(1, "License plate number is required"),
+  AssignedDriver: z.string().optional(),
+  VehicleStatus: z.enum([
+    "Available",
+    "In Use",
+    "Under Maintenance",
+    "Disabled",
+  ]),
+  VehicleImage: z.string().url("Vehicle image must be a valid URL").optional(),
 });
