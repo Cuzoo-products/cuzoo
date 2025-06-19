@@ -13,6 +13,10 @@ import Fleets from "@/pages/fleet/Fleets";
 import EditDriver from "@/pages/fleet/EditDriver";
 import VehicleDetails from "@/pages/fleet/VehicleDetails";
 import EditVehicle from "@/pages/fleet/EditVehicle";
+import Trips from "@/pages/fleet/Trips";
+import TripDetails from "@/pages/fleet/TripDetails";
+import Profile from "@/pages/fleet/Profile";
+import ResetPassword from "@/pages/fleet/ResetPassword";
 
 export const routes = createBrowserRouter([
   {
@@ -71,6 +75,22 @@ export const routes = createBrowserRouter([
       {
         path: "fleets/:id/edit",
         element: <EditVehicle />,
+      },
+      {
+        path: "trips",
+        element: <Trips />,
+      },
+      {
+        path: "trips/:id",
+        element: <TripDetails />,
+      },
+      {
+        path: "profile",
+        element: <Profile />,
+      },
+      {
+        path: "reset-password",
+        element: <ResetPassword />,
       },
     ],
   },

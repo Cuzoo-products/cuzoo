@@ -51,7 +51,7 @@ const items = [
   },
   {
     title: "Trips",
-    url: "#",
+    url: "trips",
     icon: BusFront,
   },
   {

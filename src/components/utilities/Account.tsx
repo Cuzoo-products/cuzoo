@@ -6,6 +6,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { Link } from "react-router";
 
 export function Account() {
   return (
@@ -17,7 +18,12 @@ export function Account() {
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="rounded bg-background border-0 shadow-accent shadow-sm">
-        <DropdownMenuItem>Charles Ayomike</DropdownMenuItem>
+        <DropdownMenuItem>
+          <Link to="profile">Charles Ayomike</Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem>
+          <Link to="reset-password">Reset Password</Link>
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem>Logout</DropdownMenuItem>
       </DropdownMenuContent>
