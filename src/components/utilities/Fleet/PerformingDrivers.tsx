@@ -1,6 +1,6 @@
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { AvatarFallback } from "@radix-ui/react-avatar";
-import type { PerformingDriverData } from "@/pages/fleet/Dashboard";
+import type { PerformingDriverData } from "@/pages/fleet/FleetDashboard";
 
 function PerformingDrivers({ data }: { data: PerformingDriverData[] }) {
   return (

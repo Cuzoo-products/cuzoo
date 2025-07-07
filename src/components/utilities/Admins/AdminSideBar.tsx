@@ -5,7 +5,6 @@ import {
   Truck,
   User,
   Map,
-  BusFront,
   WalletMinimal,
 } from "lucide-react";
 
@@ -30,32 +29,37 @@ const items = [
     icon: LayoutDashboard,
   },
   {
-    title: "Fleets",
+    title: "Orders",
     url: "fleets",
     icon: Truck,
   },
   {
-    title: "Add Vehicle",
+    title: "Users",
     url: "add_vehicle",
     icon: Plus,
   },
   {
-    title: "Drivers",
+    title: "Riders",
     url: "drivers",
     icon: User,
   },
   {
-    title: "Add Drivers",
+    title: "Fleet Managers",
     url: "add_driver",
     icon: UserRoundPen,
   },
   {
-    title: "Trips",
+    title: "Finance",
     url: "trips",
-    icon: BusFront,
+    icon: WalletMinimal,
   },
   {
-    title: "Finance",
+    title: "Admins",
+    url: "finance",
+    icon: WalletMinimal,
+  },
+  {
+    title: "Settings",
     url: "finance",
     icon: WalletMinimal,
   },
@@ -66,7 +70,7 @@ const items = [
   },
 ];
 
-export default function FleetSideBar() {
+export default function AdminSideBar() {
   const { isMobile, toggleSidebar } = useSidebar();
   const handleSideBarOnMoble = () => {
     if (!isMobile) return;

@@ -4,7 +4,6 @@ import {
   UserRoundPen,
   Truck,
   User,
-  Map,
   BusFront,
   WalletMinimal,
 } from "lucide-react";
@@ -30,28 +29,28 @@ const items = [
     icon: LayoutDashboard,
   },
   {
-    title: "Fleets",
-    url: "fleets",
+    title: "Categories",
+    url: "categories",
     icon: Truck,
   },
   {
-    title: "Add Vehicle",
-    url: "add_vehicle",
+    title: "Add Category",
+    url: "add_category",
     icon: Plus,
   },
   {
-    title: "Drivers",
-    url: "drivers",
+    title: "Products",
+    url: "products",
     icon: User,
   },
   {
-    title: "Add Drivers",
-    url: "add_driver",
+    title: "Add Products",
+    url: "add_product",
     icon: UserRoundPen,
   },
   {
-    title: "Trips",
-    url: "trips",
+    title: "Orders",
+    url: "orders",
     icon: BusFront,
   },
   {
@@ -59,14 +58,9 @@ const items = [
     url: "finance",
     icon: WalletMinimal,
   },
-  {
-    title: "Map",
-    url: "maps",
-    icon: Map,
-  },
 ];
 
-export default function FleetSideBar() {
+export default function VendorSideBar() {
   const { isMobile, toggleSidebar } = useSidebar();
   const handleSideBarOnMoble = () => {
     if (!isMobile) return;
@@ -79,7 +73,7 @@ export default function FleetSideBar() {
         <SidebarGroup>
           <SidebarGroupLabel className="mb-5">
             <h2 className="font-bold text-xl">Cuzoo</h2>
-            <p className="text-xs">Fleet Manager</p>
+            <p className="text-xs">Vendors</p>
           </SidebarGroupLabel>
           <SidebarGroupContent className="mt-2">
             <SidebarMenu>

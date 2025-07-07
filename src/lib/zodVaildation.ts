@@ -95,3 +95,79 @@ export const FleetManagerChangePWSchema = z
     path: ["confirmPassword"],
     message: "Passwords do not match",
   });
+
+export const CategoryFormSchema = z.object({
+  CategoryName: z.string().min(1, "Category Name is required"),
+  CategoryIcon: z
+    .any()
+    .refine(
+      (file) =>
+        file instanceof File || (typeof window !== "undefined" && file?.uri),
+      {
+        message: "A valid image is required",
+      }
+    ),
+});
+
+export const ProductFormSchema = z.object({
+  ProductName: z.string().min(1, "Product name is required"),
+  Category: z.string().min(1, "Category is required"),
+  Price: z
+    .string()
+    .min(1, "Price is required")
+    .refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
+      message: "Price must be a positive number",
+    }),
+  Stock: z
+    .string()
+    .min(1, "Stock is required")
+    .refine((val) => Number.isInteger(Number(val)) && Number(val) >= 0, {
+      message: "Stock must be a valid integer (0 or more)",
+    }),
+  ShortDescription: z.string().min(1, "Short description is required"),
+  LongDescription: z.string().min(1, "Long description is required"),
+
+  // Images: Image1 is required, others are optional
+  Image1: z
+    .any()
+    .refine(
+      (file) =>
+        file instanceof File || (typeof window !== "undefined" && file?.uri),
+      {
+        message: "A valid image is required",
+      }
+    ),
+
+  Image2: z
+    .any()
+    .optional()
+    .refine(
+      (file) =>
+        file instanceof File || (typeof window !== "undefined" && file?.uri),
+      {
+        message: "Invalid image",
+      }
+    ),
+
+  Image3: z
+    .any()
+    .optional()
+    .refine(
+      (file) =>
+        file instanceof File || (typeof window !== "undefined" && file?.uri),
+      {
+        message: "Invalid image",
+      }
+    ),
+
+  Image4: z
+    .any()
+    .optional()
+    .refine(
+      (file) =>
+        file instanceof File || (typeof window !== "undefined" && file?.uri),
+      {
+        message: "Invalid image",
+      }
+    ),
+});

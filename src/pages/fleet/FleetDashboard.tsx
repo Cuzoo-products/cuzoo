@@ -56,7 +56,7 @@ const performingDriverData: PerformingDriverData[] = [
   },
 ];
 
-function Dashboard() {
+function FleetDashboard() {
   return (
     <div className="@container/main">
       <div className="my-6">
@@ -78,4 +78,4 @@ function Dashboard() {
   );
 }
 
-export default Dashboard;
+export default FleetDashboard;

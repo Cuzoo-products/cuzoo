@@ -1,12 +1,12 @@
 import { SidebarProvider } from "@/components/ui/sidebar";
 import Header from "@/components/utilities/header";
 import { Outlet } from "react-router";
-import FleetSideBar from "../../components/utilities/Fleet/FleetSideBar";
+import VendorSideBar from "@/components/utilities/Vendors/VendorSideBar";
 
-function Layout() {
+function VendorLayout() {
   return (
     <SidebarProvider>
-      <FleetSideBar />
+      <VendorSideBar />
       <main className="w-full bg-background">
         <Header />
         <div className="p-4">
@@ -17,4 +17,4 @@ function Layout() {
   );
 }
 
-export default Layout;
+export default VendorLayout;

@@ -17,7 +17,7 @@ import Image from "@/components/ui/image";
 import { FleetManagerRegFormSchema } from "@/lib/zodVaildation";
 import truck from "@/assets/truck.jpg";
 
-function Registration() {
+function VendorRegistration() {
   const form = useForm<z.infer<typeof FleetManagerRegFormSchema>>({
     resolver: zodResolver(FleetManagerRegFormSchema),
     defaultValues: {
@@ -181,4 +181,4 @@ function Registration() {
   );
 }
 
-export default Registration;
+export default VendorRegistration;
