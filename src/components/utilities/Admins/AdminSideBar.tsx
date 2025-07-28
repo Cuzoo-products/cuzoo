@@ -1,11 +1,14 @@
 import {
-  Plus,
   LayoutDashboard,
   UserRoundPen,
   Truck,
   User,
+  Settings,
+  CarFront,
+  ShieldUser,
   Map,
   WalletMinimal,
+  Plus,
 } from "lucide-react";
 
 import {
@@ -29,43 +32,53 @@ const items = [
     icon: LayoutDashboard,
   },
   {
-    title: "Orders",
-    url: "fleets",
+    title: "trips",
+    url: "Trips",
     icon: Truck,
   },
   {
     title: "Users",
-    url: "add_vehicle",
-    icon: Plus,
+    url: "users",
+    icon: User,
   },
   {
     title: "Riders",
     url: "drivers",
-    icon: User,
+    icon: CarFront,
   },
   {
     title: "Fleet Managers",
-    url: "add_driver",
+    url: "fleet_managers",
+    icon: UserRoundPen,
+  },
+  {
+    title: "Vendors",
+    url: "vendors",
     icon: UserRoundPen,
   },
   {
     title: "Finance",
-    url: "trips",
+    url: "financials",
     icon: WalletMinimal,
   },
   {
     title: "Admins",
-    url: "finance",
-    icon: WalletMinimal,
+    url: "admins",
+    icon: ShieldUser,
+  },
+  {
+    title: "Add Admin",
+    url: "add_admin",
+    icon: Plus,
   },
   {
     title: "Settings",
-    url: "finance",
-    icon: WalletMinimal,
+    url: "settings",
+    icon: Settings,
   },
   {
     title: "Map",
-    url: "maps",
+    url: "map",
     icon: Map,
   },
 ];

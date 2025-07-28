@@ -31,6 +31,25 @@ import InvoicePage from "@/pages/vendors/InvoicePage";
 import VendorFinance from "@/pages/vendors/VendorFinance";
 import FleetFinance from "@/pages/fleet/FleetFinance";
 import AdminLayout from "@/pages/admins/AdminLayout";
+import FleetOwners from "@/pages/admins/FleetOwners";
+import FleetOwnersProfile from "@/pages/admins/FleetOwnersProfile";
+import Admins from "@/pages/admins/Admins";
+import AdminDetails from "@/pages/admins/AdminDetails";
+import Users from "@/pages/admins/Users";
+import UserDetails from "@/pages/admins/UserDetails";
+import DriversInAdmin from "@/pages/admins/Drivers";
+import Map from "@/pages/admins/Map";
+import AdminDriverDetails from "@/pages/admins/AdminDriverDetails";
+import AdminTrips from "@/pages/admins/AdminTrips";
+import AdminTripDetails from "@/pages/admins/AdminTripDetails";
+import AddAdmin from "@/pages/admins/AddAdmin";
+import AdminVendor from "@/pages/admins/AdminVendors";
+import VendorsDetails from "@/pages/admins/VendorsDetails";
+import Settings from "@/pages/admins/Settings";
+import AdminDashboard from "@/pages/admins/AdminDashboard";
+import AdminFinance from "@/pages/admins/AdminFinance";
+import IndivdualDriverTrips from "@/pages/admins/IndivdualDriverTrips";
+import IndividualDriverTipDetails from "@/pages/admins/IndividualDriverTipDetails";
 
 export const routes = createBrowserRouter([
   {
@@ -169,6 +188,93 @@ export const routes = createBrowserRouter([
   {
     path: "/admins",
     element: <AdminLayout />,
-    children: [],
+
+    children: [
+      {
+        index: true,
+        element: <AdminDashboard />,
+      },
+      {
+        path: "dashboard",
+        element: <AdminDashboard />,
+      },
+      {
+        path: "fleet_managers",
+        element: <FleetOwners />,
+      },
+      {
+        path: "fleet_managers/:id",
+        element: <FleetOwnersProfile />,
+      },
+      {
+        path: "admins",
+        element: <Admins />,
+      },
+      {
+        path: "admins/:id",
+        element: <AdminDetails />,
+      },
+      {
+        path: "users/",
+        element: <Users />,
+      },
+      {
+        path: "users/:id",
+        element: <UserDetails />,
+      },
+      {
+        path: "drivers",
+        element: <DriversInAdmin />,
+      },
+      {
+        path: "drivers",
+        element: <DriversInAdmin />,
+      },
+      {
+        path: "map",
+        element: <Map />,
+      },
+      {
+        path: "drivers/:id",
+        element: <AdminDriverDetails />,
+      },
+      {
+        path: "trips",
+        element: <AdminTrips />,
+      },
+      {
+        path: "trips/:id",
+        element: <AdminTripDetails />,
+      },
+      {
+        path: "add_admin",
+        element: <AddAdmin />,
+      },
+      {
+        path: "vendors",
+        element: <AdminVendor />,
+      },
+      {
+        path: "vendors/:id",
+        element: <VendorsDetails />,
+      },
+      {
+        path: "financials",
+        element: <AdminFinance />,
+      },
+
+      {
+        path: "settings",
+        element: <Settings />,
+      },
+      {
+        path: "drivers/:id/trips",
+        element: <IndivdualDriverTrips />,
+      },
+      {
+        path: "drivers/:id/trips/:id",
+        element: <IndividualDriverTipDetails />,
+      },
+    ],
   },
 ]);

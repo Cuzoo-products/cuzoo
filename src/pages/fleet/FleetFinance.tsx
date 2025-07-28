@@ -1,5 +1,4 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import {
   ResponsiveContainer,
   LineChart,
@@ -8,6 +7,7 @@ import {
   YAxis,
   Tooltip,
 } from "recharts";
+import { WithdrawDialog } from "@/components/utilities/WithdrawDialog";
 
 const data = [
   { name: "Mon", inflow: 400, outflow: 240 },
@@ -21,11 +21,11 @@ const data = [
 
 export default function FleetFinance() {
   return (
-    <div className="p-4 space-y-4">
+    <div className="p-4 space-y-6">
       <Card className="py-2 bg-secondary">
         <CardHeader className="flex flex-row items-center justify-between py-4">
           <CardTitle>Wallet Balance</CardTitle>
-          <Button>Withdraw</Button>
+          <WithdrawDialog />
         </CardHeader>
         <CardContent>
           <p className="text-3xl font-bold">₦150,000</p>
