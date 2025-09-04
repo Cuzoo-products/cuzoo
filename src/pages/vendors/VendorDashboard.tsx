@@ -53,10 +53,16 @@ const highestSellingProducts: HighestSellingProductsT[] = [
 function VendorDashboard() {
   return (
     <div className="@container/main">
-      <div className="my-6">
-        <h3 className="!font-bold text-3xl">Dashboard</h3>
-        <p>Hello, Tobiloba Ibrahim</p>
+      <div className="flex justify-between items-center">
+        <div className="my-6">
+          <h3 className="!font-bold text-3xl">Dashboard</h3>
+          <p>Hello, Tobiloba Ibrahim</p>
+        </div>
+        <div>
+          <h3 className="!font-bold text-xl">vendor-code</h3>
+        </div>
       </div>
+
       <VendorSectionCard />
 
       <div className="lg:flex my-20 space-y-5 lg:space-y-0 lg:space-x-3">

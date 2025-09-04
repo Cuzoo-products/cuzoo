@@ -15,7 +15,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-// MOCK DATA
 const kpiData = [
   {
     title: "Total Revenue",

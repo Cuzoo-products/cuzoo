@@ -61,6 +61,8 @@ function AddVehicles() {
       AssignedDriver: "",
       VehicleStatus: "Available",
       VehicleImage: "",
+      ChassisNumber: "",
+      EngineNumber: "",
     },
   });
 
@@ -188,6 +190,42 @@ function AddVehicles() {
                   <FormControl>
                     <Input
                       placeholder="EKY 345 XV"
+                      className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage className="text-red-600" />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="ChassisNumber"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Chassis Number</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="1234"
+                      className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage className="text-red-600" />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="EngineNumber"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Engine Number</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="1234"
                       className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
                       {...field}
                     />

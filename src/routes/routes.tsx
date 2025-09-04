@@ -50,6 +50,8 @@ import AdminDashboard from "@/pages/admins/AdminDashboard";
 import AdminFinance from "@/pages/admins/AdminFinance";
 import IndivdualDriverTrips from "@/pages/admins/IndivdualDriverTrips";
 import IndividualDriverTipDetails from "@/pages/admins/IndividualDriverTipDetails";
+import { FleetKyc } from "@/pages/fleet/FleetKyc";
+import { VendorKycForm } from "@/pages/vendors/VendorKyc";
 
 export const routes = createBrowserRouter([
   {
@@ -61,6 +63,15 @@ export const routes = createBrowserRouter([
     path: "/fleet-registration",
     element: <FleetRegistration />,
   },
+  {
+    path: "/fleetkyc",
+    element: <FleetKyc />,
+  },
+  {
+    path: "/vendorkyc",
+    element: <VendorKycForm />,
+  },
+
   {
     path: "/vendor-registration",
     element: <VendorRegistration />,

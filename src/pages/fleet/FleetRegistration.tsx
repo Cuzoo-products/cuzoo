@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
-  // FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -21,10 +20,7 @@ function FleetRegistration() {
   const form = useForm<z.infer<typeof FleetManagerRegFormSchema>>({
     resolver: zodResolver(FleetManagerRegFormSchema),
     defaultValues: {
-      fullName: "",
-      email: "",
-      businessName: "",
-      phoneNumber: "",
+      businessEmail: "",
       password: "",
       confirmPassword: "",
     },
@@ -40,7 +36,7 @@ function FleetRegistration() {
         <div className="flex-1 h-screen hidden md:flex">
           <Image source={truck} className="h-full w-1/2 fixed" alt="" />
         </div>
-        <div className="flex-1 bg-purple-50 flex justify-center items-center">
+        <div className="flex-1 bg-background flex justify-center items-center">
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(onSubmit)}
@@ -50,72 +46,18 @@ function FleetRegistration() {
                 <h3 className="text-2xl font-bold">Sign up</h3>
                 <p>Welcome to cuzoo fleet manager</p>
               </div>
-              <FormField
-                control={form.control}
-                name="fullName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Full Name</FormLabel>
-                    <FormControl>
-                      <Input
-                        className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
-                        placeholder="John Doe"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage className="text-red-600" />
-                  </FormItem>
-                )}
-              />
 
               <FormField
                 control={form.control}
-                name="email"
+                name="businessEmail"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel>Business Email</FormLabel>
                     <FormControl>
                       <Input
                         className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
                         type="email"
                         placeholder="johndoe@example.com"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage className="text-red-600" />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="businessName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Business Name</FormLabel>
-                    <FormControl>
-                      <Input
-                        className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
-                        placeholder="FleetCo Ltd."
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage className="text-red-600" />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="phoneNumber"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Phone Number</FormLabel>
-                    <FormControl>
-                      <Input
-                        className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
-                        type="tel"
-                        placeholder="+234..."
                         {...field}
                       />
                     </FormControl>
