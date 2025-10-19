@@ -4,29 +4,61 @@ import { Button } from "@/components/ui/button";
 import Image from "@/components/ui/image";
 import driver1 from "@/FolderToDelete/driver1.jpg";
 import { Label } from "@/components/ui/label";
-import driversl from "@/FolderToDelete/driversl.jpg";
 import { ComboboxForm, type ComboData } from "../ComboboxForm";
 
 // --- Types ---
 type DriverStatus = "assigned" | "unassigned" | "disabled";
-type TripStatus = "ongoing" | "completed" | "breakdown";
 
-interface Trip {
-  id: string;
-  date: string;
-  origin: string;
-  destination: string;
-  amount: string;
-  status: TripStatus;
+interface PhoneNumber {
+  internationalFormat: string;
+  nationalFormat: string;
+  number: string;
+  countryCode: string;
+  countryCallingCode: string;
+}
+
+interface Address {
+  placeId: string;
+  formatted_address: string;
+  geometry: {
+    location?: {
+      lat: number;
+      lng: number;
+    };
+  };
+  country: string;
+  state: string;
+}
+
+interface ImageFile {
+  url: string;
+  path: string;
+  contentType: string;
 }
 
 export interface Driver {
-  id: string;
-  name: string;
-  phone: string;
+  id?: string;
+  firstName?: string;
+  lastName?: string;
   email?: string;
-  status: DriverStatus;
-  tripHistory: Trip[];
+  companyEmail?: string;
+  phoneNumber?: PhoneNumber;
+  emergencyContact?: PhoneNumber;
+  dateOfBirth?: string;
+  gender?: string;
+  address?: Address;
+  passport?: ImageFile;
+  driversLicense?: ImageFile;
+  approved?: boolean;
+  regComplete?: boolean;
+  emailVerified?: boolean;
+  companyId?: string;
+  companyName?: string;
+  country?: string;
+  state?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  status?: DriverStatus;
 }
 
 export const DriverInfo = ({
@@ -36,7 +68,9 @@ export const DriverInfo = ({
   driver: Driver;
   availableVehicle: ComboData[];
 }) => {
-  const [status, setStatus] = useState<DriverStatus>(driver.status);
+  const [status, setStatus] = useState<DriverStatus>(
+    driver.status || "unassigned"
+  );
 
   const handleAssign = () => {
     if (status === "assigned") {
@@ -51,21 +85,52 @@ export const DriverInfo = ({
     // Additional logic like API call
   };
 
-  // const statusColor = {
-  //   assigned: "bg-green-100 text-green-800",
-  //   unassigned: "bg-yellow-100 text-yellow-800",
-  //   disabled: "bg-red-100 text-red-800",
-  // };
+  // Helper functions to format data
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return "Not provided";
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
+  const formatPhoneNumber = (phone?: PhoneNumber) => {
+    if (!phone) return "Not provided";
+    return phone.internationalFormat || phone.nationalFormat || phone.number;
+  };
+
+  const getDriverName = () => {
+    const firstName = driver.firstName || "";
+    const lastName = driver.lastName || "";
+    return `${firstName} ${lastName}`.trim() || "Unknown Driver";
+  };
+
+  const getStatusColor = () => {
+    switch (status) {
+      case "assigned":
+        return "text-green-600";
+      case "unassigned":
+        return "text-yellow-600";
+      case "disabled":
+        return "text-red-600";
+      default:
+        return "text-gray-600";
+    }
+  };
 
   return (
     <div className="bg-secondary max-w-3xl mx-auto p-6 rounded-lg">
       <div className="md:flex space-y-3 md:space-y-0 md:space-x-3">
         <div className="border border-line-1 bg-background rounded flex-1 text-center py-6">
-          <h3 className="text-xl font-bold">{driver.name}</h3>
-          <p className="text-red-500 text-sm">{status}</p>
+          <h3 className="text-xl font-bold">{getDriverName()}</h3>
+          <p className={`text-sm font-medium ${getStatusColor()}`}>
+            {status.charAt(0).toUpperCase() + status.slice(1)}
+          </p>
           <Image
-            source={driver1}
-            alt=""
+            source={driver.passport?.url || driver1}
+            alt="Driver Photo"
             className="mx-auto mt-3 w-50 h-50 border-8 border-accent rounded-full object-cover"
           />
         </div>
@@ -74,45 +139,65 @@ export const DriverInfo = ({
           <div className="md:flex">
             <div className="flex-1">
               <div className="my-3">
-                <Label>Number</Label>
-                <p className="text-muted-foreground text-sm">{driver.phone}</p>
+                <Label>Phone Number</Label>
+                <p className="text-muted-foreground text-sm">
+                  {formatPhoneNumber(driver.phoneNumber)}
+                </p>
               </div>
 
               <div className="my-3">
-                <Label>Cuzoo mail</Label>
-                <p className="text-muted-foreground text-sm">{driver.email}</p>
+                <Label>Email</Label>
+                <p className="text-muted-foreground text-sm">
+                  {driver.email || driver.companyEmail || "Not provided"}
+                </p>
               </div>
 
               <div className="my-3">
-                <Label>Date of birth</Label>
-                <p className="text-muted-foreground text-sm">21/6/1993</p>
+                <Label>Date of Birth</Label>
+                <p className="text-muted-foreground text-sm">
+                  {formatDate(driver.dateOfBirth)}
+                </p>
               </div>
 
               <div className="my-3">
                 <Label>Emergency Contact</Label>
-                <p className="text-muted-foreground text-sm">+234808576556</p>
+                <p className="text-muted-foreground text-sm">
+                  {formatPhoneNumber(driver.emergencyContact)}
+                </p>
               </div>
 
               <div className="my-3">
                 <Label>Vehicle</Label>
-                <p className="text-muted-foreground text-sm">Unassign</p>
+                <p className="text-muted-foreground text-sm">
+                  {status === "assigned" ? "Assigned" : "Unassigned"}
+                </p>
               </div>
             </div>
             <div className="flex-1">
               <div className="my-3">
                 <Label>Home Address</Label>
                 <p className="text-muted-foreground text-sm">
-                  No. 64, Surulere Street, Lagos state
+                  {driver.address?.formatted_address || "Not provided"}
                 </p>
               </div>
               <div className="my-3">
                 <Label>Gender</Label>
-                <p className="text-muted-foreground text-sm">Male</p>
+                <p className="text-muted-foreground text-sm">
+                  {driver.gender || "Not provided"}
+                </p>
               </div>
 
               <div className="my-3">
-                <Label>Drivers Licence</Label>
-                <Image source={driversl} className="w-4/5 mt-1" alt="" />
+                <Label>Driver's License</Label>
+                {driver.driversLicense?.url ? (
+                  <Image
+                    source={driver.driversLicense.url}
+                    className="w-4/5 mt-1 rounded border"
+                    alt="Driver's License"
+                  />
+                ) : (
+                  <p className="text-muted-foreground text-sm">Not provided</p>
+                )}
               </div>
             </div>
           </div>

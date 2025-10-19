@@ -6,9 +6,31 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
+import { useDispatch } from "react-redux";
+import { logout } from "@/redux/slices/authSlice";
+import { signOut } from "firebase/auth";
+import { auth } from "@/firebase";
+import { toast } from "sonner";
 
 export function Account() {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      // Sign out from Firebase
+      await signOut(auth);
+      // Clear Redux state
+      dispatch(logout());
+      // Navigate to login page
+      navigate("/");
+      toast.success("Logged out successfully!");
+    } catch (error) {
+      toast.error("Failed to logout");
+    }
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -25,7 +47,7 @@ export function Account() {
           <Link to="reset-password">Reset Password</Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem>Logout</DropdownMenuItem>
+        <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

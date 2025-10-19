@@ -30,7 +30,6 @@ import {
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Card,
   CardContent,
@@ -41,46 +40,52 @@ import {
 import { cn } from "@/lib/utils";
 import { fleetKycformSchema } from "@/lib/zodVaildation";
 import Header2 from "@/components/utilities/header2";
+import { useFleetKyc } from "@/api/fleet/profile/useProfile";
 
 // --- DUMMY DATA ---
 const courierServiceOptions = [
-  { id: "express", label: "Express Delivery" },
-  { id: "international", label: "International Shipping" },
-  { id: "standard", label: "Standard (3-5 days)" },
-  { id: "local", label: "Local On-Demand" },
-  { id: "specialized", label: "Specialized (e.g., Cold Chain)" },
+  { id: "Express Delivery", label: "Express Delivery" },
+  { id: "International Shipping", label: "International Shipping" },
+  { id: "Standard (3-5 days)", label: "Standard (3-5 days)" },
+  { id: "Local On-Demand", label: "Local On-Demand" },
+  {
+    id: "Specialized (e.g., Cold Chain)",
+    label: "Specialized (e.g., Cold Chain)",
+  },
+];
+
+const insuranceOptions = [
+  { id: "Goods-in-Transit", label: "Goods-in-Transit" },
+  {
+    id: "Comprehensive Vehicle Insurance",
+    label: "Comprehensive Vehicle Insurance",
+  },
+  { id: "Marine Cargo Insurance", label: "Marine Cargo Insurance" },
+  { id: "Public Liability Insurance", label: "Public Liability Insurance" },
 ];
 
 export function FleetKyc() {
   const form = useForm<z.infer<typeof fleetKycformSchema>>({
     resolver: zodResolver(fleetKycformSchema),
     defaultValues: {
-      companyName: "",
-      companyType: "",
-      placeOfIncorporation: "",
       registrationNumber: "",
-      registeredAddress: "",
-      taxIdNumber: "",
+      tinNumber: "",
       dateOfIncorporation: undefined,
-      insuranceCoverage: "",
-      courierServices: [],
-      directors: [{ name: "" }],
-      authorizedRepresentative: {
-        name: "",
-        nationality: "",
-        state: "",
-        lga: "",
-        address: "",
-        position: "",
-      },
+      placeOfIncorporation: "",
+      companyType: "",
+      directors: [""],
+      servicesRendered: [],
+      insuranceCoverage: [],
+      passport: undefined,
       certificateOfIncorporation: undefined,
-      passportPhotograph: undefined,
-      governmentId: undefined,
-      proofOfAddressDoc: undefined,
+      governmentApprovedId: undefined,
+      proofOfAddress: undefined,
       insuranceCertificate: undefined,
       courierLicense: undefined,
     },
   });
+
+  const { mutate, isPending } = useFleetKyc();
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
@@ -91,10 +96,10 @@ export function FleetKyc() {
 
   function onSubmit(values: z.infer<typeof fleetKycformSchema>) {
     console.log(values);
-    alert("Form Submitted! Check console for details.");
+    // mutate(values);
   }
 
-  const nextStep = () => setStep((prev) => Math.min(prev + 1, 4));
+  const nextStep = () => setStep((prev) => Math.min(prev + 1, 3));
   const prevStep = () => setStep((prev) => Math.max(prev - 1, 1));
 
   // File input helper
@@ -102,12 +107,12 @@ export function FleetKyc() {
 
   return (
     <div>
-      <Header2 />
+      <Header2 showLogout />
       <Card className="max-w-4xl mx-auto my-16 bg-secondary py-6">
         <CardHeader>
           <CardTitle>Fleet Company KYC Registration</CardTitle>
           <CardDescription>
-            Step {step} of 4 — Please complete all sections
+            Step {step} of 3 — Please complete all sections
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -120,59 +125,6 @@ export function FleetKyc() {
                     Company Information
                   </h3>
                   <div className="grid md:grid-cols-2 gap-8">
-                    {/* Company Name */}
-                    <FormField
-                      control={form.control}
-                      name="companyName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Company Name</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="e.g., FastFleet Logistics"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    {/* Company Type */}
-                    <FormField
-                      control={form.control}
-                      name="companyType"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Type of Company</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select type" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent className="rounded bg-background border-0 shadow-accent shadow-sm">
-                              <SelectItem value="private-limited">
-                                Private Limited Company
-                              </SelectItem>
-                              <SelectItem value="public-limited">
-                                Public Limited Company
-                              </SelectItem>
-                              <SelectItem value="business-name">
-                                Business Name
-                              </SelectItem>
-                              <SelectItem value="llc">LLC</SelectItem>
-                              <SelectItem value="incorporated-trustee">
-                                Incorporated Trustee
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
                     {/* RC / Registration No */}
                     <FormField
                       control={form.control}
@@ -190,7 +142,7 @@ export function FleetKyc() {
                     {/* TIN */}
                     <FormField
                       control={form.control}
-                      name="taxIdNumber"
+                      name="tinNumber"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Tax Identification Number (TIN)</FormLabel>
@@ -264,6 +216,42 @@ export function FleetKyc() {
                         </FormItem>
                       )}
                     />
+                    {/* Company Type */}
+                    <FormField
+                      control={form.control}
+                      name="companyType"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Type of Company</FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select type" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent className="rounded bg-background border-0 shadow-accent shadow-sm">
+                              <SelectItem value="Private Limited Company">
+                                Private Limited Company
+                              </SelectItem>
+                              <SelectItem value="Public Limited Company">
+                                Public Limited Company
+                              </SelectItem>
+                              <SelectItem value="Business Name">
+                                Business Name
+                              </SelectItem>
+                              <SelectItem value="LLC">LLC</SelectItem>
+                              <SelectItem value="Incorporated Trustee">
+                                Incorporated Trustee
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
                 </div>
               )}
@@ -272,66 +260,13 @@ export function FleetKyc() {
               {step === 2 && (
                 <div>
                   <h3 className="text-lg font-semibold border-b pb-2 mb-5">
-                    Address & Services
+                    Services & Insurance
                   </h3>
                   <div className="grid md:grid-cols-2 gap-8">
-                    {/* Address */}
-                    <FormField
-                      control={form.control}
-                      name="registeredAddress"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Official / Registered Address</FormLabel>
-                          <FormControl>
-                            <Textarea
-                              placeholder="123 Logistics Avenue, Lagos"
-                              className="resize-none"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    {/* Insurance Coverage */}
-                    <FormField
-                      control={form.control}
-                      name="insuranceCoverage"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Type of Insurance Coverage</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select coverage" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="goods-in-transit">
-                                Goods-in-Transit
-                              </SelectItem>
-                              <SelectItem value="comprehensive">
-                                Comprehensive Vehicle Insurance
-                              </SelectItem>
-                              <SelectItem value="marine">
-                                Marine Cargo Insurance
-                              </SelectItem>
-                              <SelectItem value="liability">
-                                Public Liability Insurance
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
                     {/* Courier Services */}
                     <FormField
                       control={form.control}
-                      name="courierServices"
+                      name="servicesRendered"
                       render={() => (
                         <FormItem>
                           <FormLabel className="text-base">
@@ -341,7 +276,54 @@ export function FleetKyc() {
                             <FormField
                               key={item.id}
                               control={form.control}
-                              name="courierServices"
+                              name="servicesRendered"
+                              render={({ field }) => (
+                                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                                  <FormControl>
+                                    <Checkbox
+                                      checked={
+                                        Array.isArray(field.value) &&
+                                        field.value.includes(item.id)
+                                      }
+                                      onCheckedChange={(checked) => {
+                                        return checked
+                                          ? field.onChange([
+                                              ...field.value,
+                                              item.id,
+                                            ])
+                                          : field.onChange(
+                                              field.value?.filter(
+                                                (val) => val !== item.id
+                                              )
+                                            );
+                                      }}
+                                    />
+                                  </FormControl>
+                                  <FormLabel className="font-normal">
+                                    {item.label}
+                                  </FormLabel>
+                                </FormItem>
+                              )}
+                            />
+                          ))}
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    {/* Insurance Coverage */}
+                    <FormField
+                      control={form.control}
+                      name="insuranceCoverage"
+                      render={() => (
+                        <FormItem>
+                          <FormLabel className="text-base">
+                            Type of Insurance Coverage
+                          </FormLabel>
+                          {insuranceOptions.map((item) => (
+                            <FormField
+                              key={item.id}
+                              control={form.control}
+                              name="insuranceCoverage"
                               render={({ field }) => (
                                 <FormItem className="flex flex-row items-start space-x-3 space-y-0">
                                   <FormControl>
@@ -390,7 +372,7 @@ export function FleetKyc() {
                     <div key={field.id} className="flex items-center gap-4">
                       <FormField
                         control={form.control}
-                        name={`directors.${index}.name`}
+                        name={`directors.${index}`}
                         render={({ field }) => (
                           <FormItem className="flex-grow">
                             <FormLabel className={cn(index !== 0 && "sr-only")}>
@@ -424,105 +406,13 @@ export function FleetKyc() {
                     variant="outline"
                     size="sm"
                     className="my-3"
-                    onClick={() => append({ name: "" })}
+                    onClick={() => append("")}
                   >
                     Add Director
                   </Button>
                   <FormMessage>
                     {form.formState.errors.directors?.message}
                   </FormMessage>
-
-                  {/* Authorized Rep */}
-
-                  <h3 className="text-lg font-semibold border-b pb-2 mb-5">
-                    Authorized Representative
-                  </h3>
-                  <div className="grid md:grid-cols-2 gap-8 mt-6">
-                    <FormField
-                      control={form.control}
-                      name="authorizedRepresentative.name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Full Name</FormLabel>
-                          <FormControl>
-                            <Input placeholder="e.g., Jane Doe" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="authorizedRepresentative.position"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Position / Role</FormLabel>
-                          <FormControl>
-                            <Input placeholder="e.g., Manager" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="authorizedRepresentative.nationality"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Nationality</FormLabel>
-                          <FormControl>
-                            <Input placeholder="e.g., Nigerian" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="authorizedRepresentative.state"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>State of Origin</FormLabel>
-                          <FormControl>
-                            <Input placeholder="e.g., Anambra" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="authorizedRepresentative.lga"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>LGA</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="e.g., Idemili North"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="authorizedRepresentative.address"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Residential Address</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="e.g., 45 Freedom Way"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
                 </div>
               )}
 
@@ -554,15 +444,12 @@ export function FleetKyc() {
                     />
                     <FormField
                       control={form.control}
-                      name="passportPhotograph"
+                      name="passport"
                       render={() => (
                         <FormItem className="my-3">
                           <FormLabel>Passport Photograph</FormLabel>
                           <FormControl>
-                            <Input
-                              type="file"
-                              {...fileRef("passportPhotograph")}
-                            />
+                            <Input type="file" {...fileRef("passport")} />
                           </FormControl>
                           <FormDescription>
                             JPG or PNG. Max 5MB.
@@ -573,12 +460,15 @@ export function FleetKyc() {
                     />
                     <FormField
                       control={form.control}
-                      name="governmentId"
+                      name="governmentApprovedId"
                       render={() => (
                         <FormItem>
                           <FormLabel>Government Approved ID</FormLabel>
                           <FormControl>
-                            <Input type="file" {...fileRef("governmentId")} />
+                            <Input
+                              type="file"
+                              {...fileRef("governmentApprovedId")}
+                            />
                           </FormControl>
                           <FormDescription>
                             NIN, Driver's License, etc. PDF, JPG, PNG.
@@ -589,15 +479,12 @@ export function FleetKyc() {
                     />
                     <FormField
                       control={form.control}
-                      name="proofOfAddressDoc"
+                      name="proofOfAddress"
                       render={() => (
                         <FormItem className="my-3">
                           <FormLabel>Proof of Address Document</FormLabel>
                           <FormControl>
-                            <Input
-                              type="file"
-                              {...fileRef("proofOfAddressDoc")}
-                            />
+                            <Input type="file" {...fileRef("proofOfAddress")} />
                           </FormControl>
                           <FormDescription>
                             Utility Bill, PDF, JPG, PNG.
@@ -652,12 +539,14 @@ export function FleetKyc() {
                     Previous
                   </Button>
                 )}
-                {step < 4 ? (
+                {step < 3 ? (
                   <Button type="button" onClick={nextStep}>
                     Next
                   </Button>
                 ) : (
-                  <Button type="submit">Submit KYC</Button>
+                  <Button disabled={isPending} type="submit">
+                    {isPending ? "Submitting..." : "Submit KYC"}
+                  </Button>
                 )}
               </div>
             </form>

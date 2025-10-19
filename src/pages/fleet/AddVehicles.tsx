@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-// import { toast } from "sonner";
+import { toast } from "sonner";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import {
@@ -35,39 +35,69 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
+import { useAddVehicles } from "@/api/fleet/vehicles/useVehicles";
+import { useGetRiders } from "@/api/fleet/rider/useRiderQuery";
 
-const drivers = [
-  { label: "John Doe", value: "1" },
-  { label: "Jane Doe", value: "2" },
-  { label: "Barry White", value: "3" },
-  { label: "David Olushegun", value: "4" },
-  { label: "MurFy Doe", value: "5" },
-  { label: "Emma John", value: "6" },
-  { label: "Victor kenzy", value: "7" },
-  { label: "Tolu Jame", value: "8" },
-  { label: "Larry Blue", value: "9" },
-] as const;
+// Interface for rider data structure
+interface Rider {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: {
+    internationalFormat: string;
+    nationalFormat: string;
+    number: string;
+  };
+  approved: boolean;
+  regComplete: boolean;
+}
+
+// Utility function to convert file to base64
+const fileToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = (error) => reject(error);
+  });
+};
 
 function AddVehicles() {
   const form = useForm<z.infer<typeof AddVehicleFormSchema>>({
     resolver: zodResolver(AddVehicleFormSchema),
     defaultValues: {
-      VehicleType: "",
-      Make: "",
-      Model: "",
-      Year: "",
-      Color: "",
-      LicensePlateNumber: "",
-      AssignedDriver: "",
-      VehicleStatus: "Available",
-      VehicleImage: "",
-      ChassisNumber: "",
-      EngineNumber: "",
+      color: "",
+      type: undefined,
+      model: "",
+      plateNumber: "",
+      riderId: "",
+      image: "",
+      year: new Date().getFullYear(),
+      status: "available",
     },
   });
 
+  const { mutate: addVehicles, isPending } = useAddVehicles();
+  const { data: riders } = useGetRiders();
+
+  // Type for driver dropdown items
+  interface DriverOption {
+    label: string;
+    value: string;
+  }
+
+  // Transform riders data for the dropdown
+  const availableDrivers: DriverOption[] =
+    riders?.data?.data?.map((rider: Rider) => ({
+      label: `${rider.firstName} ${rider.lastName}`,
+      value: rider.id,
+    })) || [];
+
   function onSubmit(data: z.infer<typeof AddVehicleFormSchema>) {
     console.log(data);
+    addVehicles(data);
+    form.reset();
   }
 
   return (
@@ -84,7 +114,7 @@ function AddVehicles() {
           >
             <FormField
               control={form.control}
-              name="VehicleType"
+              name="type"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Vehicle Type</FormLabel>
@@ -94,11 +124,12 @@ function AddVehicles() {
                         <SelectValue placeholder="Select Vehicle type" />
                       </SelectTrigger>
                       <SelectContent className="bg-background border-0 shadow-accent shadow-sm">
-                        <SelectItem value="Car">Car</SelectItem>
-                        <SelectItem value="Truck">Truck</SelectItem>
-                        <SelectItem value="Van">Van</SelectItem>
-                        <SelectItem value="Bus">Bus</SelectItem>
-                        <SelectItem value="Motorcycle">Motorcycle</SelectItem>
+                        <SelectItem value="car">Car</SelectItem>
+                        <SelectItem value="bike">Bike</SelectItem>
+                        <SelectItem value="truck">Truck</SelectItem>
+                        <SelectItem value="bicycle">Bicycle</SelectItem>
+                        <SelectItem value="van">Van</SelectItem>
+                        <SelectItem value="tricycle">Tricycle</SelectItem>
                       </SelectContent>
                     </Select>
                   </FormControl>
@@ -109,31 +140,13 @@ function AddVehicles() {
 
             <FormField
               control={form.control}
-              name="Make"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Make</FormLabel>
-                  <FormControl>
-                    <Input
-                      className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
-                      placeholder="Toyota"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage className="text-red-600" />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="Model"
+              name="model"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Model</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="Corolla, F-150"
+                      placeholder="Corolla, F-150, etc."
                       className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
                       {...field}
                     />
@@ -145,17 +158,21 @@ function AddVehicles() {
 
             <FormField
               control={form.control}
-              name="Year"
+              name="year"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Year</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
-                      min="1"
-                      placeholder="2005"
+                      min="1900"
+                      max={new Date().getFullYear() + 1}
+                      placeholder="2024"
                       className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
                       {...field}
+                      onChange={(e) =>
+                        field.onChange(parseInt(e.target.value) || 0)
+                      }
                     />
                   </FormControl>
                   <FormMessage className="text-red-600" />
@@ -165,13 +182,13 @@ function AddVehicles() {
 
             <FormField
               control={form.control}
-              name="Color"
+              name="color"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Year</FormLabel>
+                  <FormLabel>Color</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="red"
+                      placeholder="Red, Blue, White, etc."
                       className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
                       {...field}
                     />
@@ -183,10 +200,10 @@ function AddVehicles() {
 
             <FormField
               control={form.control}
-              name="LicensePlateNumber"
+              name="plateNumber"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>License Plate Number</FormLabel>
+                  <FormLabel>Plate Number</FormLabel>
                   <FormControl>
                     <Input
                       placeholder="EKY 345 XV"
@@ -201,43 +218,7 @@ function AddVehicles() {
 
             <FormField
               control={form.control}
-              name="ChassisNumber"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Chassis Number</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="1234"
-                      className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage className="text-red-600" />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="EngineNumber"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Engine Number</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="1234"
-                      className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage className="text-red-600" />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="VehicleImage"
+              name="image"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Vehicle Image</FormLabel>
@@ -246,7 +227,18 @@ function AddVehicles() {
                       type="file"
                       accept="image/*"
                       className="h-11 border-[#d6d6d6] focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
-                      onChange={(e) => field.onChange(e.target.files?.[0])}
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          try {
+                            const base64 = await fileToBase64(file);
+                            field.onChange(base64);
+                          } catch (error) {
+                            toast.error("Error processing vehicle image");
+                            console.error("Error:", error);
+                          }
+                        }
+                      }}
                     />
                   </FormControl>
                   <FormMessage className="text-red-600" />
@@ -256,7 +248,7 @@ function AddVehicles() {
 
             <FormField
               control={form.control}
-              name="VehicleStatus"
+              name="status"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Vehicle Status</FormLabel>
@@ -266,12 +258,12 @@ function AddVehicles() {
                         <SelectValue placeholder="Select Vehicle Status" />
                       </SelectTrigger>
                       <SelectContent className="bg-background border-0 shadow-accent shadow-sm">
-                        <SelectItem value="Available">Available</SelectItem>
-                        <SelectItem value="In Use">In Use</SelectItem>
-                        <SelectItem value="Under Maintenance">
+                        <SelectItem value="available">Available</SelectItem>
+                        <SelectItem value="in use">In Use</SelectItem>
+                        <SelectItem value="under maintenance">
                           Under Maintenance
                         </SelectItem>
-                        <SelectItem value="Disabled">Disabled</SelectItem>
+                        <SelectItem value="disabled">Disabled</SelectItem>
                       </SelectContent>
                     </Select>
                   </FormControl>
@@ -282,10 +274,10 @@ function AddVehicles() {
 
             <FormField
               control={form.control}
-              name="AssignedDriver"
+              name="riderId"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel>Assign Driver</FormLabel>
+                  <FormLabel>Assign Driver (Optional)</FormLabel>
                   <Popover>
                     <PopoverTrigger asChild>
                       <FormControl>
@@ -298,10 +290,10 @@ function AddVehicles() {
                           )}
                         >
                           {field.value
-                            ? drivers.find(
+                            ? availableDrivers.find(
                                 (driver) => driver.value === field.value
                               )?.label
-                            : "Select drivers"}
+                            : "Select driver (optional)"}
                           <ChevronsUpDown className="opacity-50" />
                         </Button>
                       </FormControl>
@@ -315,23 +307,36 @@ function AddVehicles() {
                         <CommandList>
                           <CommandEmpty>No driver found.</CommandEmpty>
                           <CommandGroup>
-                            {drivers.map((driver) => (
+                            <CommandItem
+                              onSelect={() => {
+                                form.setValue("riderId", "");
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  !field.value ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              No driver assigned
+                            </CommandItem>
+                            {availableDrivers.map((driver) => (
                               <CommandItem
                                 value={driver.label}
                                 key={driver.value}
                                 onSelect={() => {
-                                  form.setValue("AssignedDriver", driver.value);
+                                  form.setValue("riderId", driver.value);
                                 }}
                               >
-                                {driver.label}
                                 <Check
                                   className={cn(
-                                    "ml-auto",
+                                    "mr-2 h-4 w-4",
                                     driver.value === field.value
                                       ? "opacity-100"
                                       : "opacity-0"
                                   )}
                                 />
+                                {driver.label}
                               </CommandItem>
                             ))}
                           </CommandGroup>
@@ -346,9 +351,10 @@ function AddVehicles() {
 
             <Button
               type="submit"
+              disabled={isPending}
               className="w-full mt-3 h-11 bg-[#4D37B3] text-white"
             >
-              Submit
+              {isPending ? "Submitting..." : "Submit"}
             </Button>
           </form>
         </Form>

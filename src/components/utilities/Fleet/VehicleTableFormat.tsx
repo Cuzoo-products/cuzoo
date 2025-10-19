@@ -16,11 +16,11 @@ import { Link } from "react-router";
 // You can use a Zod schema here if you want.
 export type VehicleData = {
   id: string;
-  name: string;
+  model: string;
   type: string;
-  vehicleStatus: "Available" | "In Use" | "Under Maintenance" | "Disabled";
-  driver: string | "Unasigned";
-  number: string;
+  status: "Available" | "In Use" | "Under Maintenance" | "Disabled";
+  // driver: string | "Unasigned";
+  plateNumber: string;
 };
 
 export const columns: ColumnDef<VehicleData>[] = [
@@ -31,29 +31,29 @@ export const columns: ColumnDef<VehicleData>[] = [
     },
   },
   {
-    accessorKey: "name",
+    accessorKey: "model",
     header: ({ column }) => {
       return <DataTableColumnHeader column={column} title="Name" />;
     },
   },
   {
-    accessorKey: "number",
+    accessorKey: "plateNumber",
     header: ({ column }) => {
       return <DataTableColumnHeader column={column} title="Plate Number" />;
     },
   },
   {
-    accessorKey: "vehicleStatus",
+    accessorKey: "status",
     header: ({ column }) => {
       return <DataTableColumnHeader column={column} title="Status" />;
     },
   },
-  {
-    accessorKey: "driver",
-    header: ({ column }) => {
-      return <DataTableColumnHeader column={column} title="Driver" />;
-    },
-  },
+  // {
+  //   accessorKey: "driver",
+  //   header: ({ column }) => {
+  //     return <DataTableColumnHeader column={column} title="Driver" />;
+  //   },
+  // },
   {
     id: "actions",
     cell: ({ row }) => {

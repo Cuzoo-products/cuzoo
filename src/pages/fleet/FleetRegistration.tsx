@@ -15,19 +15,37 @@ import { Input } from "@/components/ui/input";
 import Image from "@/components/ui/image";
 import { FleetManagerRegFormSchema } from "@/lib/zodVaildation";
 import truck from "@/assets/truck.jpg";
+import { useCreateFleetManager } from "@/api/fleet/auth/useAuth";
+import { useNavigate } from "react-router";
 
 function FleetRegistration() {
+  const navigate = useNavigate();
   const form = useForm<z.infer<typeof FleetManagerRegFormSchema>>({
     resolver: zodResolver(FleetManagerRegFormSchema),
     defaultValues: {
-      businessEmail: "",
+      firstName: "",
+      lastName: "",
+      email: "",
+      businessName: "",
+      phoneNumber: "",
+      registrationNumber: "",
+      tinNumber: "",
+      dateOfIncorporation: "",
+      placeOfIncorporation: "",
+      companyType: "",
       password: "",
       confirmPassword: "",
     },
   });
 
+  const { mutate, isPending } = useCreateFleetManager();
+
   function onSubmit(data: z.infer<typeof FleetManagerRegFormSchema>) {
-    console.log(data);
+    mutate(data, {
+      onSuccess: () => {
+        navigate("/verify-email");
+      },
+    });
   }
 
   return (
@@ -47,24 +65,196 @@ function FleetRegistration() {
                 <p>Welcome to cuzoo fleet manager</p>
               </div>
 
-              <FormField
-                control={form.control}
-                name="businessEmail"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Business Email</FormLabel>
-                    <FormControl>
-                      <Input
-                        className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
-                        type="email"
-                        placeholder="johndoe@example.com"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage className="text-red-600" />
-                  </FormItem>
-                )}
-              />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="firstName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>First Name</FormLabel>
+                      <FormControl>
+                        <Input
+                          className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
+                          type="text"
+                          placeholder="John"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage className="text-red-600" />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="lastName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Last Name</FormLabel>
+                      <FormControl>
+                        <Input
+                          className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
+                          type="text"
+                          placeholder="Doe"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage className="text-red-600" />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem className="md:col-span-2">
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input
+                          className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
+                          type="email"
+                          placeholder="johndoe@example.com"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage className="text-red-600" />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="businessName"
+                  render={({ field }) => (
+                    <FormItem className="md:col-span-2">
+                      <FormLabel>Business Name</FormLabel>
+                      <FormControl>
+                        <Input
+                          className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
+                          type="text"
+                          placeholder="Acme Logistics"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage className="text-red-600" />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="phoneNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Phone Number</FormLabel>
+                      <FormControl>
+                        <Input
+                          className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
+                          type="tel"
+                          placeholder="0801 234 5678"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage className="text-red-600" />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="registrationNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Registration Number</FormLabel>
+                      <FormControl>
+                        <Input
+                          className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
+                          type="text"
+                          placeholder="RC1234567"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage className="text-red-600" />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="tinNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>TIN Number</FormLabel>
+                      <FormControl>
+                        <Input
+                          className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
+                          type="text"
+                          placeholder="1234567890"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage className="text-red-600" />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="dateOfIncorporation"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Date of Incorporation</FormLabel>
+                      <FormControl>
+                        <Input
+                          className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
+                          type="date"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage className="text-red-600" />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="placeOfIncorporation"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Place of Incorporation</FormLabel>
+                      <FormControl>
+                        <Input
+                          className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
+                          type="text"
+                          placeholder="Lagos, Nigeria"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage className="text-red-600" />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="companyType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Company Type</FormLabel>
+                      <FormControl>
+                        <Input
+                          className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
+                          type="text"
+                          placeholder="Private Limited Company"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage className="text-red-600" />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
               <FormField
                 control={form.control}
@@ -112,6 +302,7 @@ function FleetRegistration() {
               <Button
                 type="submit"
                 className="w-full bg-[#4D37B3] text-white mt-3"
+                disabled={isPending}
               >
                 Submit
               </Button>

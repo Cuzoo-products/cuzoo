@@ -1,6 +1,8 @@
 import { createBrowserRouter } from "react-router";
 import App from "@/App";
 import NotFoundPage from "@/pages/shared/NotFoundPage";
+import VerifyEmail from "@/pages/shared/VerifyEmail";
+import { ProtectedRoute } from "@/routes/ProtectedRoute";
 import Maps from "@/pages/fleet/Maps";
 import Drivers from "@/pages/fleet/Drivers";
 import DriverDetails from "@/pages/fleet/DriverDetails";
@@ -60,16 +62,28 @@ export const routes = createBrowserRouter([
     errorElement: <NotFoundPage />,
   },
   {
+    path: "/verify-email",
+    element: <VerifyEmail />,
+  },
+  {
     path: "/fleet-registration",
     element: <FleetRegistration />,
   },
   {
     path: "/fleetkyc",
-    element: <FleetKyc />,
+    element: (
+      <ProtectedRoute allowedUserTypes={["fleet"]}>
+        <FleetKyc />
+      </ProtectedRoute>
+    ),
   },
   {
     path: "/vendorkyc",
-    element: <VendorKycForm />,
+    element: (
+      <ProtectedRoute allowedUserTypes={["vendor"]}>
+        <VendorKycForm />
+      </ProtectedRoute>
+    ),
   },
 
   {
@@ -78,7 +92,11 @@ export const routes = createBrowserRouter([
   },
   {
     path: "/fleet",
-    element: <FleetLayout />,
+    element: (
+      <ProtectedRoute allowedUserTypes={["fleet"]}>
+        <FleetLayout />
+      </ProtectedRoute>
+    ),
     children: [
       {
         index: true,
@@ -148,7 +166,11 @@ export const routes = createBrowserRouter([
   },
   {
     path: "/vendor",
-    element: <VendorLayout />,
+    element: (
+      <ProtectedRoute allowedUserTypes={["vendor"]}>
+        <VendorLayout />
+      </ProtectedRoute>
+    ),
     children: [
       {
         index: true,
@@ -198,8 +220,11 @@ export const routes = createBrowserRouter([
   },
   {
     path: "/admins",
-    element: <AdminLayout />,
-
+    element: (
+      <ProtectedRoute allowedUserTypes={["admin"]}>
+        <AdminLayout />
+      </ProtectedRoute>
+    ),
     children: [
       {
         index: true,
