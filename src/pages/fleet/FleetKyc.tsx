@@ -95,8 +95,7 @@ export function FleetKyc() {
   const [step, setStep] = useState(1);
 
   function onSubmit(values: z.infer<typeof fleetKycformSchema>) {
-    console.log(values);
-    // mutate(values);
+    mutate(values);
   }
 
   const nextStep = () => setStep((prev) => Math.min(prev + 1, 3));

@@ -4,7 +4,6 @@ import {
   Mail,
   Bell,
   Calendar,
-  Smartphone,
   UserX,
   ShieldCheck,
   Send,
@@ -63,25 +62,25 @@ function UserDetails() {
   const { id } = useParams();
   const { data: userData, isLoading } = useUser(id as string);
   const user = userData?.data;
-  
+
   const [isAccountActive, setIsAccountActive] = useState(true);
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("email");
   const [hasChanges, setHasChanges] = useState(false);
-  
+
   // Format date for display
   const formatDate = (dateString: string) => {
     try {
-      return new Date(dateString).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
+      return new Date(dateString).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
       });
     } catch (error) {
-      console.error('Error formatting date:', error);
-      return 'N/A';
+      console.error("Error formatting date:", error);
+      return "N/A";
     }
   };
 
@@ -89,7 +88,8 @@ function UserDetails() {
   useEffect(() => {
     if (user) {
       const statusChanged =
-        (isAccountActive ? "Active" : "Disabled") !== (user?.status || 'Active');
+        (isAccountActive ? "Active" : "Disabled") !==
+        (user?.status || "Active");
       setHasChanges(statusChanged);
     }
   }, [isAccountActive, user]);
@@ -111,7 +111,7 @@ function UserDetails() {
       <div className="text-muted-foreground mt-1">{icon}</div>
       <div className="flex flex-col">
         <span className="text-xs text-muted-foreground">{label}</span>
-        <span className="text-sm font-medium">{value || 'N/A'}</span>
+        <span className="text-sm font-medium">{value || "N/A"}</span>
       </div>
     </div>
   );
@@ -121,7 +121,11 @@ function UserDetails() {
   }
 
   if (!user) {
-    return <div className="flex items-center justify-center h-64">User not found</div>;
+    return (
+      <div className="flex items-center justify-center h-64">
+        User not found
+      </div>
+    );
   }
 
   return (
