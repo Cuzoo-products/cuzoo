@@ -1,33 +1,15 @@
 import { DataTable } from "@/components/ui/data-table";
-import {
-  columns,
-  type CategoryData,
-} from "@/components/utilities/Vendors/CategoryDataTable";
-
-const data: CategoryData[] = [
-  {
-    id: "728ed52f",
-    name: "Phones",
-    icon: "https://github.com/shadcn.png",
-  },
-  {
-    id: "728ed52f",
-    name: "Cloths",
-    icon: "https://github.com/shadcn.png",
-  },
-  {
-    id: "489e1d42",
-    name: "Assessories",
-    icon: "https://github.com/shadcn.png",
-  },
-  {
-    id: "48901d42",
-    name: "Watches",
-    icon: "https://github.com/shadcn.png",
-  },
-];
+import { columns } from "@/components/utilities/Vendors/CategoryDataTable";
+import { useGetCategories } from "@/api/vendor/categories/useCategories";
+import Loader from "@/components/utilities/Loader";
 
 function Categories() {
+  const { data: categories, isLoading } = useGetCategories();
+
+  if (isLoading) {
+    return <Loader />;
+  }
+
   return (
     <div className="@container/main">
       <div className="my-6">
@@ -35,7 +17,7 @@ function Categories() {
         <p>Manage all categories information</p>
       </div>
 
-      <DataTable columns={columns} data={data} />
+      <DataTable columns={columns} data={categories?.data || []} />
     </div>
   );
 }

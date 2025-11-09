@@ -25,6 +25,7 @@ import truck from "@/assets/truck.jpg";
 import { useCreateVendor } from "@/api/vendor/auth/useAuth";
 import { Loader2 } from "lucide-react";
 import { useNavigate } from "react-router";
+import { GogglePlace } from "@/components/utilities/GogglePlace";
 
 // Utility function to convert file to base64
 const fileToBase64 = (file: File): Promise<string> => {
@@ -47,8 +48,12 @@ function VendorRegistration() {
       phoneNumber: "",
       password: "",
       confirmPassword: "",
+      registrationNumber: "",
+      dateOfIncorporation: "",
+      placeOfIncorporation: "",
       businessType: "",
       logo: "",
+      addressPlaceId: "",
     },
   });
 
@@ -56,8 +61,15 @@ function VendorRegistration() {
   const navigate = useNavigate();
 
   function onSubmit(data: z.infer<typeof VendorRegistrationFormSchema>) {
-    console.log(data);
-    createVendor(data, {
+    // Convert date to ISO string format
+    const formattedData = {
+      ...data,
+      dateOfIncorporation: data.dateOfIncorporation
+        ? new Date(data.dateOfIncorporation).toISOString()
+        : "",
+    };
+    console.log(formattedData);
+    createVendor(formattedData, {
       onSuccess: () => {
         navigate("/verify-email");
       },
@@ -155,6 +167,62 @@ function VendorRegistration() {
                   </FormItem>
                 )}
               />
+
+              <FormField
+                control={form.control}
+                name="registrationNumber"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Registration Number</FormLabel>
+                    <FormControl>
+                      <Input
+                        className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
+                        placeholder="RC123456789"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage className="text-red-600" />
+                  </FormItem>
+                )}
+              />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="dateOfIncorporation"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Date of Incorporation</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="date"
+                          className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage className="text-red-600" />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="placeOfIncorporation"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Place of Incorporation</FormLabel>
+                      <FormControl>
+                        <Input
+                          className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
+                          placeholder="Lagos, Nigeria"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage className="text-red-600" />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
               <FormField
                 control={form.control}
@@ -258,6 +326,27 @@ function VendorRegistration() {
                       </SelectContent>
                     </Select>
                     <FormMessage className="text-red-600" />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="addressPlaceId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Business Address</FormLabel>
+                    <FormControl>
+                      <GogglePlace
+                        value={field.value}
+                        onChange={field.onChange}
+                        placeholder="Enter your business address"
+                      />
+                    </FormControl>
+                    <FormMessage className="text-red-600" />
+                    <p className="text-sm text-muted-foreground">
+                      Start typing to search for your business address
+                    </p>
                   </FormItem>
                 )}
               />

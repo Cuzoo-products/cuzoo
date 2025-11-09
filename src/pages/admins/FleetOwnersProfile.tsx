@@ -20,6 +20,10 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Download, Truck, User, Users } from "lucide-react";
 import FinancialReport from "@/components/utilities/Admins/FinancialReport";
+import { useParams } from "react-router";
+import { useGetOneFleet } from "@/api/admin/useFleet";
+import { Badge } from "@/components/ui/badge";
+import Loader from "@/components/utilities/Loader";
 
 interface FleetManagerDocument {
   id: string;
@@ -28,56 +32,68 @@ interface FleetManagerDocument {
   url: string;
 }
 
-interface FleetManager {
-  id: string;
-  businessName: string;
-  contactPerson: string;
-  email: string;
-  phone: string;
-  joinDate: string;
+interface FleetApiData {
+  approvalStatus?: string;
+  businessName?: string;
+  companyType?: string;
+  dateOfIncorporation?: { _seconds?: number; _nanoseconds?: number };
+  drivers?: number;
+  email?: string;
+  fleets?: number;
+  id?: string;
+  lastName?: string;
+  phoneNumber?: {
+    internationalFormat?: string;
+    nationalFormat?: string;
+    number?: string;
+    countryCode?: string;
+    countryCallingCode?: string;
+  };
+  placeOfIncorporation?: string;
+  registrationNumber?: string;
+  tinNumber?: string;
   avatarUrl?: string;
-  isAccountActive: boolean;
-  fleetCount: number;
-  driverCount: number;
-  documents: FleetManagerDocument[];
 }
 
-const mockFleetManager: FleetManager = {
-  id: "fltmgr_9z8y7x6w5v",
-  businessName: "Logistics Kings",
-  contactPerson: "John Carter",
-  email: "john.carter@logisticskings.com",
-  phone: "+1 (555) 987-6543",
-  joinDate: "2022-11-20",
-  avatarUrl: "https://placehold.co/100x100/E2E8F0/4A5568?text=LK",
-  isAccountActive: true,
-  fleetCount: 42,
-  driverCount: 58,
-  documents: [
-    {
-      id: "doc_fm_1",
-      name: "Company_Incorporation.pdf",
-      uploadDate: "2022-11-21",
-      url: "#",
-    },
-    {
-      id: "doc_fm_2",
-      name: "Insurance_Policy.pdf",
-      uploadDate: "2022-11-22",
-      url: "#",
-    },
-  ],
-};
+// Minimal mock data only for documents and financial summary sections
+const mockDocuments: FleetManagerDocument[] = [
+  {
+    id: "doc_fm_1",
+    name: "Company_Incorporation.pdf",
+    uploadDate: "2022-11-21",
+    url: "#",
+  },
+  {
+    id: "doc_fm_2",
+    name: "Insurance_Policy.pdf",
+    uploadDate: "2022-11-22",
+    url: "#",
+  },
+];
 
 export default function FleetOwnersProfile() {
-  const [manager, setManager] = useState<FleetManager>(mockFleetManager);
+  const { id } = useParams();
+  const { data: fleetManager, isLoading } = useGetOneFleet(id!);
+
+  const [isAccountActive, setIsAccountActive] = useState<boolean>(true);
+  const api: FleetApiData | undefined = (
+    fleetManager as { data?: FleetApiData } | undefined
+  )?.data;
+
+  const joinDate = api?.dateOfIncorporation?._seconds
+    ? new Date(api.dateOfIncorporation._seconds * 1000).toLocaleDateString()
+    : "-";
 
   const handleAccountToggle = (checked: boolean) => {
-    setManager((m) => ({ ...m, isAccountActive: checked }));
+    setIsAccountActive(checked);
     console.log(
       `Fleet Manager account is now ${checked ? "enabled" : "disabled"}`
     );
   };
+
+  if (isLoading) {
+    return <Loader />;
+  }
 
   return (
     <div className="min-h-screen p-4 sm:p-6 lg:p-8 font-sans">
@@ -94,19 +110,30 @@ export default function FleetOwnersProfile() {
               <CardHeader className="flex flex-row items-center space-x-4 pb-4">
                 <Avatar className="h-16 w-16">
                   <AvatarImage
-                    src={manager.avatarUrl}
-                    alt={manager.businessName}
+                    src={api?.avatarUrl}
+                    alt={(api?.businessName || "Fleet Manager") as string}
                   />
                   <AvatarFallback>
-                    {manager.businessName.substring(0, 2).toUpperCase()}
+                    {api?.avatarUrl ? (
+                      (api?.businessName || "FM").substring(0, 2).toUpperCase()
+                    ) : (
+                      <User className="h-8 w-8 text-muted-foreground" />
+                    )}
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <CardTitle className="text-2xl">
-                    {manager.businessName}
-                  </CardTitle>
+                  <div className="flex items-center gap-3">
+                    <CardTitle className="text-2xl">
+                      {api?.businessName || "-"}
+                    </CardTitle>
+                    {api?.approvalStatus && (
+                      <Badge variant="secondary" className="capitalize">
+                        {api.approvalStatus}
+                      </Badge>
+                    )}
+                  </div>
                   <CardDescription>
-                    Contact: {manager.contactPerson}
+                    Contact: {api?.lastName || "-"}
                   </CardDescription>
                 </div>
               </CardHeader>
@@ -114,15 +141,47 @@ export default function FleetOwnersProfile() {
                 <div className="space-y-3 text-sm">
                   <div className="flex justify-between">
                     <span>Email</span>
-                    <span className="font-medium">{manager.email}</span>
+                    <span className="font-medium">{api?.email || "-"}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Phone</span>
-                    <span className="font-medium">{manager.phone}</span>
+                    <span className="font-medium">
+                      {api?.phoneNumber?.internationalFormat ||
+                        api?.phoneNumber?.number ||
+                        "-"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Status</span>
+                    <span className="font-medium capitalize">
+                      {api?.approvalStatus || "-"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Company Type</span>
+                    <span className="font-medium">
+                      {api?.companyType || "-"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Place of Incorporation</span>
+                    <span className="font-medium">
+                      {api?.placeOfIncorporation || "-"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Registration No.</span>
+                    <span className="font-medium">
+                      {api?.registrationNumber || "-"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>TIN</span>
+                    <span className="font-medium">{api?.tinNumber || "-"}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Joined On</span>
-                    <span className="font-medium">{manager.joinDate}</span>
+                    <span className="font-medium">{joinDate}</span>
                   </div>
                 </div>
               </CardContent>
@@ -136,7 +195,7 @@ export default function FleetOwnersProfile() {
                   <Truck className="h-5 w-5 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold">{manager.fleetCount}</div>
+                  <div className="text-3xl font-bold">{api?.fleets ?? 0}</div>
                 </CardContent>
               </Card>
               <Card className="py-3 bg-secondary">
@@ -145,9 +204,7 @@ export default function FleetOwnersProfile() {
                   <Users className="h-5 w-5 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold">
-                    {manager.driverCount}
-                  </div>
+                  <div className="text-3xl font-bold">{api?.drivers ?? 0}</div>
                 </CardContent>
               </Card>
             </div>
@@ -173,7 +230,7 @@ export default function FleetOwnersProfile() {
                   </div>
                   <Switch
                     id="account-status"
-                    checked={manager.isAccountActive}
+                    checked={isAccountActive}
                     onCheckedChange={handleAccountToggle}
                   />
                 </div>
@@ -190,7 +247,7 @@ export default function FleetOwnersProfile() {
                   </div>
                   <Switch
                     id="account-status"
-                    checked={manager.isAccountActive}
+                    checked={isAccountActive}
                     onCheckedChange={handleAccountToggle}
                   />
                 </div>
@@ -218,7 +275,7 @@ export default function FleetOwnersProfile() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {manager.documents.map((doc) => (
+                    {mockDocuments.map((doc) => (
                       <TableRow key={doc.id}>
                         <TableCell className="font-medium">
                           {doc.name}
@@ -238,7 +295,7 @@ export default function FleetOwnersProfile() {
                     ))}
                   </TableBody>
                 </Table>
-                {manager.documents.length === 0 && (
+                {mockDocuments.length === 0 && (
                   <div className="text-center py-10 text-gray-500 dark:text-gray-400">
                     No documents have been uploaded.
                   </div>

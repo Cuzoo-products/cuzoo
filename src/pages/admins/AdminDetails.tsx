@@ -15,6 +15,8 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useGetAdmin, useToggleReleaseAdmin } from "@/api/admin/useAdmin";
+import { useParams } from "react-router";
 
 const mockAdmin = {
   id: "adm_7a9f3b2c",
@@ -51,12 +53,17 @@ const CompareRoles = (selectedRole: string[], adminData: string[]) => {
 };
 
 function AdminDetails() {
+  const { id } = useParams();
+  const { data } = useGetAdmin(id as string);
+  const { mutate: toggleReleaseAdmin } = useToggleReleaseAdmin();
   const [adminData, setAdminData] = useState(mockAdmin);
   const [selectedRole, setSelectedRole] = useState(mockAdmin.role);
   const [isAccountActive, setIsAccountActive] = useState(
     mockAdmin.status === "Active"
   );
   const [hasChanges, setHasChanges] = useState(false);
+
+  console.log(data);
 
   useEffect(() => {
     const roleChanged = CompareRoles(selectedRole, adminData.role);

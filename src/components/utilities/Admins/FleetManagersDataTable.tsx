@@ -16,16 +16,16 @@ import { Link } from "react-router";
 // You can use a Zod schema here if you want.
 export type FleetManagerData = {
   id: string;
-  name: string;
+  businessName: string;
   email: string;
-  number: string;
+  approvalStatus: string;
 };
 
 export const columns: ColumnDef<FleetManagerData>[] = [
   {
-    accessorKey: "name",
+    accessorKey: "businessName",
     header: ({ column }) => {
-      return <DataTableColumnHeader column={column} title="Name" />;
+      return <DataTableColumnHeader column={column} title="Business Name" />;
     },
   },
   {
@@ -35,9 +35,9 @@ export const columns: ColumnDef<FleetManagerData>[] = [
     },
   },
   {
-    accessorKey: "number",
+    accessorKey: "approvalStatus",
     header: ({ column }) => {
-      return <DataTableColumnHeader column={column} title="Number" />;
+      return <DataTableColumnHeader column={column} title="Status" />;
     },
   },
   {

@@ -8,9 +8,10 @@ import {
   UserX,
   ShieldCheck,
   Send,
+  Gift,
 } from "lucide-react";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,17 +26,31 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useUser } from "@/api/admin/useUsers";
+import { useParams } from "react-router";
+import Loader from "@/components/utilities/Loader";
 
-const mockUser = {
-  id: "usr_8c4d5e1a",
-  name: "Casey Jordan",
-  email: "casey.jordan@example.com",
-  avatarUrl: "https://placehold.co/100x100/ec4899/white?text=CJ",
-  status: "Active", // Can be 'Active', 'Invited', or 'Disabled'
-  lastSeen: "2025-07-22T20:15:00Z",
-  dateJoined: "2024-03-10T14:48:00Z",
-  device: "iPhone 15 Pro",
-};
+// interface UserData {
+//   id: string;
+//   firstName: string;
+//   lastName: string;
+//   email: string;
+//   emailVerified: boolean;
+//   phoneNumber: {
+//     internationalFormat: string;
+//     nationalFormat: string;
+//     number: string;
+//     countryCode: string;
+//     countryCallingCode: string;
+//   };
+//   gender: string;
+//   country: string;
+//   state: string;
+//   referrerCode: string;
+//   createdAt: string;
+//   updatedAt: string;
+//   fcmToken?: string;
+// }
 
 // --- TYPE DEFINITION FOR INFOROW PROPS ---
 type InfoRowProps = {
@@ -45,32 +60,49 @@ type InfoRowProps = {
 };
 
 function UserDetails() {
-  // const { toast } = useToast(); // Uncomment when you have toast configured
-  const [userData, setUserData] = useState(mockUser);
-  const [isAccountActive, setIsAccountActive] = useState(
-    mockUser.status === "Active"
-  );
+  const { id } = useParams();
+  const { data: userData, isLoading } = useUser(id as string);
+  const user = userData?.data;
+  
+  const [isAccountActive, setIsAccountActive] = useState(true);
   const [message, setMessage] = useState("");
-  const [messageType, setMessageType] = useState("email"); // 'email' or 'push'
+  const [messageType, setMessageType] = useState("email");
   const [hasChanges, setHasChanges] = useState(false);
+  
+  // Format date for display
+  const formatDate = (dateString: string) => {
+    try {
+      return new Date(dateString).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return 'N/A';
+    }
+  };
 
   // Effect to track if the account status has changed
   useEffect(() => {
-    const statusChanged =
-      (isAccountActive ? "Active" : "Disabled") !== userData.status;
-    setHasChanges(statusChanged);
-  }, [isAccountActive, userData.status]);
+    if (user) {
+      const statusChanged =
+        (isAccountActive ? "Active" : "Disabled") !== (user?.status || 'Active');
+      setHasChanges(statusChanged);
+    }
+  }, [isAccountActive, user]);
 
   const handleUpdateStatus = () => {
     const newStatus = isAccountActive ? "Active" : "Disabled";
     console.log("Updating status to:", newStatus);
-    setUserData((prev) => ({ ...prev, status: newStatus }));
     setHasChanges(false);
   };
 
   const handleSendMessage = () => {
     if (!message.trim()) return;
-    console.log(`Sending ${messageType} to ${userData.email}:`, message);
+    console.log(`Sending ${messageType} to ${user.email}:`, message);
     setMessage("");
   };
 
@@ -79,10 +111,18 @@ function UserDetails() {
       <div className="text-muted-foreground mt-1">{icon}</div>
       <div className="flex flex-col">
         <span className="text-xs text-muted-foreground">{label}</span>
-        <span className="text-sm font-medium">{value}</span>
+        <span className="text-sm font-medium">{value || 'N/A'}</span>
       </div>
     </div>
   );
+
+  if (isLoading) {
+    return <Loader />;
+  }
+
+  if (!user) {
+    return <div className="flex items-center justify-center h-64">User not found</div>;
+  }
 
   return (
     <div className="min-h-screen p-4 sm:p-6 lg:p-8">
@@ -92,23 +132,18 @@ function UserDetails() {
             <CardContent className="pt-6">
               <div className="flex flex-col items-center text-center">
                 <Avatar className="w-24 h-24 mb-4">
-                  <AvatarImage src={userData.avatarUrl} alt={userData.name} />
-                  <AvatarFallback>
-                    {userData.name
-                      .split(" ")
-                      .map((n) => n[0])
-                      .join("")}
-                  </AvatarFallback>
+                  <div className="relative w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-lg mb-4 bg-gray-200 flex items-center justify-center">
+                    {user?.firstName?.[0]}
+                    {user?.lastName?.[0]}
+                  </div>
                 </Avatar>
-                <h2 className="text-2xl font-bold">{userData.name}</h2>
-                <p className="text-sm text-muted-foreground">{userData.id}</p>
-                <div className="mt-4">
-                  <Badge
-                    variant={
-                      userData.status === "Active" ? "default" : "destructive"
-                    }
-                  >
-                    {userData.status}
+                <h2 className="text-2xl font-bold">
+                  {user?.firstName} {user?.lastName}
+                </h2>
+                <p className="text-sm text-muted-foreground">{user?.email}</p>
+                <div className="mt-2">
+                  <Badge variant={user.emailVerified ? "default" : "secondary"}>
+                    {user.emailVerified ? "Verified" : "Unverified"}
                   </Badge>
                 </div>
               </div>
@@ -122,17 +157,17 @@ function UserDetails() {
               <InfoRow
                 icon={<Mail className="w-5 h-5" />}
                 label="Email"
-                value={userData.email}
+                value={user.email}
               />
               <InfoRow
                 icon={<Calendar className="w-5 h-5" />}
-                label="Date Joined"
-                value={new Date(userData.dateJoined).toLocaleDateString()}
+                label="Join Date"
+                value={formatDate(user.createdAt)}
               />
               <InfoRow
-                icon={<Smartphone className="w-5 h-5" />}
-                label="Last Seen On"
-                value={userData.device}
+                icon={<Gift className="w-5 h-5" />}
+                label="Referral Code"
+                value={user.referrerCode}
               />
             </CardContent>
           </Card>

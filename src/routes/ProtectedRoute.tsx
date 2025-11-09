@@ -72,6 +72,7 @@ export const ProtectedRoute = ({
   }
 
   // Check KYC verification for fleet and vendor users (but allow access to KYC pages)
+
   if (
     reduxUser &&
     (reduxUser.accountType === "fleet" || reduxUser.accountType === "vendor") &&

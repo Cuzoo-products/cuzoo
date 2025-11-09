@@ -14,18 +14,20 @@ import { Link } from "react-router";
 import Image from "@/components/ui/image";
 
 // This type is used to define the shape of our data.
+type image1 = {
+  url: string;
+};
 export type ProductData = {
   id: string;
-  productName: string;
-  image: string;
+  name: string;
+  image1: image1;
   price: string;
   stock: string;
-  shorDes: string;
 };
 
 export const columns: ColumnDef<ProductData>[] = [
   {
-    accessorKey: "image",
+    accessorKey: "image1",
     header: ({ column }) => {
       return <DataTableColumnHeader column={column} title="Image" />;
     },
@@ -33,13 +35,13 @@ export const columns: ColumnDef<ProductData>[] = [
       const productData = row.original;
       return (
         <div>
-          <Image className="w-12 h-12" alt="" source={productData.image} />
+          <Image className="w-12 h-12" alt="" source={productData.image1.url} />
         </div>
       );
     },
   },
   {
-    accessorKey: "productName",
+    accessorKey: "name",
     header: ({ column }) => {
       return <DataTableColumnHeader column={column} title="Product Name" />;
     },
@@ -54,14 +56,6 @@ export const columns: ColumnDef<ProductData>[] = [
     accessorKey: "stock",
     header: ({ column }) => {
       return <DataTableColumnHeader column={column} title="Stock" />;
-    },
-  },
-  {
-    accessorKey: "shorDes",
-    header: ({ column }) => {
-      return (
-        <DataTableColumnHeader column={column} title="Short Description" />
-      );
     },
   },
   {

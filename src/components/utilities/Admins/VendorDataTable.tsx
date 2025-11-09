@@ -14,18 +14,27 @@ import { Link } from "react-router";
 
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
+
+type PhoneNumber = {
+  countryCallingCode: string;
+  countryCode: string;
+  internationalFormat: string;
+  nationalFormat: string;
+  number: string;
+};
+
 export type VendorData = {
   id: string;
-  name: string;
+  businessName: string;
   email: string;
-  status: string;
+  approvalStatus: string;
   storeCode: string;
-  number: string;
+  phoneNumber: PhoneNumber;
 };
 
 export const columns: ColumnDef<VendorData>[] = [
   {
-    accessorKey: "name",
+    accessorKey: "businessName",
     header: ({ column }) => {
       return <DataTableColumnHeader column={column} title="Name" />;
     },
@@ -43,13 +52,17 @@ export const columns: ColumnDef<VendorData>[] = [
     },
   },
   {
-    accessorKey: "number",
+    accessorKey: "phoneNumber",
     header: ({ column }) => {
       return <DataTableColumnHeader column={column} title="Number" />;
     },
+    cell: ({ row }) => {
+      const phoneNumber = row.original.phoneNumber;
+      return <div>{phoneNumber.internationalFormat}</div>;
+    },
   },
   {
-    accessorKey: "status",
+    accessorKey: "approvalStatus",
     header: ({ column }) => {
       return <DataTableColumnHeader column={column} title="Status" />;
     },

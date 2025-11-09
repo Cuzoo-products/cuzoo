@@ -49,6 +49,11 @@ export const VendorRegistrationFormSchema = z
     confirmPassword: z
       .string()
       .min(6, "Confirm password must be at least 6 characters long"),
+    registrationNumber: z.string().min(1, "Registration number is required"),
+    dateOfIncorporation: z.string().min(1, "Date of incorporation is required"),
+    placeOfIncorporation: z
+      .string()
+      .min(1, "Place of incorporation is required"),
     businessType: z.string().min(1, "Business type is required"),
     logo: z
       .string()
@@ -57,6 +62,7 @@ export const VendorRegistrationFormSchema = z
         (val) => val.startsWith("data:image/"),
         "Please upload a valid image file."
       ),
+    addressPlaceId: z.string().min(1, "Address is required"),
   })
   .refine((data) => data.password === data.confirmPassword, {
     path: ["confirmPassword"],
@@ -201,14 +207,13 @@ export const FleetManagerProfileFormSchema = z.object({
     .string()
     .min(1, "Email is required")
     .email("Please enter a valid email address"),
-
   businessName: z.string().min(1, "Business name is required"),
   phoneNumber: z.string().min(6, "Phone number must be at least 6 characters"),
 });
 
 export const FleetManagerChangePWSchema = z
   .object({
-    oldPassword: z.string().min(1, "Olid password is required"),
+    oldPassword: z.string().min(1, "Old password is required"),
     password: z
       .string()
       .min(6, "New Password must be at least 6 characters long"),
@@ -223,78 +228,51 @@ export const FleetManagerChangePWSchema = z
 
 export const CategoryFormSchema = z.object({
   CategoryName: z.string().min(1, "Category Name is required"),
-  CategoryIcon: z
-    .any()
-    .refine(
-      (file) =>
-        file instanceof File || (typeof window !== "undefined" && file?.uri),
-      {
-        message: "A valid image is required",
-      }
-    ),
+  CategoryIcon: z.string().min(1, "Category Icon is required"),
+});
+
+export const EditProductFormSchema = z.object({
+  name: z.string().min(1, "Product name is required"),
+  categoryId: z.string().min(1, "Category is required"),
+  price: z.coerce
+    .number()
+    .min(1, "Price is required")
+    .refine((val) => val > 0, { message: "Price must be a positive number" }),
+  stock: z.coerce
+    .number()
+    .min(0, "Stock must be 0 or more")
+    .int({ message: "Stock must be a valid integer (0 or more)" }),
+  shortDescription: z.string().min(1, "Short description is required"),
+  longDescription: z.string().min(1, "Long description is required"),
+  image1: z.string().optional(),
+
+  image2: z.string().optional(),
+
+  image3: z.string().optional(),
+
+  image4: z.string().optional(),
 });
 
 export const ProductFormSchema = z.object({
-  ProductName: z.string().min(1, "Product name is required"),
-  Category: z.string().min(1, "Category is required"),
-  Price: z
-    .string()
+  name: z.string().min(1, "Product name is required"),
+  categoryId: z.string().min(1, "Category is required"),
+  price: z.coerce
+    .number()
     .min(1, "Price is required")
-    .refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
-      message: "Price must be a positive number",
-    }),
-  Stock: z
-    .string()
-    .min(1, "Stock is required")
-    .refine((val) => Number.isInteger(Number(val)) && Number(val) >= 0, {
-      message: "Stock must be a valid integer (0 or more)",
-    }),
-  ShortDescription: z.string().min(1, "Short description is required"),
-  LongDescription: z.string().min(1, "Long description is required"),
+    .refine((val) => val > 0, { message: "Price must be a positive number" }),
+  stock: z.coerce
+    .number()
+    .min(0, "Stock must be 0 or more")
+    .int({ message: "Stock must be a valid integer (0 or more)" }),
+  shortDescription: z.string().min(1, "Short description is required"),
+  longDescription: z.string().min(1, "Long description is required"),
+  image1: z.string().min(1, "Image 1 is required"),
 
-  // Images: Image1 is required, others are optional
-  Image1: z
-    .any()
-    .refine(
-      (file) =>
-        file instanceof File || (typeof window !== "undefined" && file?.uri),
-      {
-        message: "A valid image is required",
-      }
-    ),
+  image2: z.string().min(1, "Image 2 is required"),
 
-  Image2: z
-    .any()
-    .optional()
-    .refine(
-      (file) =>
-        file instanceof File || (typeof window !== "undefined" && file?.uri),
-      {
-        message: "Invalid image",
-      }
-    ),
+  image3: z.string().min(1, "Image 3 is required"),
 
-  Image3: z
-    .any()
-    .optional()
-    .refine(
-      (file) =>
-        file instanceof File || (typeof window !== "undefined" && file?.uri),
-      {
-        message: "Invalid image",
-      }
-    ),
-
-  Image4: z
-    .any()
-    .optional()
-    .refine(
-      (file) =>
-        file instanceof File || (typeof window !== "undefined" && file?.uri),
-      {
-        message: "Invalid image",
-      }
-    ),
+  image4: z.string().min(1, "Image 4 is required"),
 });
 
 const MAX_FILE_SIZE = 5000000; // 5MB
@@ -354,6 +332,7 @@ export const fleetKycformSchema = z.object({
     )
     .refine(
       (files) => ACCEPTED_FILE_TYPES.includes(files?.[0]?.type),
+
       ".pdf, .jpg, .jpeg, and .png files are accepted."
     ),
   governmentApprovedId: z

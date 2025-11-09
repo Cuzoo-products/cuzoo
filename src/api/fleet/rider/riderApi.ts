@@ -16,7 +16,7 @@ export const getRider = async (id: string) => {
 };
 
 export const updateRider = async (id: string, riderDetails: any) => {
-  const response = await axiosInstance.put(
+  const response = await axiosInstance.patch(
     `/fleets/riders/${id}`,
     riderDetails
   );

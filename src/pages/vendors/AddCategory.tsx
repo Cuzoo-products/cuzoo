@@ -13,17 +13,38 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { CategoryFormSchema } from "@/lib/zodVaildation";
+import { useCreateCategory } from "@/api/vendor/categories/useCategories";
+import { toast } from "sonner";
+
+// Utility function to convert file to base64
+const fileToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = (error) => reject(error);
+  });
+};
+
 function AddCategory() {
   const form = useForm<z.infer<typeof CategoryFormSchema>>({
     resolver: zodResolver(CategoryFormSchema),
     defaultValues: {
-      CategoryName: "Phones",
+      CategoryName: "",
       CategoryIcon: "",
     },
   });
 
+  const { mutate, isPending } = useCreateCategory();
+
   function onSubmit(data: z.infer<typeof CategoryFormSchema>) {
-    console.log(data);
+    const CatInfo = {
+      name: data.CategoryName,
+      icon: data.CategoryIcon,
+    };
+
+    console.log(CatInfo);
+    mutate(CatInfo);
   }
 
   return (
@@ -46,8 +67,8 @@ function AddCategory() {
                   <FormLabel>Category Name</FormLabel>
                   <FormControl>
                     <Input
-                      className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
-                      placeholder="John Doe"
+                      className="border-[rgb(214,214,214)] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
+                      placeholder="Phones"
                       {...field}
                     />
                   </FormControl>
@@ -66,8 +87,19 @@ function AddCategory() {
                     <Input
                       type="file"
                       accept="image/*"
-                      className="h-11 border-[#d6d6d6] focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
-                      onChange={(e) => field.onChange(e.target.files?.[0])}
+                      className="h-11 border-[rgb(214,214,214)] focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          try {
+                            const base64 = await fileToBase64(file);
+                            field.onChange(base64);
+                          } catch (error) {
+                            toast.error("Error processing passport image");
+                            console.error("Error:", error);
+                          }
+                        }
+                      }}
                     />
                   </FormControl>
                   <FormMessage className="text-red-600" />
@@ -77,9 +109,10 @@ function AddCategory() {
 
             <Button
               type="submit"
+              disabled={isPending}
               className="w-full mt-3 h-11 bg-[#4D37B3] text-white"
             >
-              Submit
+              {isPending ? "Submitting..." : "Submit"}
             </Button>
           </form>
         </Form>

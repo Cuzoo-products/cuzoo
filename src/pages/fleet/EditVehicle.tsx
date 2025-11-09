@@ -130,8 +130,7 @@ function EditVehicle() {
       type: data.type || vehicle?.data?.type || "",
     };
 
-    console.log(submitData);
-    updateVehicle(id as string, submitData as any);
+    updateVehicle({ id, submitData });
   }
 
   if (isLoading) {
@@ -173,7 +172,6 @@ function EditVehicle() {
               control={form.control}
               name="type"
               render={({ field }) => {
-                console.log(field.value);
                 return (
                   <FormItem>
                     <FormLabel>Vehicle Type</FormLabel>
@@ -309,7 +307,7 @@ function EditVehicle() {
                             field.onChange(base64);
                           } catch (error) {
                             toast.error("Error processing vehicle image");
-                            console.error("Error:", error);
+                            // console.error("Error:", error);
                           }
                         }
                       }}

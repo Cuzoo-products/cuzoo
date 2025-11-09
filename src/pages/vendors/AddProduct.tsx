@@ -21,26 +21,42 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useCreateProduct } from "@/api/vendor/products/useProducts";
+import { useGetCategories } from "@/api/vendor/categories/useCategories";
+import { toast } from "sonner";
+
+// Utility function to convert file to base64
+const fileToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = (error) => reject(error);
+  });
+};
 
 function AddProduct() {
+  const { data: categories } = useGetCategories();
   const form = useForm<z.infer<typeof ProductFormSchema>>({
     resolver: zodResolver(ProductFormSchema),
     defaultValues: {
-      ProductName: "",
-      Category: "",
-      Price: "",
-      Stock: "",
-      ShortDescription: "",
-      LongDescription: "",
-      Image1: "",
-      Image2: "",
-      Image3: "",
-      Image4: "",
+      name: "",
+      categoryId: "",
+      price: 0,
+      stock: 0,
+      shortDescription: "",
+      longDescription: "",
+      image1: "",
+      image2: "",
+      image3: "",
+      image4: "",
     },
   });
 
+  const { mutate: createProduct, isPending } = useCreateProduct();
+
   function onSubmit(data: z.infer<typeof ProductFormSchema>) {
-    console.log(data);
+    createProduct(data);
   }
 
   return (
@@ -57,7 +73,7 @@ function AddProduct() {
           >
             <FormField
               control={form.control}
-              name="ProductName"
+              name="name"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Product Name</FormLabel>
@@ -75,12 +91,13 @@ function AddProduct() {
 
             <FormField
               control={form.control}
-              name="Price"
+              name="price"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Price</FormLabel>
                   <FormControl>
                     <Input
+                      type="number"
                       className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
                       {...field}
                       placeholder="100000"
@@ -93,12 +110,13 @@ function AddProduct() {
 
             <FormField
               control={form.control}
-              name="Stock"
+              name="stock"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Stock</FormLabel>
                   <FormControl>
                     <Input
+                      type="number"
                       placeholder="10"
                       className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
                       {...field}
@@ -111,19 +129,23 @@ function AddProduct() {
 
             <FormField
               control={form.control}
-              name="Category"
+              name="categoryId"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Select Category</FormLabel>
                   <FormControl>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <SelectTrigger className="h-11 w-full border-[#d6d6d6]">
-                        <SelectValue placeholder="Select gender" />
+                        <SelectValue placeholder="Select category" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Male">Phone</SelectItem>
-                        <SelectItem value="Female">Watch</SelectItem>
-                        <SelectItem value="Other">Food</SelectItem>
+                        {(categories?.data || []).map(
+                          (cat: { id: string; name: string }) => (
+                            <SelectItem key={cat.id} value={cat.id}>
+                              {cat.name}
+                            </SelectItem>
+                          )
+                        )}
                       </SelectContent>
                     </Select>
                   </FormControl>
@@ -134,7 +156,7 @@ function AddProduct() {
 
             <FormField
               control={form.control}
-              name="ShortDescription"
+              name="shortDescription"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Short Description</FormLabel>
@@ -152,7 +174,7 @@ function AddProduct() {
 
             <FormField
               control={form.control}
-              name="LongDescription"
+              name="longDescription"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Long Description</FormLabel>
@@ -170,7 +192,7 @@ function AddProduct() {
 
             <FormField
               control={form.control}
-              name="Image1"
+              name="image1"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Image 1 (required)</FormLabel>
@@ -179,7 +201,18 @@ function AddProduct() {
                       type="file"
                       accept="image/*"
                       className="h-11 border-[#d6d6d6] focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
-                      onChange={(e) => field.onChange(e.target.files?.[0])}
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          try {
+                            const base64 = await fileToBase64(file);
+                            field.onChange(base64);
+                          } catch (error) {
+                            toast.error("Error processing passport image");
+                            console.error("Error:", error);
+                          }
+                        }
+                      }}
                     />
                   </FormControl>
                   <FormMessage className="text-red-600" />
@@ -189,7 +222,7 @@ function AddProduct() {
 
             <FormField
               control={form.control}
-              name="Image2"
+              name="image2"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Image 2 (optional)</FormLabel>
@@ -198,7 +231,18 @@ function AddProduct() {
                       type="file"
                       accept="image/*"
                       className="h-11 border-[#d6d6d6] focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
-                      onChange={(e) => field.onChange(e.target.files?.[0])}
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          try {
+                            const base64 = await fileToBase64(file);
+                            field.onChange(base64);
+                          } catch (error) {
+                            toast.error("Error processing passport image");
+                            console.error("Error:", error);
+                          }
+                        }
+                      }}
                     />
                   </FormControl>
                   <FormMessage className="text-red-600" />
@@ -208,7 +252,7 @@ function AddProduct() {
 
             <FormField
               control={form.control}
-              name="Image3"
+              name="image3"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Image 3 (optional)</FormLabel>
@@ -217,7 +261,18 @@ function AddProduct() {
                       type="file"
                       accept="image/*"
                       className="h-11 border-[#d6d6d6] focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
-                      onChange={(e) => field.onChange(e.target.files?.[0])}
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          try {
+                            const base64 = await fileToBase64(file);
+                            field.onChange(base64);
+                          } catch (error) {
+                            toast.error("Error processing passport image");
+                            console.error("Error:", error);
+                          }
+                        }
+                      }}
                     />
                   </FormControl>
                   <FormMessage className="text-red-600" />
@@ -227,7 +282,7 @@ function AddProduct() {
 
             <FormField
               control={form.control}
-              name="Image4"
+              name="image4"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Image 4 (optional)</FormLabel>
@@ -236,7 +291,18 @@ function AddProduct() {
                       type="file"
                       accept="image/*"
                       className="h-11 border-[#d6d6d6] focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
-                      onChange={(e) => field.onChange(e.target.files?.[0])}
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          try {
+                            const base64 = await fileToBase64(file);
+                            field.onChange(base64);
+                          } catch (error) {
+                            toast.error("Error processing passport image");
+                            console.error("Error:", error);
+                          }
+                        }
+                      }}
                     />
                   </FormControl>
                   <FormMessage className="text-red-600" />
@@ -247,8 +313,9 @@ function AddProduct() {
             <Button
               type="submit"
               className="w-full mt-3 h-11 bg-[#4D37B3] text-white"
+              disabled={isPending}
             >
-              Submit
+              {isPending ? "Submitting..." : "Submit"}
             </Button>
           </form>
         </Form>

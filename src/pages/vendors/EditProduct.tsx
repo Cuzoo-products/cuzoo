@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ProductFormSchema } from "@/lib/zodVaildation";
+import { EditProductFormSchema } from "@/lib/zodVaildation";
 import {
   Select,
   SelectContent,
@@ -21,31 +21,53 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import phone from "@/FolderToDelete/phone.jpg";
-import phone2 from "@/FolderToDelete/phone2.jpg";
 import Image from "@/components/ui/image";
+import {
+  useGetOneProduct,
+  useUpdateProduct,
+} from "@/api/vendor/products/useProducts";
+import { useParams } from "react-router";
+import { useEffect } from "react";
+import { Loader } from "lucide-react";
+import { useGetCategories } from "@/api/vendor/categories/useCategories";
+import type { CategoryData } from "@/components/utilities/Vendors/CategoryDataTable";
+import { toast } from "sonner";
+
+const fileToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = (error) => reject(error);
+  });
+};
 
 function EditProduct() {
-  const form = useForm<z.infer<typeof ProductFormSchema>>({
-    resolver: zodResolver(ProductFormSchema),
+  const { id } = useParams();
+
+  const { data: product, isLoading } = useGetOneProduct(id as string);
+  const { data: categories, isLoading: categoriesLoading } = useGetCategories();
+
+  const form = useForm<z.infer<typeof EditProductFormSchema>>({
+    resolver: zodResolver(EditProductFormSchema),
     defaultValues: {
-      ProductName: "",
-      Category: "",
-      Price: "",
-      Stock: "",
-      ShortDescription: "",
-      LongDescription: "",
-      Image1: phone,
-      Image2: phone,
-      Image3: phone2,
-      Image4: phone2,
+      name: product?.data?.name,
+      categoryId: product?.data?.categoryId,
+      price: product?.data?.price,
+      stock: product?.data?.stock,
+      shortDescription: product?.data?.shortDescription,
+      longDescription: product?.data?.longDescription,
+      image1: product?.data?.image1?.url,
+      image2: product?.data?.image2?.url,
+      image3: product?.data?.image3?.url,
+      image4: product?.data?.image4?.url,
     },
   });
 
-  const watchedFile1 = form.watch("Image1");
-  const watchedFile2 = form.watch("Image2");
-  const watchedFile3 = form.watch("Image3");
-  const watchedFile4 = form.watch("Image4");
+  const watchedFile1 = form.watch("image1");
+  const watchedFile2 = form.watch("image2");
+  const watchedFile3 = form.watch("image3");
+  const watchedFile4 = form.watch("image4");
 
   const previewUrl1 = watchedFile1
     ? typeof watchedFile1 === "string"
@@ -71,8 +93,60 @@ function EditProduct() {
       : URL.createObjectURL(watchedFile4)
     : null;
 
-  function onSubmit(data: z.infer<typeof ProductFormSchema>) {
-    console.log(data);
+  const { mutate: updateProduct, isPending } = useUpdateProduct();
+  function onSubmit(data: z.infer<typeof EditProductFormSchema>) {
+    // Create a new payload without unchanged images
+    const payload = { ...data };
+
+    // Only include images that have been changed (not the original URL)
+    if (
+      typeof data.image1 === "string" &&
+      data.image1 === product?.data?.image1?.url
+    ) {
+      delete payload.image1;
+    }
+    if (
+      typeof data.image2 === "string" &&
+      data.image2 === product?.data?.image2?.url
+    ) {
+      delete payload.image2;
+    }
+    if (
+      typeof data.image3 === "string" &&
+      data.image3 === product?.data?.image3?.url
+    ) {
+      delete payload.image3;
+    }
+    if (
+      typeof data.image4 === "string" &&
+      data.image4 === product?.data?.image4?.url
+    ) {
+      delete payload.image4;
+    }
+
+    console.log(payload);
+    updateProduct({ id: id as string, productData: payload });
+  }
+
+  useEffect(() => {
+    if (product?.data) {
+      form.reset({
+        name: product.data.name,
+        categoryId: product.data.categoryId,
+        price: product.data.price,
+        stock: product.data.stock,
+        shortDescription: product.data.shortDescription,
+        longDescription: product.data.longDescription,
+        image1: product.data.image1?.url,
+        image2: product.data.image2?.url,
+        image3: product.data.image3?.url,
+        image4: product.data.image4?.url,
+      });
+    }
+  }, [product, form]);
+
+  if (isLoading || categoriesLoading) {
+    return <Loader />;
   }
 
   return (
@@ -89,7 +163,7 @@ function EditProduct() {
           >
             <FormField
               control={form.control}
-              name="ProductName"
+              name="name"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Product Name</FormLabel>
@@ -107,7 +181,7 @@ function EditProduct() {
 
             <FormField
               control={form.control}
-              name="Price"
+              name="price"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Price</FormLabel>
@@ -125,7 +199,7 @@ function EditProduct() {
 
             <FormField
               control={form.control}
-              name="Stock"
+              name="stock"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Stock</FormLabel>
@@ -143,19 +217,24 @@ function EditProduct() {
 
             <FormField
               control={form.control}
-              name="Category"
+              name="categoryId"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Select Category</FormLabel>
                   <FormControl>
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value || product?.data?.categoryId}
+                    >
                       <SelectTrigger className="h-11 w-full border-[#d6d6d6]">
-                        <SelectValue placeholder="Select gender" />
+                        <SelectValue placeholder="Select category" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Male">Phone</SelectItem>
-                        <SelectItem value="Female">Watch</SelectItem>
-                        <SelectItem value="Other">Food</SelectItem>
+                        {categories?.data?.map((category: CategoryData) => (
+                          <SelectItem key={category.id} value={category.id}>
+                            {category.name}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </FormControl>
@@ -166,7 +245,7 @@ function EditProduct() {
 
             <FormField
               control={form.control}
-              name="ShortDescription"
+              name="shortDescription"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Short Description</FormLabel>
@@ -184,7 +263,7 @@ function EditProduct() {
 
             <FormField
               control={form.control}
-              name="LongDescription"
+              name="longDescription"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Long Description</FormLabel>
@@ -213,7 +292,7 @@ function EditProduct() {
 
             <FormField
               control={form.control}
-              name="Image1"
+              name="image1"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Image 1 (required)</FormLabel>
@@ -222,7 +301,18 @@ function EditProduct() {
                       type="file"
                       accept="image/*"
                       className="h-11 border-[#d6d6d6] focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
-                      onChange={(e) => field.onChange(e.target.files?.[0])}
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          try {
+                            const base64 = await fileToBase64(file);
+                            field.onChange(base64);
+                          } catch (error) {
+                            toast.error("Error processing passport image");
+                            console.error("Error:", error);
+                          }
+                        }
+                      }}
                     />
                   </FormControl>
                   <FormMessage className="text-red-600" />
@@ -232,7 +322,7 @@ function EditProduct() {
 
             {previewUrl2 && (
               <div>
-                <h3>Image 2 (optional)</h3>
+                <h3>Image 2 </h3>
                 <Image
                   source={previewUrl2}
                   alt="Product Image two"
@@ -242,7 +332,7 @@ function EditProduct() {
             )}
             <FormField
               control={form.control}
-              name="Image2"
+              name="image2"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Image 2 (optional)</FormLabel>
@@ -251,7 +341,18 @@ function EditProduct() {
                       type="file"
                       accept="image/*"
                       className="h-11 border-[#d6d6d6] focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
-                      onChange={(e) => field.onChange(e.target.files?.[0])}
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          try {
+                            const base64 = await fileToBase64(file);
+                            field.onChange(base64);
+                          } catch (error) {
+                            toast.error("Error processing passport image");
+                            console.error("Error:", error);
+                          }
+                        }
+                      }}
                     />
                   </FormControl>
                   <FormMessage className="text-red-600" />
@@ -272,16 +373,27 @@ function EditProduct() {
 
             <FormField
               control={form.control}
-              name="Image3"
+              name="image3"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Image 3 (optional)</FormLabel>
+                  <FormLabel>Image 3</FormLabel>
                   <FormControl>
                     <Input
                       type="file"
                       accept="image/*"
                       className="h-11 border-[#d6d6d6] focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
-                      onChange={(e) => field.onChange(e.target.files?.[0])}
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          try {
+                            const base64 = await fileToBase64(file);
+                            field.onChange(base64);
+                          } catch (error) {
+                            toast.error("Error processing passport image");
+                            console.error("Error:", error);
+                          }
+                        }
+                      }}
                     />
                   </FormControl>
                   <FormMessage className="text-red-600" />
@@ -302,16 +414,27 @@ function EditProduct() {
 
             <FormField
               control={form.control}
-              name="Image4"
+              name="image4"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Image 4 (optional)</FormLabel>
+                  <FormLabel>Image 4</FormLabel>
                   <FormControl>
                     <Input
                       type="file"
                       accept="image/*"
                       className="h-11 border-[#d6d6d6] focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
-                      onChange={(e) => field.onChange(e.target.files?.[0])}
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          try {
+                            const base64 = await fileToBase64(file);
+                            field.onChange(base64);
+                          } catch (error) {
+                            toast.error("Error processing passport image");
+                            console.error("Error:", error);
+                          }
+                        }
+                      }}
                     />
                   </FormControl>
                   <FormMessage className="text-red-600" />
@@ -321,9 +444,10 @@ function EditProduct() {
 
             <Button
               type="submit"
+              disabled={isPending}
               className="w-full mt-3 h-11 bg-[#4D37B3] text-white"
             >
-              Submit
+              {isPending ? "Submitting..." : "Submit"}
             </Button>
           </form>
         </Form>

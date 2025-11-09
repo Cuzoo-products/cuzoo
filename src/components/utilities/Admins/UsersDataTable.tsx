@@ -14,17 +14,32 @@ import { Link } from "react-router";
 
 export type UserData = {
   id: string;
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
-  status: string;
-  number: string;
+  phoneNumber: {
+    internationalFormat: string;
+    nationalFormat: string;
+    number: string;
+    countryCode: string;
+    countryCallingCode: string;
+  };
 };
 
 export const columns: ColumnDef<UserData>[] = [
   {
-    accessorKey: "name",
+    id: "name",
     header: ({ column }) => {
       return <DataTableColumnHeader column={column} title="Name" />;
+    },
+    cell: ({ row }) => {
+      return (
+        <div>
+          {`${row.original.firstName || ""} ${
+            row.original.lastName || ""
+          }`.trim()}
+        </div>
+      );
     },
   },
   {
@@ -34,15 +49,12 @@ export const columns: ColumnDef<UserData>[] = [
     },
   },
   {
-    accessorKey: "number",
+    accessorKey: "phoneNumber",
     header: ({ column }) => {
       return <DataTableColumnHeader column={column} title="Number" />;
     },
-  },
-  {
-    accessorKey: "status",
-    header: ({ column }) => {
-      return <DataTableColumnHeader column={column} title="Status" />;
+    cell: ({ row }) => {
+      return <div>{`${row.original.phoneNumber.number || ""}`}</div>;
     },
   },
   {

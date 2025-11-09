@@ -15,10 +15,11 @@ export const getVehicle = async (id: string) => {
   return response.data;
 };
 
-export const updateVehicle = async (id: string, vehicleData: any) => {
+export const updateVehicle = async (data: { id: string; submitData: any }) => {
+  console.log(data);
   const response = await axiosInstance.patch(
-    `fleets/vehicles/${id}`,
-    vehicleData
+    `fleets/vehicles/${data.id}`,
+    data.submitData
   );
   return response.data;
 };

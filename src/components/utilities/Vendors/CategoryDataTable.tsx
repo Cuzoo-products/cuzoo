@@ -15,10 +15,14 @@ import Image from "@/components/ui/image";
 
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
+
+type IconProps = {
+  url: string;
+};
 export type CategoryData = {
   id: string;
   name: string;
-  icon: string;
+  image: IconProps;
 };
 
 export const columns: ColumnDef<CategoryData>[] = [
@@ -31,7 +35,7 @@ export const columns: ColumnDef<CategoryData>[] = [
       const categoryData = row.original;
       return (
         <div>
-          <Image className="w-12 h-12" alt="" source={categoryData.icon} />
+          <Image className="w-12 h-12" alt="" source={categoryData.image.url} />
         </div>
       );
     },

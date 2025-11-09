@@ -3,6 +3,7 @@ import {
   columns,
   type AdminData,
 } from "@/components/utilities/Admins/AdminsDataTable";
+import { useGetAllAdmins } from "@/api/admin/useAdmin";
 
 const data: AdminData[] = [
   {
@@ -36,6 +37,8 @@ const data: AdminData[] = [
 ];
 
 function Admins() {
+  const { data: admins } = useGetAllAdmins();
+  console.log(admins);
   return (
     <div className="@container/main">
       <div className="my-6">

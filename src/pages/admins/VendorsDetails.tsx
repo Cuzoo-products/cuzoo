@@ -20,6 +20,9 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Download, User2, Wallet } from "lucide-react";
 import FinancialReport from "@/components/utilities/Admins/FinancialReport";
+import { useParams } from "react-router";
+import { useGetVendor } from "@/api/admin/useVendors";
+import Loader from "@/components/utilities/Loader";
 
 interface VendorDocument {
   id: string;
@@ -28,66 +31,78 @@ interface VendorDocument {
   url: string;
 }
 
-interface Vendor {
-  id: string;
-  firstName: string;
-  lastName: string;
-  companyName: string;
-  email: string;
-  phone: string;
-  joinDate: string;
-  avatarUrl?: string;
-  isAccountActive: boolean;
-  isWalletActive: boolean;
-  documents: VendorDocument[];
-}
-
-// --- MOCK DATA ---
-const mockVendor: Vendor = {
-  id: "vndr_1a2b3c4d5e",
-  firstName: "Jane",
-  lastName: "Doe",
-  companyName: "Crafty Creations Inc.",
-  email: "jane.doe@crafty.com",
-  phone: "+1 (555) 123-4567",
-  joinDate: "2023-05-15",
-  avatarUrl: "https://placehold.co/100x100/E2E8F0/4A5568?text=JD",
-  isAccountActive: true,
-  isWalletActive: true,
-  documents: [
-    {
-      id: "doc_1",
-      name: "Business_Registration.pdf",
-      uploadDate: "2023-05-16",
-      url: "#",
-    },
-    {
-      id: "doc_2",
-      name: "VAT_Certificate.pdf",
-      uploadDate: "2023-05-18",
-      url: "#",
-    },
-    {
-      id: "doc_3",
-      name: "ID_Verification.png",
-      uploadDate: "2023-06-01",
-      url: "#",
-    },
-  ],
-};
+// interface Vendor {
+//   id: string;
+//   firstName: string;
+//   lastName: string;
+//   businessName: string;
+//   businessType: string;
+//   email: string;
+//   phoneNumber: {
+//     internationalFormat: string;
+//     nationalFormat: string;
+//     number: string;
+//     countryCode: string;
+//     countryCallingCode: string;
+//   };
+//   createdAt: string;
+//   logo?: {
+//     url: string;
+//     path: string;
+//     contentType: string;
+//   };
+//   approvalStatus: string;
+//   approved: boolean;
+//   accountDeleted: boolean;
+//   placeOfIncorporation: string;
+//   registrationNumber: string;
+//   storeCode: string;
+//   referrerCode: string;
+//   dateOfIncorporation: {
+//     _seconds: number;
+//     _nanoseconds: number;
+//   };
+//   address: {
+//     placeId: string;
+//     formatted_address: string;
+//     geometry: any;
+//     country: string;
+//     state: string;
+//   };
+//   documents?: Array<{
+//     id: string;
+//     name: string;
+//     uploadDate: string;
+//     url: string;
+//   }>;
+// }
 
 export default function VendorsDetails() {
-  const [vendor, setVendor] = useState<Vendor>(mockVendor);
+  const { id } = useParams();
+  const { data: vendorDetails, isLoading } = useGetVendor(id!);
+  const [isAccountActive, setIsAccountActive] = useState<boolean>(true);
+  const [isWalletActive, setIsWalletActive] = useState<boolean>(true);
 
   const handleAccountToggle = (checked: boolean) => {
-    setVendor((v) => ({ ...v, isAccountActive: checked }));
+    setIsAccountActive(checked);
     console.log(`Vendor account is now ${checked ? "enabled" : "disabled"}`);
+    // TODO: Add API call to update account status
   };
 
   const handleWalletToggle = (checked: boolean) => {
-    setVendor((v) => ({ ...v, isWalletActive: checked }));
+    setIsWalletActive(checked);
     console.log(`Vendor wallet is now ${checked ? "enabled" : "disabled"}`);
+    // TODO: Add API call to update wallet status
   };
+
+  const vendor = vendorDetails?.data;
+  const joinDate = vendor?.createdAt
+    ? new Date(vendor.createdAt).toLocaleDateString()
+    : "";
+
+  if (isLoading || !vendor) {
+    return <Loader />;
+  }
 
   return (
     <div className="min-h-screen p-4 sm:p-6 lg:p-8 font-sans">
@@ -103,19 +118,24 @@ export default function VendorsDetails() {
               <CardHeader className="flex flex-row items-center space-x-4 pb-4">
                 <Avatar className="h-16 w-16">
                   <AvatarImage
-                    src={vendor.avatarUrl}
+                    src={vendor.logo?.url}
                     alt={`${vendor.firstName} ${vendor.lastName}`}
                   />
                   <AvatarFallback>
-                    {vendor.firstName[0]}
-                    {vendor.lastName[0]}
+                    {vendor.firstName?.[0]}
+                    {vendor.lastName?.[0]}
                   </AvatarFallback>
                 </Avatar>
                 <div>
                   <CardTitle className="text-2xl">
                     {vendor.firstName} {vendor.lastName}
                   </CardTitle>
-                  <CardDescription>{vendor.companyName}</CardDescription>
+                  <CardDescription>{vendor.businessName}</CardDescription>
+                  <div className="mt-1">
+                    <span className="text-xs px-2 py-1 bg-green-100 text-green-800 rounded-full">
+                      {vendor.approvalStatus}
+                    </span>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>
@@ -126,11 +146,39 @@ export default function VendorsDetails() {
                   </div>
                   <div className="flex justify-between">
                     <span>Phone</span>
-                    <span className="font-medium">{vendor.phone}</span>
+                    <span className="font-medium">
+                      {vendor.phoneNumber?.internationalFormat}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Business Type</span>
+                    <span className="font-medium capitalize">
+                      {vendor.businessType}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Registration No.</span>
+                    <span className="font-medium">
+                      {vendor.registrationNumber}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Place of Inc.</span>
+                    <span className="font-medium">
+                      {vendor.placeOfIncorporation}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Store Code</span>
+                    <span className="font-medium">{vendor.storeCode}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Referral Code</span>
+                    <span className="font-medium">{vendor.referrerCode}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Joined On</span>
-                    <span className="font-medium">{vendor.joinDate}</span>
+                    <span className="font-medium">{joinDate}</span>
                   </div>
                 </div>
               </CardContent>
@@ -157,8 +205,9 @@ export default function VendorsDetails() {
                   </div>
                   <Switch
                     id="account-status"
-                    checked={vendor.isAccountActive}
+                    checked={isAccountActive}
                     onCheckedChange={handleAccountToggle}
+                    disabled={vendor.accountDeleted}
                   />
                 </div>
                 <div className="flex items-center space-x-4 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
@@ -173,8 +222,9 @@ export default function VendorsDetails() {
                   </div>
                   <Switch
                     id="wallet-status"
-                    checked={vendor.isWalletActive}
+                    checked={isWalletActive}
                     onCheckedChange={handleWalletToggle}
+                    disabled={vendor.accountDeleted}
                   />
                 </div>
               </CardContent>
@@ -201,7 +251,7 @@ export default function VendorsDetails() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {vendor.documents.map((doc) => (
+                    {(vendor.documents || []).map((doc: VendorDocument) => (
                       <TableRow key={doc.id}>
                         <TableCell className="font-medium">
                           {doc.name}
@@ -221,7 +271,7 @@ export default function VendorsDetails() {
                     ))}
                   </TableBody>
                 </Table>
-                {vendor.documents.length === 0 && (
+                {(!vendor.documents || vendor.documents.length === 0) && (
                   <div className="text-center py-10 text-gray-500 dark:text-gray-400">
                     No documents have been uploaded.
                   </div>
