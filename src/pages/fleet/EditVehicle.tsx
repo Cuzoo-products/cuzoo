@@ -130,7 +130,7 @@ function EditVehicle() {
       type: data.type || vehicle?.data?.type || "",
     };
 
-    updateVehicle({ id, submitData });
+    updateVehicle({ id: id as string, submitData });
   }
 
   if (isLoading) {
@@ -305,9 +305,8 @@ function EditVehicle() {
                           try {
                             const base64 = await fileToBase64(file);
                             field.onChange(base64);
-                          } catch (error) {
+                          } catch {
                             toast.error("Error processing vehicle image");
-                            // console.error("Error:", error);
                           }
                         }
                       }}
