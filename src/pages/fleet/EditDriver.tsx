@@ -85,7 +85,7 @@ function EditDriver() {
 
   function onSubmit(data: z.infer<typeof EditDriverFormSchema>) {
     console.log(data);
-    updateDriver(id as string, data);
+    updateDriver({ id: id as string, data });
   }
 
   if (isLoading) {

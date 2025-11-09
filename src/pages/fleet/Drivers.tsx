@@ -1,9 +1,6 @@
 import { useGetRiders } from "@/api/fleet/rider/useRiderQuery";
 import { DataTable } from "@/components/ui/data-table";
-import {
-  columns,
-  type DriverData,
-} from "@/components/utilities/Fleet/DriverTableFormate";
+import { columns } from "@/components/utilities/Fleet/DriverTableFormate";
 
 function Drivers() {
   const { data: riders } = useGetRiders();
