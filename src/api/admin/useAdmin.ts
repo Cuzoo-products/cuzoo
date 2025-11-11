@@ -5,7 +5,7 @@ import {
   getAllAdmins,
   toggleReleaseAdmin,
 } from "./adminApi";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export const useCreateAdmin = () => {
   return useMutation({
@@ -26,11 +26,13 @@ export const useGetAdmin = (id: string) => {
   });
 };
 
-export const useToggleReleaseAdmin = () => {
+export const useToggleReleaseAdmin = (id: string) => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: toggleReleaseAdmin,
     onSuccess: () => {
       toast.success("Admin status changed successfully");
+      queryClient.invalidateQueries({ queryKey: ["admin", id] });
     },
     onError: () => {
       toast.error("Failed to change admin status");

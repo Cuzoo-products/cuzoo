@@ -1,44 +1,13 @@
 import { DataTable } from "@/components/ui/data-table";
-import {
-  columns,
-  type AdminData,
-} from "@/components/utilities/Admins/AdminsDataTable";
+import { columns } from "@/components/utilities/Admins/AdminsDataTable";
 import { useGetAllAdmins } from "@/api/admin/useAdmin";
-
-const data: AdminData[] = [
-  {
-    id: "728ed52f",
-    name: "Emmanuel",
-    status: "Active",
-    number: "08123456789",
-    email: "m@businessname.com",
-  },
-  {
-    id: "728ed52f",
-    name: "John",
-    status: "Active",
-    number: "08123456789",
-    email: "john@businessname.com",
-  },
-  {
-    id: "489e1d42",
-    name: "David",
-    status: "Active",
-    number: "08123456789",
-    email: "example@businessname.com",
-  },
-  {
-    id: "48901d42",
-    name: "Blackie",
-    status: "Disabled",
-    number: "08123456789",
-    email: "blackie@businessname.com",
-  },
-];
+import Loader from "@/components/utilities/Loader";
 
 function Admins() {
-  const { data: admins } = useGetAllAdmins();
-  console.log(admins);
+  const { data: admins, isLoading } = useGetAllAdmins();
+
+  if (isLoading) return <Loader />;
+
   return (
     <div className="@container/main">
       <div className="my-6">
@@ -46,7 +15,7 @@ function Admins() {
         <p>Manage all admins data and information</p>
       </div>
 
-      <DataTable columns={columns} data={data} />
+      <DataTable columns={columns} data={admins?.data?.data} />
     </div>
   );
 }

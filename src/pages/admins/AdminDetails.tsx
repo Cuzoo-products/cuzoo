@@ -1,7 +1,7 @@
 import { useState, useEffect, type ReactNode } from "react";
 import { Mail, Clock, Calendar, UserCheck, Shield, UserX } from "lucide-react";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,19 +15,9 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useGetAdmin } from "@/api/admin/useAdmin";
+import { useGetAdmin, useToggleReleaseAdmin } from "@/api/admin/useAdmin";
 import { useParams } from "react-router";
-
-const mockAdmin = {
-  id: "adm_7a9f3b2c",
-  name: "Alexandre Dubois",
-  email: "alex.dubois@example.com",
-  avatarUrl: "https://placehold.co/100x100/6366f1/white?text=AD",
-  role: ["Admin"],
-  status: "Active",
-  lastLogin: "2025-07-22T18:30:00Z",
-  dateJoined: "2024-01-15T10:00:00Z",
-};
+import Loader from "@/components/utilities/Loader";
 
 const AVAILABLE_ROLES: string[] = [
   "Admin",
@@ -37,40 +27,56 @@ const AVAILABLE_ROLES: string[] = [
   "Publisher",
 ];
 
-const CompareRoles = (selectedRole: string[], adminData: string[]) => {
-  const sortedSelected = [...selectedRole].sort();
-  const sortedAdmin = [...adminData].sort();
-
-  let areNotEqual = false;
-  if (sortedSelected.length !== sortedAdmin.length) {
-    areNotEqual = true;
-  } else {
-    areNotEqual = !sortedSelected.every(
-      (value, index) => value === sortedAdmin[index]
-    );
-  }
-  return areNotEqual;
-};
-
 function AdminDetails() {
   const { id } = useParams();
-  const { data } = useGetAdmin(id as string);
-  // const { mutate: toggleReleaseAdmin } = useToggleReleaseAdmin();
-  const [adminData, setAdminData] = useState(mockAdmin);
-  const [selectedRole, setSelectedRole] = useState(mockAdmin.role);
-  const [isAccountActive, setIsAccountActive] = useState(
-    mockAdmin.status === "Active"
-  );
+  const { data, isLoading } = useGetAdmin(id as string);
+  const { mutate: toggleReleaseAdmin } = useToggleReleaseAdmin(id as string);
+  const [selectedRole, setSelectedRole] = useState(["Admin"]);
+  const [isAccountActive, setIsAccountActive] = useState(true);
   const [hasChanges, setHasChanges] = useState(false);
 
-  console.log(data);
+  const adminData = data?.data || {
+    id: "",
+    firstName: "",
+    lastName: "",
+    email: "",
+    phoneNumber: {
+      internationalFormat: "",
+      nationalFormat: "",
+      number: "",
+      countryCode: "",
+      countryCallingCode: "",
+    },
+    country: "",
+    position: "",
+    createdAt: "",
+    updatedAt: "",
+    referrerCode: "",
+    gender: "",
+    suspended: false,
+  };
 
   useEffect(() => {
-    const roleChanged = CompareRoles(selectedRole, adminData.role);
-    const statusChanged =
-      (isAccountActive ? "Active" : "Disabled") !== adminData.status;
-    setHasChanges(roleChanged || statusChanged);
-  }, [selectedRole, isAccountActive, adminData]);
+    if (data?.data) {
+      setSelectedRole(["Admin"]);
+      setIsAccountActive(!data.data.suspended);
+    }
+  }, [data]);
+
+  const toggleAdminStatus = () => {
+    setIsAccountActive(!isAccountActive);
+    toggleReleaseAdmin(
+      {
+        id: adminData.id,
+        release: adminData.suspended ? "release" : "suspend",
+      },
+      {
+        onError: () => {
+          setIsAccountActive(!isAccountActive);
+        },
+      }
+    );
+  };
 
   // Handler for saving changes
   const handleSaveChanges = () => {
@@ -81,11 +87,6 @@ function AdminDetails() {
     });
 
     // Update the local state to reflect the "saved" data
-    setAdminData((prev) => ({
-      ...prev,
-      role: selectedRole,
-      status: isAccountActive ? "Active" : "Disabled",
-    }));
     setHasChanges(false);
     // Here you might show a success toast message, e.g., using shadcn's toast component.
   };
@@ -122,6 +123,8 @@ function AdminDetails() {
     });
   };
 
+  if (isLoading) return <Loader />;
+
   return (
     <div>
       <div className="my-6">
@@ -137,30 +140,23 @@ function AdminDetails() {
               <CardContent className="pt-6">
                 <div className="flex flex-col items-center text-center">
                   <Avatar className="w-24 h-24 mb-4">
-                    <AvatarImage
-                      src={adminData.avatarUrl}
-                      alt={adminData.name}
-                    />
                     <AvatarFallback>
-                      {adminData.name
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")}
+                      {`${adminData.firstName?.[0] || ""}${
+                        adminData.lastName?.[0] || ""
+                      }`.toUpperCase() || "AD"}
                     </AvatarFallback>
                   </Avatar>
-                  <h2 className="text-2xl font-bold">{adminData.name}</h2>
-                  <p className="text-sm text-muted-foreground">
-                    {adminData.id}
-                  </p>
+                  <h2 className="text-2xl font-bold">
+                    {`${adminData.firstName || ""} ${
+                      adminData.lastName || ""
+                    }`.trim()}
+                  </h2>
+
                   <div className="my-4 flex items-center space-x-2">
                     <Badge
-                      variant={
-                        adminData.status === "Active"
-                          ? "outline"
-                          : "destructive"
-                      }
+                      variant={adminData.suspended ? "destructive" : "outline"}
                     >
-                      {adminData.status}
+                      {adminData.suspended ? "Suspended" : "Active"}
                     </Badge>
                   </div>
                 </div>
@@ -171,21 +167,70 @@ function AdminDetails() {
                 <CardTitle>Contact Information</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <InfoRow
-                  icon={<Mail className="w-5 h-5" />}
-                  label="Email"
-                  value={adminData.email}
-                />
-                <InfoRow
-                  icon={<Clock className="w-5 h-5" />}
-                  label="Last Login"
-                  value={new Date(adminData.lastLogin).toLocaleString()}
-                />
-                <InfoRow
-                  icon={<Calendar className="w-5 h-5" />}
-                  label="Date Joined"
-                  value={new Date(adminData.dateJoined).toLocaleDateString()}
-                />
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <InfoRow
+                    icon={<Mail className="h-4 w-4 text-muted-foreground" />}
+                    label="Email"
+                    value={adminData.email || "N/A"}
+                  />
+                  <InfoRow
+                    icon={<Clock className="h-4 w-4 text-muted-foreground" />}
+                    label="Last Updated"
+                    value={
+                      adminData.updatedAt
+                        ? new Date(adminData.updatedAt).toLocaleString()
+                        : "N/A"
+                    }
+                  />
+                  <InfoRow
+                    icon={
+                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                    }
+                    label="Date Joined"
+                    value={
+                      adminData.createdAt
+                        ? new Date(adminData.createdAt).toLocaleDateString()
+                        : "N/A"
+                    }
+                  />
+                  <InfoRow
+                    icon={<Shield className="h-4 w-4 text-muted-foreground" />}
+                    label="Position"
+                    value={adminData.position || "N/A"}
+                  />
+                  <InfoRow
+                    icon={
+                      <UserCheck className="h-4 w-4 text-muted-foreground" />
+                    }
+                    label="Phone Number"
+                    value={adminData.phoneNumber?.internationalFormat || "N/A"}
+                  />
+                  <InfoRow
+                    icon={
+                      <UserCheck className="h-4 w-4 text-muted-foreground" />
+                    }
+                    label="Referral Code"
+                    value={adminData.referrerCode || "N/A"}
+                  />
+                  <InfoRow
+                    icon={
+                      <UserCheck className="h-4 w-4 text-muted-foreground" />
+                    }
+                    label="Country"
+                    value={adminData.country || "N/A"}
+                  />
+                  <InfoRow
+                    icon={
+                      adminData.status === "Active" ? (
+                        <UserCheck className="h-4 w-4 text-green-500" />
+                      ) : (
+                        <UserX className="h-4 w-4 text-red-500" />
+                      )
+                    }
+                    label="Status"
+                    value={adminData.suspended ? "Suspended" : "Active"}
+                  />
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -255,7 +300,7 @@ function AdminDetails() {
                     <Switch
                       id="account-status-switch"
                       checked={isAccountActive}
-                      onCheckedChange={setIsAccountActive}
+                      onCheckedChange={toggleAdminStatus}
                       aria-label="Toggle account status"
                     />
                   </div>
