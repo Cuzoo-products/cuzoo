@@ -1,6 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-// import { toast } from "sonner";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,6 +16,13 @@ import { FleetManagerRegFormSchema } from "@/lib/zodVaildation";
 import truck from "@/assets/truck.jpg";
 import { useCreateFleetManager } from "@/api/fleet/auth/useAuth";
 import { useNavigate } from "react-router";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 function FleetRegistration() {
   const navigate = useNavigate();
@@ -32,7 +38,7 @@ function FleetRegistration() {
       tinNumber: "",
       dateOfIncorporation: "",
       placeOfIncorporation: "",
-      companyType: "",
+      companyType: "Private Limited Company",
       password: "",
       confirmPassword: "",
     },
@@ -207,7 +213,7 @@ function FleetRegistration() {
                       <FormLabel>Date of Incorporation</FormLabel>
                       <FormControl>
                         <Input
-                          className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
+                          className="border-[#d6d6d6] w-full h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
                           type="date"
                           {...field}
                         />
@@ -241,15 +247,29 @@ function FleetRegistration() {
                   name="companyType"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Company Type</FormLabel>
-                      <FormControl>
-                        <Input
-                          className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
-                          type="text"
-                          placeholder="Private Limited Company"
-                          {...field}
-                        />
-                      </FormControl>
+                      <FormLabel>Business Type</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="h-11 w-full border-[#d6d6d6]">
+                            <SelectValue placeholder="Select business type" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent className="bg-background border-0 shadow-accent shadow-sm">
+                          <SelectItem value="Private Limited Company">
+                            Private Limited Company
+                          </SelectItem>
+                          <SelectItem value="Public Limited Company">
+                            Public Limited Company
+                          </SelectItem>
+                          <SelectItem value="LLC">LLC</SelectItem>
+                          <SelectItem value="Incorporated Trustee">
+                            Incorporated Trustee
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
                       <FormMessage className="text-red-600" />
                     </FormItem>
                   )}
@@ -304,7 +324,7 @@ function FleetRegistration() {
                 className="w-full bg-[#4D37B3] text-white mt-3"
                 disabled={isPending}
               >
-                Submit
+                {isPending ? "Submitting..." : "Submit"}
               </Button>
             </form>
           </Form>

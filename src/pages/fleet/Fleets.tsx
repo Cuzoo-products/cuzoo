@@ -1,9 +1,14 @@
 import { useGetVehicles } from "@/api/fleet/vehicles/useVehicles";
 import { DataTable } from "@/components/ui/data-table";
 import { columns } from "@/components/utilities/Fleet/VehicleTableFormat";
+import Loader from "@/components/utilities/Loader";
 
 function Fleets() {
-  const { data: vehicles } = useGetVehicles();
+  const { data: vehicles, isLoading } = useGetVehicles();
+
+  if (isLoading) {
+    return <Loader />;
+  }
 
   return (
     <div className="@container/main">

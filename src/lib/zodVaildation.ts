@@ -18,7 +18,9 @@ export const FleetManagerRegFormSchema = z
     placeOfIncorporation: z
       .string()
       .min(1, "Place of incorporation is required"),
-    companyType: z.string().min(1, "Company type is required"),
+    companyType: z.enum(["Private Limited Company", "Public Limited Company", "LLC", "Incorporated Trustee"], {
+      required_error: "Please select a company type",
+    }),
     password: z.string().min(6, "Password must be at least 6 characters long"),
     confirmPassword: z
       .string()
