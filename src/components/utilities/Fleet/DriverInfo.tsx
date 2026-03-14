@@ -1,12 +1,18 @@
 import { useState } from "react";
 import { Link } from "react-router";
+import { Mail, Phone, MapPin, Calendar, User, FileCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import Image from "@/components/ui/image";
-import driver1 from "@/FolderToDelete/driver1.jpg";
-import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ComboboxForm, type ComboData } from "../ComboboxForm";
 
-// --- Types ---
 type DriverStatus = "assigned" | "unassigned" | "disabled";
 
 interface PhoneNumber {
@@ -20,12 +26,7 @@ interface PhoneNumber {
 interface Address {
   placeId: string;
   formatted_address: string;
-  geometry: {
-    location?: {
-      lat: number;
-      lng: number;
-    };
-  };
+  geometry: { location?: { lat: number; lng: number } };
   country: string;
   state: string;
 }
@@ -61,6 +62,33 @@ export interface Driver {
   status?: DriverStatus;
 }
 
+const formatDate = (dateString?: string) => {
+  if (!dateString) return "—";
+  return new Date(dateString).toLocaleDateString("en-NG", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+};
+
+const formatPhone = (phone?: PhoneNumber) =>
+  phone?.internationalFormat || phone?.nationalFormat || phone?.number || "—";
+
+const getInitials = (driver: Driver) => {
+  const first = (driver.firstName ?? "").charAt(0);
+  const last = (driver.lastName ?? "").charAt(0);
+  return `${first}${last}`.toUpperCase() || "?";
+};
+
+const statusConfig: Record<
+  DriverStatus,
+  { label: string; variant: "default" | "secondary" | "destructive" | "outline" }
+> = {
+  assigned: { label: "Assigned", variant: "default" },
+  unassigned: { label: "Unassigned", variant: "secondary" },
+  disabled: { label: "Disabled", variant: "destructive" },
+};
+
 export const DriverInfo = ({
   driver,
   availableVehicle,
@@ -68,194 +96,177 @@ export const DriverInfo = ({
   driver: Driver;
   availableVehicle: ComboData[];
 }) => {
-  const [status, setStatus] = useState<DriverStatus>(
-    driver.status || "unassigned"
-  );
+  const [status, setStatus] = useState<DriverStatus>(driver.status ?? "unassigned");
+
+  const name =
+    `${driver.firstName ?? ""} ${driver.lastName ?? ""}`.trim() || "Unknown driver";
+
+  const [suspended, setSuspended] = useState(false);
 
   const handleAssign = () => {
-    if (status === "assigned") {
-      setStatus("unassigned");
-    } else {
-      setStatus("assigned");
-    }
+    setStatus((s) => (s === "assigned" ? "unassigned" : "assigned"));
   };
 
-  const handleDisable = () => {
-    setStatus("disabled");
-    // Additional logic like API call
+  const handleSuspend = () => {
+    setSuspended(true);
   };
 
-  // Helper functions to format data
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return "Not provided";
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
+  const handleRelease = () => {
+    setSuspended(false);
   };
 
-  const formatPhoneNumber = (phone?: PhoneNumber) => {
-    if (!phone) return "Not provided";
-    return phone.internationalFormat || phone.nationalFormat || phone.number;
-  };
-
-  const getDriverName = () => {
-    const firstName = driver.firstName || "";
-    const lastName = driver.lastName || "";
-    return `${firstName} ${lastName}`.trim() || "Unknown Driver";
-  };
-
-  const getStatusColor = () => {
-    switch (status) {
-      case "assigned":
-        return "text-green-600";
-      case "unassigned":
-        return "text-yellow-600";
-      case "disabled":
-        return "text-red-600";
-      default:
-        return "text-gray-600";
-    }
-  };
+  const statusStyle = statusConfig[status] ?? statusConfig.unassigned;
 
   return (
-    <div className="bg-secondary max-w-3xl mx-auto p-6 rounded-lg">
-      <div className="md:flex space-y-3 md:space-y-0 md:space-x-3">
-        <div className="border border-line-1 bg-background rounded flex-1 text-center py-6">
-          <h3 className="text-xl font-bold">{getDriverName()}</h3>
-          <p className={`text-sm font-medium ${getStatusColor()}`}>
-            {status.charAt(0).toUpperCase() + status.slice(1)}
-          </p>
-          <Image
-            source={driver.passport?.url || driver1}
-            alt="Driver Photo"
-            className="mx-auto mt-3 w-50 h-50 border-8 border-accent rounded-full object-cover"
-          />
-        </div>
-        <div className="border border-line-1 bg-background rounded flex-2 py-6 px-4">
-          <h3>Bio & other details</h3>
-          <div className="md:flex">
-            <div className="flex-1">
-              <div className="my-3">
-                <Label>Phone Number</Label>
-                <p className="text-muted-foreground text-sm">
-                  {formatPhoneNumber(driver.phoneNumber)}
-                </p>
-              </div>
-
-              <div className="my-3">
-                <Label>Email</Label>
-                <p className="text-muted-foreground text-sm">
-                  {driver.email || driver.companyEmail || "Not provided"}
-                </p>
-              </div>
-
-              <div className="my-3">
-                <Label>Date of Birth</Label>
-                <p className="text-muted-foreground text-sm">
-                  {formatDate(driver.dateOfBirth)}
-                </p>
-              </div>
-
-              <div className="my-3">
-                <Label>Emergency Contact</Label>
-                <p className="text-muted-foreground text-sm">
-                  {formatPhoneNumber(driver.emergencyContact)}
-                </p>
-              </div>
-
-              <div className="my-3">
-                <Label>Vehicle</Label>
-                <p className="text-muted-foreground text-sm">
-                  {status === "assigned" ? "Assigned" : "Unassigned"}
-                </p>
-              </div>
-            </div>
-            <div className="flex-1">
-              <div className="my-3">
-                <Label>Home Address</Label>
-                <p className="text-muted-foreground text-sm">
-                  {driver.address?.formatted_address || "Not provided"}
-                </p>
-              </div>
-              <div className="my-3">
-                <Label>Gender</Label>
-                <p className="text-muted-foreground text-sm">
-                  {driver.gender || "Not provided"}
-                </p>
-              </div>
-
-              <div className="my-3">
-                <Label>Driver's License</Label>
-                {driver.driversLicense?.url ? (
-                  <Image
-                    source={driver.driversLicense.url}
-                    className="w-4/5 mt-1 rounded border"
-                    alt="Driver's License"
-                  />
-                ) : (
-                  <p className="text-muted-foreground text-sm">Not provided</p>
+    <div className="space-y-6 max-w-4xl mx-auto">
+      {/* Profile card */}
+      <Card className="overflow-hidden">
+        <div className="bg-muted/50 px-6 py-5">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+            <Avatar className="size-24 rounded-xl border-4 border-background shadow-md">
+              <AvatarImage src={driver.passport?.url} alt={name} className="object-cover" />
+              <AvatarFallback className="rounded-xl text-2xl bg-primary/20 text-primary">
+                {getInitials(driver)}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0">
+              <CardTitle className="text-2xl truncate">{name}</CardTitle>
+              <div className="flex flex-wrap items-center gap-2 mt-2">
+                <Badge variant={statusStyle.variant}>{statusStyle.label}</Badge>
+                {driver.gender && (
+                  <span className="text-sm text-muted-foreground capitalize">
+                    {driver.gender}
+                  </span>
                 )}
               </div>
+              {(driver.email || driver.companyEmail) && (
+                <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1.5 truncate">
+                  <Mail className="size-3.5 shrink-0" />
+                  {driver.email || driver.companyEmail}
+                </p>
+              )}
+              {formatPhone(driver.phoneNumber) !== "—" && (
+                <p className="text-sm text-muted-foreground flex items-center gap-1.5 mt-0.5">
+                  <Phone className="size-3.5 shrink-0" />
+                  {formatPhone(driver.phoneNumber)}
+                </p>
+              )}
             </div>
           </div>
         </div>
-      </div>
+      </Card>
 
-      <div className="my-5 flex justify-end bg-background border border-line-1 p-3 rounded">
-        <div>
-          <div className="my-2">
-            {status !== "assigned" ? (
+      {/* Bio & contact */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Bio & contact</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 text-sm">
+            <div className="flex items-start gap-3">
+              <Phone className="size-4 text-muted-foreground mt-0.5 shrink-0" />
               <div>
-                <h3>Assign Vehicle</h3>
-                <ComboboxForm info={availableVehicle} />
+                <p className="font-medium text-muted-foreground">Phone</p>
+                <p>{formatPhone(driver.phoneNumber)}</p>
               </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <Mail className="size-4 text-muted-foreground mt-0.5 shrink-0" />
+              <div>
+                <p className="font-medium text-muted-foreground">Email</p>
+                <p className="break-all">{driver.email || driver.companyEmail || "—"}</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <Calendar className="size-4 text-muted-foreground mt-0.5 shrink-0" />
+              <div>
+                <p className="font-medium text-muted-foreground">Date of birth</p>
+                <p>{formatDate(driver.dateOfBirth)}</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <Phone className="size-4 text-muted-foreground mt-0.5 shrink-0" />
+              <div>
+                <p className="font-medium text-muted-foreground">Emergency contact</p>
+                <p>{formatPhone(driver.emergencyContact)}</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3 sm:col-span-2">
+              <MapPin className="size-4 text-muted-foreground mt-0.5 shrink-0" />
+              <div>
+                <p className="font-medium text-muted-foreground">Address</p>
+                <p>{driver.address?.formatted_address || "—"}</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <User className="size-4 text-muted-foreground mt-0.5 shrink-0" />
+              <div>
+                <p className="font-medium text-muted-foreground">Vehicle</p>
+                <p>{status === "assigned" ? "Assigned" : "Unassigned"}</p>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Driver's license */}
+      {(driver.driversLicense?.url || driver.driversLicense) && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <FileCheck className="size-5" />
+              Driver&apos;s license
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {driver.driversLicense?.url ? (
+              <img
+                src={driver.driversLicense.url}
+                alt="Driver's license"
+                className="rounded-lg border border-line-1 max-h-48 object-contain bg-muted/30"
+              />
             ) : (
-              <Button onClick={handleAssign}>Unassign from Vehicle</Button>
+              <p className="text-sm text-muted-foreground">No image available</p>
             )}
-          </div>
+          </CardContent>
+        </Card>
+      )}
 
-          <div className="my-2 flex space-x-3">
-            <Link
-              to="edit"
-              className="text-primary flex justify-center items-center border rounded-md px-2 hover:text-accent"
-            >
-              Edit Driver
-            </Link>
-
-            {status !== "disabled" && (
-              <Button onClick={handleDisable}>Disable Driver</Button>
-            )}
-          </div>
-        </div>
-
-        {/* <div>
-          <h3 className="text-lg font-medium mt-6 mb-2">Trip History</h3>
-          {driver.tripHistory.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No trips yet.</p>
+      {/* Actions */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Actions</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {status !== "assigned" ? (
+            <div className="space-y-2">
+              <p className="text-sm font-medium">Assign vehicle</p>
+              <ComboboxForm info={availableVehicle} />
+            </div>
           ) : (
-            <ul className="space-y-2">
-              {driver.tripHistory.map((trip) => (
-                <li
-                  key={trip.id}
-                  className="border rounded p-3 text-sm items-center flex justify-between"
-                >
-                  <div>
-                    <div className="font-semibold">{trip.date}</div>
-                    <div className="text-muted-foreground">
-                      {trip.origin} → {trip.destination}
-                    </div>
-                  </div>
-                  <div>₦ {trip.amount}</div>
-                  <div>{trip.status}</div>
-                </li>
-              ))}
-            </ul>
+            <Button variant="outline" onClick={handleAssign}>
+              Unassign from vehicle
+            </Button>
           )}
-        </div> */}
-      </div>
+
+          <Separator />
+
+          <div className="flex flex-wrap gap-2">
+            <Button asChild variant="outline" size="sm">
+              <Link to="edit">Edit driver</Link>
+            </Button>
+            {suspended ? (
+              <Button variant="default" size="sm" onClick={handleRelease}>
+                Release driver
+              </Button>
+            ) : (
+              <Button variant="destructive" size="sm" onClick={handleSuspend}>
+                Suspend driver
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };

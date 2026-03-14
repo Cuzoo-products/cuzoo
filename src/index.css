@@ -134,3 +134,28 @@ h6 {
   padding: 1rem;
   border: 1px solid var(--border);
 }
+
+/* Invoice PDF: show only the invoice when printing (Save as PDF) */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .invoice-print-area,
+  .invoice-print-area * {
+    visibility: visible;
+  }
+  .invoice-print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 1rem;
+    background: white;
+    color: #111;
+  }
+  .no-print {
+    display: none !important;
+  }
+}

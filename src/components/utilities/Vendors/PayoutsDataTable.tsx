@@ -12,37 +12,50 @@ import {
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
 import { Link } from "react-router";
 
-// This type is used to define the shape of our data.
-// You can use a Zod schema here if you want.
-export type DriverData = {
+export type PayoutData = {
   id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
+  referenceNo: string;
+  amount: string;
+  status: string;
+  requestedAt: string;
+  bankAccount: string;
 };
 
-export const columns: ColumnDef<DriverData>[] = [
+export const columns: ColumnDef<PayoutData>[] = [
   {
-    id: "name",
+    accessorKey: "referenceNo",
     header: ({ column }) => {
-      return <DataTableColumnHeader column={column} title="Name" />;
-    },
-    cell: ({ row }) => {
-      const { firstName, lastName } = row.original;
-      return `${firstName} ${lastName}`;
+      return <DataTableColumnHeader column={column} title="Reference No." />;
     },
   },
   {
-    accessorKey: "email",
+    accessorKey: "amount",
     header: ({ column }) => {
-      return <DataTableColumnHeader column={column} title="Email" />;
+      return <DataTableColumnHeader column={column} title="Amount" />;
+    },
+  },
+  {
+    accessorKey: "status",
+    header: ({ column }) => {
+      return <DataTableColumnHeader column={column} title="Status" />;
+    },
+  },
+  {
+    accessorKey: "requestedAt",
+    header: ({ column }) => {
+      return <DataTableColumnHeader column={column} title="Requested" />;
+    },
+  },
+  {
+    accessorKey: "bankAccount",
+    header: ({ column }) => {
+      return <DataTableColumnHeader column={column} title="Bank Account" />;
     },
   },
   {
     id: "actions",
     cell: ({ row }) => {
-      const driverData = row.original;
-
+      const payout = row.original;
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -56,16 +69,11 @@ export const columns: ColumnDef<DriverData>[] = [
             align="end"
           >
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(driverData.id)}
-            >
-              Copy Driver ID
+            <DropdownMenuItem onClick={() => navigator.clipboard.writeText(payout.referenceNo)}>
+              Copy Reference No.
             </DropdownMenuItem>
             <DropdownMenuItem>
-              <Link to={`${driverData.id}`}>View Driver</Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <button onClick={() => {}}>Disable Driver</button>
+              <Link to={`${payout.id}`}>View details</Link>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

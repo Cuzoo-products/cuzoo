@@ -7,7 +7,19 @@ import {
 } from "@/components/ui/card";
 import { Car, RouteIcon, Users, Wallet } from "lucide-react";
 
-function VendorSectionCard() {
+export type VendorSectionCardProps = {
+  finance?: number;
+  overallSales?: number;
+  salesThisMonth?: number;
+  products?: number;
+};
+
+function VendorSectionCard({
+  finance = 0,
+  overallSales = 0,
+  salesThisMonth = 0,
+  products = 0,
+}: VendorSectionCardProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4  gap-2">
       <Card className="bg-primary text-white gap-0 pt-4 pb-2">
@@ -15,7 +27,9 @@ function VendorSectionCard() {
           <Wallet />
         </CardHeader>
         <CardContent className="mt-1">
-          <h3 className="text-3xl">₦340000</h3>
+          <h3 className="text-3xl">
+            ₦{finance.toLocaleString("en-NG", { maximumFractionDigits: 0 })}
+          </h3>
         </CardContent>
         <CardFooter>
           <CardTitle>Finance</CardTitle>
@@ -27,7 +41,7 @@ function VendorSectionCard() {
           <Car />
         </CardHeader>
         <CardContent className="mt-1">
-          <h3 className="text-3xl">34</h3>
+          <h3 className="text-3xl">{overallSales.toLocaleString("en-NG")}</h3>
         </CardContent>
         <CardFooter>
           <CardTitle>Overall Sales</CardTitle>
@@ -39,10 +53,10 @@ function VendorSectionCard() {
           <Users />
         </CardHeader>
         <CardContent className="mt-1">
-          <h3 className="text-3xl">30</h3>
+          <h3 className="text-3xl">{salesThisMonth.toLocaleString("en-NG")}</h3>
         </CardContent>
         <CardFooter>
-          <CardTitle>Sale this month</CardTitle>
+          <CardTitle>Sales this month</CardTitle>
         </CardFooter>
       </Card>
 
@@ -51,7 +65,7 @@ function VendorSectionCard() {
           <RouteIcon />
         </CardHeader>
         <CardContent className="mt-1">
-          <h3 className="text-3xl">127</h3>
+          <h3 className="text-3xl">{products.toLocaleString("en-NG")}</h3>
         </CardContent>
         <CardFooter>
           <CardTitle>Products</CardTitle>

@@ -19,7 +19,6 @@ export type VehicleData = {
   model: string;
   type: string;
   status: "Available" | "In Use" | "Under Maintenance" | "Disabled";
-  // driver: string | "Unasigned";
   plateNumber: string;
 };
 

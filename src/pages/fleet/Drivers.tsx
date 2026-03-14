@@ -1,13 +1,15 @@
 import { useGetRiders } from "@/api/fleet/rider/useRiderQuery";
 import { DataTable } from "@/components/ui/data-table";
 import { columns } from "@/components/utilities/Fleet/DriverTableFormate";
+import Loader from "@/components/utilities/Loader";
 
 function Drivers() {
-  const { data: riders } = useGetRiders();
+  const { data: riders, isLoading } = useGetRiders();
 
-  console.log(riders?.data);
+  if (isLoading) {
+    return <Loader />;
+  }
 
-  console.log(riders?.data?.data);
   return (
     <div className="@container/main">
       <div className="my-6">

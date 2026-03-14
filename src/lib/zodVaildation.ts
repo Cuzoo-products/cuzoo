@@ -210,7 +210,15 @@ export const FleetManagerProfileFormSchema = z.object({
     .min(1, "Email is required")
     .email("Please enter a valid email address"),
   businessName: z.string().min(1, "Business name is required"),
-  phoneNumber: z.string().min(6, "Phone number must be at least 6 characters"),
+  phoneNumber: z
+    .string()
+    .min(6, "Phone number must be at least 6 characters"),
+  registrationNumber: z.string().optional(),
+  tinNumber: z.string().optional(),
+  dateOfIncorporation: z.string().optional(),
+  placeOfIncorporation: z.string().optional(),
+  companyType: z.string().optional(),
+  approvalStatus: z.string().optional(),
 });
 
 export const FleetManagerChangePWSchema = z

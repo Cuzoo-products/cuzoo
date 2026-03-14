@@ -7,6 +7,7 @@ import {
   Map,
   BusFront,
   WalletMinimal,
+  Banknote,
 } from "lucide-react";
 
 import {
@@ -60,10 +61,15 @@ const items = [
     icon: WalletMinimal,
   },
   {
-    title: "Map",
-    url: "maps",
-    icon: Map,
+    title: "Payouts",
+    url: "payouts",
+    icon: Banknote,
   },
+  // {
+  //   title: "Map",
+  //   url: "maps",
+  //   icon: Map,
+  // },
 ];
 
 export default function FleetSideBar() {

@@ -6,6 +6,8 @@ import {
   User,
   BusFront,
   WalletMinimal,
+  Ticket,
+  Banknote,
 } from "lucide-react";
 
 import {
@@ -57,6 +59,16 @@ const items = [
     title: "Finance",
     url: "finance",
     icon: WalletMinimal,
+  },
+  {
+    title: "Coupons",
+    url: "coupons",
+    icon: Ticket,
+  },
+  {
+    title: "Payouts",
+    url: "payouts",
+    icon: Banknote,
   },
 ];
 

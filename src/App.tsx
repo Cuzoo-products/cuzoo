@@ -35,6 +35,8 @@ function App() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
+  console.log(user);
+
   // Listen to Firebase auth state changes
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -76,7 +78,7 @@ function App() {
                 accountType: userDetails.data.type,
                 status: userDetails.data.approvalStatus,
               },
-            })
+            }),
           );
 
           // Check if user needs KYC verification (only for fleet and vendor)
@@ -114,7 +116,7 @@ function App() {
           }
         } catch (error) {
           toast.error(
-            error instanceof Error ? error.message : "Failed to get user data"
+            error instanceof Error ? error.message : "Failed to get user data",
           );
         }
       }

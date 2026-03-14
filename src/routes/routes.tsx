@@ -29,9 +29,11 @@ import AddProduct from "@/pages/vendors/AddProduct";
 import Products from "@/pages/vendors/Products";
 import EditProduct from "@/pages/vendors/EditProduct";
 import Orders from "@/pages/vendors/Orders";
+import OrderDetailsPage from "@/pages/vendors/OrderDetails";
 import InvoicePage from "@/pages/vendors/InvoicePage";
 import VendorFinance from "@/pages/vendors/VendorFinance";
 import FleetFinance from "@/pages/fleet/FleetFinance";
+import Banks from "@/pages/fleet/Banks";
 import AdminLayout from "@/pages/admins/AdminLayout";
 import FleetOwners from "@/pages/admins/FleetOwners";
 import FleetOwnersProfile from "@/pages/admins/FleetOwnersProfile";
@@ -54,6 +56,12 @@ import IndivdualDriverTrips from "@/pages/admins/IndivdualDriverTrips";
 import IndividualDriverTipDetails from "@/pages/admins/IndividualDriverTipDetails";
 import { FleetKyc } from "@/pages/fleet/FleetKyc";
 import { VendorKycForm } from "@/pages/vendors/VendorKyc";
+import VendorBanks from "@/pages/vendors/Banks";
+import Coupons from "@/pages/vendors/Coupons";
+import VendorPayouts from "@/pages/vendors/Payouts";
+import VendorPayoutDetails from "@/pages/vendors/PayoutDetails";
+import FleetPayouts from "@/pages/fleet/Payouts";
+import FleetPayoutDetails from "@/pages/fleet/PayoutDetails";
 
 export const routes = createBrowserRouter([
   {
@@ -162,6 +170,18 @@ export const routes = createBrowserRouter([
         path: "finance",
         element: <FleetFinance />,
       },
+      {
+        path: "banks",
+        element: <Banks />,
+      },
+      {
+        path: "payouts",
+        element: <FleetPayouts />,
+      },
+      {
+        path: "payouts/:id",
+        element: <FleetPayoutDetails />,
+      },
     ],
   },
   {
@@ -210,11 +230,31 @@ export const routes = createBrowserRouter([
       },
       {
         path: "orders/:id",
+        element: <OrderDetailsPage />,
+      },
+      {
+        path: "orders/:id/invoice",
         element: <InvoicePage />,
       },
       {
         path: "finance",
         element: <VendorFinance />,
+      },
+      {
+        path: "banks",
+        element: <VendorBanks />,
+      },
+      {
+        path: "coupons",
+        element: <Coupons />,
+      },
+      {
+        path: "payouts",
+        element: <VendorPayouts />,
+      },
+      {
+        path: "payouts/:id",
+        element: <VendorPayoutDetails />,
       },
     ],
   },

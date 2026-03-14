@@ -1,10 +1,18 @@
+import { useState } from "react";
+import { Link } from "react-router";
+import {
+  Car,
+  Palette,
+  Calendar,
+  Hash,
+  User,
+  Clock,
+  Wrench,
+  UserPlus,
+} from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router";
-import Image from "@/components/ui/image";
-import { ComboboxForm } from "../ComboboxForm";
 import {
   Select,
   SelectContent,
@@ -12,8 +20,28 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useState } from "react";
+import { ComboboxForm } from "../ComboboxForm";
 import { toast } from "sonner";
+
+type VehicleStatus = "available" | "in use" | "under maintenance" | "disabled";
+
+interface VehicleDetailsProps {
+  vehicle: {
+    id?: string;
+    assigned?: boolean;
+    color?: string;
+    companyId?: string;
+    createdAt?: { _seconds: number; _nanoseconds: number } | string;
+    image?: { url: string; path: string; contentType: string };
+    model?: string;
+    plateNumber?: string;
+    riderId?: string;
+    status?: VehicleStatus;
+    type?: string;
+    updatedAt?: { _seconds: number; _nanoseconds: number } | string;
+    year?: number;
+  };
+}
 
 const availableDrivers = [
   { label: "John Doe", value: "1" },
@@ -22,37 +50,68 @@ const availableDrivers = [
   { label: "David Olushegun", value: "4" },
   { label: "MurFy Doe", value: "5" },
   { label: "Emma John", value: "6" },
-  { label: "Victor kenzy", value: "7" },
+  { label: "Victor Kenzy", value: "7" },
   { label: "Tolu Jame", value: "8" },
   { label: "Larry Blue", value: "9" },
 ];
 
-interface VehicleDetailsProps {
-  vehicle: {
-    id?: string;
-    assigned?: boolean;
-    color?: string;
-    companyId?: string;
-    createdAt?: {
-      _seconds: number;
-      _nanoseconds: number;
-    };
-    image?: {
-      url: string;
-      path: string;
-      contentType: string;
-    };
-    model?: string;
-    plateNumber?: string;
-    riderId?: string;
-    status?: "available" | "in use" | "under maintenance" | "disabled";
-    type?: "car" | "bike" | "truck" | "bicycle" | "van" | "tricycle";
-    updatedAt?: {
-      _seconds: number;
-      _nanoseconds: number;
-    };
-    year?: number;
-  };
+const statusConfig: Record<
+  VehicleStatus,
+  {
+    label: string;
+    variant: "default" | "secondary" | "destructive" | "outline";
+  }
+> = {
+  available: { label: "Available", variant: "outline" },
+  "in use": { label: "In use", variant: "secondary" },
+  "under maintenance": { label: "Under maintenance", variant: "destructive" },
+  disabled: { label: "Disabled", variant: "destructive" },
+};
+
+const formatDisplay = (value: string | undefined) =>
+  value ? value.charAt(0).toUpperCase() + value.slice(1) : "—";
+
+const formatDate = (
+  value: { _seconds: number; _nanoseconds: number } | string | undefined,
+) => {
+  if (!value) return "—";
+  if (typeof value === "string") {
+    try {
+      return new Date(value).toLocaleDateString("en-NG", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+    } catch {
+      return value;
+    }
+  }
+  const date = new Date(value._seconds * 1000);
+  return date.toLocaleDateString("en-NG", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+};
+
+function DetailRow({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="flex items-start gap-3 text-sm">
+      <Icon className="size-4 text-muted-foreground mt-0.5 shrink-0" />
+      <div className="min-w-0">
+        <p className="font-medium text-muted-foreground">{label}</p>
+        <p className="truncate">{value}</p>
+      </div>
+    </div>
+  );
 }
 
 export default function VehicleInfo({
@@ -60,207 +119,160 @@ export default function VehicleInfo({
 }: {
   vehicle: VehicleDetailsProps["vehicle"];
 }) {
-  const [currentStatus, setCurrentStatus] = useState<
-    "available" | "in use" | "under maintenance" | "disabled"
-  >(vehicle.status || "available");
+  const [currentStatus, setCurrentStatus] = useState<VehicleStatus>(
+    (vehicle.status as VehicleStatus) || "available",
+  );
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
-  const handleStatusChange = async (
-    newStatus: "available" | "in use" | "under maintenance" | "disabled"
-  ) => {
+  const handleStatusChange = async (newStatus: VehicleStatus) => {
     setIsUpdatingStatus(true);
     try {
-      // TODO: Implement API call to update vehicle status
-      // await updateVehicleStatus(vehicle.id, newStatus);
       setCurrentStatus(newStatus);
-      toast.success("Vehicle status updated successfully!");
-    } catch (error) {
-      toast.error("Failed to update vehicle status");
-      console.error("Error updating status:", error);
+      toast.success("Vehicle status updated");
+    } catch {
+      toast.error("Failed to update status");
     } finally {
       setIsUpdatingStatus(false);
     }
   };
-  // Helper function to format status for display
-  const formatStatus = (status: string | undefined) => {
-    if (!status) return "Unknown";
-    return status
-      .split(" ")
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(" ");
-  };
 
-  // Helper function to format vehicle type for display
-  const formatVehicleType = (type: string | undefined) => {
-    if (!type) return "Unknown";
-    return type.charAt(0).toUpperCase() + type.slice(1);
-  };
-
-  // Helper function to get badge variant based on status
-  const getBadgeVariant = (status: string | undefined) => {
-    if (!status) return "outline";
-    switch (status) {
-      case "available":
-        return "outline";
-      case "in use":
-        return "secondary";
-      case "under maintenance":
-        return "destructive";
-      case "disabled":
-        return "destructive";
-      default:
-        return "outline";
-    }
-  };
-
-  // Helper function to format date from Firebase timestamp
-  const formatDate = (timestamp: {
-    _seconds: number;
-    _nanoseconds: number;
-  }) => {
-    const date = new Date(timestamp._seconds * 1000);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
+  const statusStyle = statusConfig[currentStatus] ?? statusConfig.available;
+  const typeLabel = formatDisplay(vehicle.type);
+  const modelLabel = vehicle.model || "—";
 
   return (
-    <div className="max-w-4xl mx-auto my-10 space-y-6">
-      <Card className="gap-0">
-        <CardHeader className="flex items-center py-3 justify-between my-0">
-          <CardTitle className="text-xl font-semibold">
-            Vehicle Details
-          </CardTitle>
-          <Badge variant={getBadgeVariant(currentStatus)}>
-            {formatStatus(currentStatus)}
-          </Badge>
+    <div className="space-y-6 max-w-4xl mx-auto">
+      {/* Hero card with image or placeholder */}
+      <Card className="overflow-hidden">
+        <div className="bg-muted/50">
+          {vehicle.image?.url ? (
+            <div className="aspect-video max-h-64 w-full flex items-center justify-center bg-muted/30">
+              <img
+                src={vehicle.image.url}
+                alt={`${modelLabel} ${typeLabel}`}
+                className="w-full h-full object-cover"
+              />
+            </div>
+          ) : (
+            <div className="aspect-video max-h-48 flex items-center justify-center bg-muted/30">
+              <Car className="size-16 text-muted-foreground/50" />
+            </div>
+          )}
+          <div className="px-6 py-4 flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h2 className="text-xl font-semibold">
+                {modelLabel} {typeLabel}
+              </h2>
+              <p className="text-sm text-muted-foreground font-mono">
+                {vehicle.plateNumber || "—"}
+              </p>
+            </div>
+            <Badge variant={statusStyle.variant}>{statusStyle.label}</Badge>
+          </div>
+        </div>
+      </Card>
+
+      {/* Details */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Details</CardTitle>
         </CardHeader>
-
-        <Separator className="my-0" />
-
-        <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-sm text-gray-700 py-6">
-          <DetailItem
-            label="Vehicle Type"
-            value={formatVehicleType(vehicle.type)}
-          />
-          <DetailItem label="Model" value={vehicle.model || "Unknown"} />
-          <DetailItem
-            label="Year"
-            value={vehicle.year?.toString() || "Unknown"}
-          />
-          <DetailItem label="Color" value={vehicle.color || "Unknown"} />
-          <DetailItem
-            label="Plate Number"
-            value={vehicle.plateNumber || "Unknown"}
-          />
-          <DetailItem
-            label="Assigned Driver"
-            value={vehicle.assigned ? "Assigned" : "Not assigned"}
-          />
-          <DetailItem
-            label="Created At"
-            value={
-              vehicle.createdAt ? formatDate(vehicle.createdAt) : "Unknown"
-            }
-          />
-          <DetailItem
-            label="Last Updated"
-            value={
-              vehicle.updatedAt ? formatDate(vehicle.updatedAt) : "Unknown"
-            }
-          />
+        <CardContent>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+            <DetailRow icon={Car} label="Type" value={typeLabel} />
+            <DetailRow icon={Hash} label="Model" value={modelLabel} />
+            <DetailRow
+              icon={Calendar}
+              label="Year"
+              value={vehicle.year?.toString() ?? "—"}
+            />
+            <DetailRow
+              icon={Palette}
+              label="Color"
+              value={vehicle.color ?? "—"}
+            />
+            <DetailRow
+              icon={Hash}
+              label="Plate number"
+              value={vehicle.plateNumber ?? "—"}
+            />
+            <DetailRow
+              icon={User}
+              label="Driver"
+              value={vehicle.assigned ? "Assigned" : "Not assigned"}
+            />
+            <DetailRow
+              icon={Clock}
+              label="Created"
+              value={formatDate(vehicle.createdAt)}
+            />
+            <DetailRow
+              icon={Wrench}
+              label="Last updated"
+              value={formatDate(vehicle.updatedAt)}
+            />
+          </div>
         </CardContent>
       </Card>
 
-      {vehicle.image && (
-        <Card className="overflow-hidden">
-          <CardContent className="p-0">
-            <div className="flex justify-center bg-gray-50">
-              <Image
-                source={vehicle.image.url}
-                alt="Vehicle"
-                className="max-h-80 w-full object-cover"
-              />
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Status Change Section */}
+      {/* Status */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Change Vehicle Status</CardTitle>
+          <CardTitle className="text-lg">Change status</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center space-x-4">
-            <div className="flex-1">
-              <label className="text-sm font-medium text-gray-700 mb-2 block">
-                Current Status
-              </label>
-              <Select
-                value={currentStatus}
-                onValueChange={handleStatusChange}
-                disabled={isUpdatingStatus}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="available">Available</SelectItem>
-                  <SelectItem value="in use">In Use</SelectItem>
-                  <SelectItem value="under maintenance">
-                    Under Maintenance
-                  </SelectItem>
-                  <SelectItem value="disabled">Disabled</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <Select
+              value={currentStatus}
+              onValueChange={handleStatusChange}
+              disabled={isUpdatingStatus}
+            >
+              <SelectTrigger className="w-full sm:max-w-xs">
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent className="bg-secondary">
+                <SelectItem value="available">Available</SelectItem>
+                <SelectItem value="in use">In use</SelectItem>
+                <SelectItem value="under maintenance">
+                  Under maintenance
+                </SelectItem>
+                <SelectItem value="disabled">Disabled</SelectItem>
+              </SelectContent>
+            </Select>
             {isUpdatingStatus && (
-              <div className="flex items-center text-sm text-gray-500">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#4D37B3] mr-2"></div>
-                Updating...
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent" />
+                Updating…
               </div>
             )}
           </div>
         </CardContent>
       </Card>
 
-      {/* Driver Assignment Section */}
+      {/* Driver assignment */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Driver Assignment</CardTitle>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <UserPlus className="size-5" />
+            Driver assignment
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            <div>
-              <label className="text-sm font-medium text-gray-700 mb-2 block">
-                Assign Driver
-              </label>
-              <ComboboxForm info={availableDrivers} />
-            </div>
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-muted-foreground">
+              Assign driver
+            </p>
+            <ComboboxForm info={availableDrivers} />
           </div>
         </CardContent>
       </Card>
 
-      {/* Action Buttons */}
-      <div className="flex justify-end space-x-3">
-        <Button variant="outline" asChild>
-          <Link to="edit">Edit Vehicle</Link>
+      {/* Actions */}
+      <div className="flex justify-end">
+        <Button asChild variant="outline" size="sm">
+          <Link to="edit">Edit vehicle</Link>
         </Button>
       </div>
-    </div>
-  );
-}
-
-function DetailItem({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="space-y-1">
-      <div className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-        {label}
-      </div>
-      <div className="text-sm font-semibold text-gray-900">{value}</div>
     </div>
   );
 }

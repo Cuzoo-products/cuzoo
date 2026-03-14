@@ -1,3 +1,4 @@
+import React from "react";
 import {
   Card,
   CardContent,
@@ -7,7 +8,19 @@ import {
 } from "@/components/ui/card";
 import { Car, RouteIcon, Users, Wallet } from "lucide-react";
 
-function FleetSectionCard() {
+export type FleetSectionCardProps = {
+  finance?: number;
+  vehicles?: number;
+  drivers?: number;
+  trips?: number;
+};
+
+function FleetSectionCard({
+  finance = 0,
+  vehicles = 0,
+  drivers = 0,
+  trips = 0,
+}: FleetSectionCardProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4  gap-2">
       <Card className="bg-primary text-white gap-0 pt-4 pb-2">
@@ -15,7 +28,7 @@ function FleetSectionCard() {
           <Wallet />
         </CardHeader>
         <CardContent className="mt-1">
-          <h3 className="text-3xl">₦340000</h3>
+          <h3 className="text-3xl">₦{finance.toLocaleString()}</h3>
         </CardContent>
         <CardFooter>
           <CardTitle>Finance</CardTitle>
@@ -27,7 +40,7 @@ function FleetSectionCard() {
           <Car />
         </CardHeader>
         <CardContent className="mt-1">
-          <h3 className="text-3xl">24</h3>
+          <h3 className="text-3xl">{vehicles}</h3>
         </CardContent>
         <CardFooter>
           <CardTitle>Vehicles</CardTitle>
@@ -39,7 +52,7 @@ function FleetSectionCard() {
           <Users />
         </CardHeader>
         <CardContent className="mt-1">
-          <h3 className="text-3xl">30</h3>
+          <h3 className="text-3xl">{drivers}</h3>
         </CardContent>
         <CardFooter>
           <CardTitle>Drivers</CardTitle>
@@ -51,7 +64,7 @@ function FleetSectionCard() {
           <RouteIcon />
         </CardHeader>
         <CardContent className="mt-1">
-          <h3 className="text-3xl">127</h3>
+          <h3 className="text-3xl">{trips}</h3>
         </CardContent>
         <CardFooter>
           <CardTitle>Total Trips</CardTitle>

@@ -11,9 +11,9 @@ function PerformingDrivers({ data }: { data: PerformingDriverData[] }) {
           className="flex items-center space-x-3 border-b border-b-line-1 py-3"
         >
           <Avatar className="size-10">
-            <AvatarImage src={items.imageUrl} />
+            <AvatarImage src={items.imageUrl ?? undefined} />
             <AvatarFallback className="border-1">
-              {items.initials}
+              {items.initials ?? items.name?.[0] ?? ""}
             </AvatarFallback>
           </Avatar>
           <div className="text-sm">
