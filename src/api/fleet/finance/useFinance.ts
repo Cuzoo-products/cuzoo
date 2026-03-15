@@ -1,6 +1,6 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  accountBalance,
+  getWalletDetails,
   addBankAccount,
   deleteBankAccount,
   getBankList,
@@ -32,8 +32,13 @@ export const useGetVerifyAccount = (
 };
 
 export const useAddBankAccount = () => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: addBankAccount,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["walletDetails"] });
+      toast.success("Bank account added successfully");
+    },
     onError: () => {
       toast.error("Failed to add bank account");
     },
@@ -41,9 +46,11 @@ export const useAddBankAccount = () => {
 };
 
 export const useDeleteBankAccount = () => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: deleteBankAccount,
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["walletDetails"] });
       toast.success("Bank account deleted successfully");
     },
     onError: () => {
@@ -52,10 +59,10 @@ export const useDeleteBankAccount = () => {
   });
 };
 
-export const useAccountBalance = () => {
+export const useWalletDetails = () => {
   return useQuery({
-    queryKey: ["accountBalance"],
-    queryFn: accountBalance,
+    queryKey: ["walletDetails"],
+    queryFn: getWalletDetails,
   });
 };
 

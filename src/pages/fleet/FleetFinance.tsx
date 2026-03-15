@@ -10,19 +10,20 @@ import {
 import { WithdrawDialog } from "@/components/utilities/WithdrawDialog";
 import { Link } from "react-router";
 import {
-  useAccountBalance,
+  useWalletDetails,
   useInflow,
   useOutflow,
   useRequestWithdrawal,
 } from "@/api/fleet/finance/useFinance";
 
-type AccountBalanceResponse = {
+type WalletDetailsResponse = {
   success: boolean;
   statusCode: number;
   data: {
     amount: number;
     currency: string;
     suspended: boolean;
+    accounts: { accountName: string; accountNumber: string; bankName: string }[];
   };
 };
 
@@ -43,8 +44,8 @@ type HistoryResponse = {
 export default function FleetFinance() {
   const { mutate: requestWithdrawal, isPending: isWithdrawing } =
     useRequestWithdrawal();
-  const { data, isLoading, error } = useAccountBalance() as {
-    data?: AccountBalanceResponse;
+  const { data, isLoading, error } = useWalletDetails() as {
+    data?: WalletDetailsResponse;
     isLoading: boolean;
     error: unknown;
   };
@@ -113,6 +114,7 @@ export default function FleetFinance() {
               balance={wallet?.amount ?? 0}
               onSubmit={(payload) => requestWithdrawal(payload)}
               isPending={isWithdrawing}
+              accounts={wallet?.accounts ?? []}
             />
           </div>
         </CardHeader>

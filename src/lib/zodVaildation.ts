@@ -29,31 +29,11 @@ export const VendorRegistrationFormSchema = z
       .min(1, "Email is required")
       .email("Please enter a valid email address"),
     businessName: z.string().min(1, "Business name is required"),
-    phoneNumber: z
-      .string()
-      .min(1, "Phone number is required")
-      .regex(
-        /^\+[1-9]\d{1,14}$/,
-        "Please enter a valid international phone number (e.g., +2348000000000)"
-      ),
+    phoneNumber: z.string().min(1, "Phone number is required"),
     password: z.string().min(6, "Password must be at least 6 characters long"),
     confirmPassword: z
       .string()
       .min(6, "Confirm password must be at least 6 characters long"),
-    registrationNumber: z.string().min(1, "Registration number is required"),
-    dateOfIncorporation: z.string().min(1, "Date of incorporation is required"),
-    placeOfIncorporation: z
-      .string()
-      .min(1, "Place of incorporation is required"),
-    businessType: z.string().min(1, "Business type is required"),
-    logo: z
-      .string()
-      .min(1, "Business logo is required")
-      .refine(
-        (val) => val.startsWith("data:image/"),
-        "Please upload a valid image file."
-      ),
-    addressPlaceId: z.string().min(1, "Address is required"),
   })
   .refine((data) => data.password === data.confirmPassword, {
     path: ["confirmPassword"],

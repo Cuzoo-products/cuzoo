@@ -13,24 +13,26 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 
-const dummyBanks = [
-  { id: "8140231279", name: "Opay - 8140231279" },
-  { id: "1234567890", name: "Access Bank - 1234567890" },
-  { id: "9000000000", name: "UBA - 9000000000" },
-];
-
 export type WithdrawPayload = { accountNumber: string; amount: number };
+
+export type WithdrawAccount = {
+  accountName: string;
+  accountNumber: string;
+  bankName: string;
+};
 
 export type WithdrawDialogProps = {
   balance: number;
   onSubmit: (data: WithdrawPayload) => void;
   isPending?: boolean;
+  accounts?: WithdrawAccount[];
 };
 
 export function WithdrawDialog({
   balance,
   onSubmit,
   isPending = false,
+  accounts = [],
 }: WithdrawDialogProps) {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -75,13 +77,16 @@ export function WithdrawDialog({
                 name="accountNumber"
                 className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 defaultValue=""
+                disabled={accounts.length === 0}
               >
                 <option value="" disabled>
-                  Select bank to withdraw to
+                  {accounts.length === 0
+                    ? "No bank accounts. Add one in Banks."
+                    : "Select bank to withdraw to"}
                 </option>
-                {dummyBanks.map((bank) => (
-                  <option key={bank.id} value={bank.id}>
-                    {bank.name}
+                {accounts.map((acc) => (
+                  <option key={acc.accountNumber} value={acc.accountNumber}>
+                    {acc.bankName} – {acc.accountNumber}
                   </option>
                 ))}
               </select>

@@ -30,6 +30,11 @@ export const accountBalance = async () => {
   return response.data;
 };
 
+export const getWalletDetails = async () => {
+  const response = await axiosInstance.get("/vendors/wallet");
+  return response.data;
+};
+
 export const inflowHistory = async () => {
   const response = await axiosInstance.get("/vendors/finance/inflow-history");
   return response.data;

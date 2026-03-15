@@ -8,14 +8,24 @@ import {
   useDeleteBankAccount,
   useGetBankList,
   useGetVerifyAccount,
+  useWalletDetails,
 } from "@/api/fleet/finance/useFinance";
-import { toast } from "sonner";
 
-type BankAccount = {
-  id: string;
-  bankName: string;
+type WalletAccount = {
   accountName: string;
   accountNumber: string;
+  bankName: string;
+};
+
+type WalletDetailsResponse = {
+  success: boolean;
+  statusCode: number;
+  data: {
+    amount: number;
+    currency: string;
+    suspended: boolean;
+    accounts: WalletAccount[];
+  };
 };
 
 type BankListResponse = {
@@ -43,9 +53,11 @@ type VerifyAccountResponse = {
   };
 };
 
-const initialBanks: BankAccount[] = [];
-
 export default function Banks() {
+  const { data: walletData, isLoading: isLoadingWallet } = useWalletDetails() as {
+    data?: WalletDetailsResponse;
+    isLoading: boolean;
+  };
   const { mutate: addBankAccount, isPending: isAddingBankAccount } =
     useAddBankAccount();
   const { data: bankList } = useGetBankList() as {
@@ -54,7 +66,7 @@ export default function Banks() {
   const { mutate: deleteBankAccount, isPending: isDeletingBankAccount } =
     useDeleteBankAccount();
 
-  const [banks] = useState<BankAccount[]>(initialBanks);
+  const banks = walletData?.data?.accounts ?? [];
   const [form, setForm] = useState({
     bankCode: "",
     accountName: "",
@@ -100,16 +112,13 @@ export default function Banks() {
             accountName: "",
             accountNumber: "",
           });
-          toast.success("Bank account added successfully");
         },
       },
     );
   };
 
   const handleDeleteBank = (accountNumber: string) => {
-    deleteBankAccount({
-      accountNumber: accountNumber,
-    });
+    deleteBankAccount({ accountNumber });
   };
 
   return (
@@ -183,7 +192,9 @@ export default function Banks() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {banks.length === 0 ? (
+            {isLoadingWallet ? (
+              <p className="text-sm text-muted-foreground">Loading accounts…</p>
+            ) : banks.length === 0 ? (
               <p className="text-sm text-muted-foreground">
                 No bank accounts added yet. Add a bank on the left to get
                 started.
@@ -202,7 +213,7 @@ export default function Banks() {
                   <tbody>
                     {banks.map((bank) => (
                       <tr
-                        key={bank.id}
+                        key={bank.accountNumber}
                         className="border-b border-line-1 last:border-0"
                       >
                         <td className="py-2 pr-4">{bank.bankName}</td>
@@ -212,7 +223,7 @@ export default function Banks() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => handleDeleteBank(bank.id)}
+                            onClick={() => handleDeleteBank(bank.accountNumber)}
                             aria-label="Delete bank"
                             disabled={isDeletingBankAccount}
                           >

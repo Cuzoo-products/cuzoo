@@ -26,17 +26,33 @@ import {
   FileCheck,
   ShieldAlert,
   Store,
-  Gift,
 } from "lucide-react";
 import { useParams } from "react-router";
 import { useApproveVendor, useGetVendor } from "@/api/admin/useVendors";
 import Loader from "@/components/utilities/Loader";
 
-interface VendorDocument {
-  id: string;
-  name: string;
-  uploadDate: string;
-  url: string;
+type DocAsset = { path?: string; url?: string; type?: string };
+
+const DOCUMENT_LABELS: Record<string, string> = {
+  passport: "Passport",
+  certificateOfIncorporation: "Certificate of Incorporation",
+  governmentApprovedId: "Government Approved ID",
+  proofOfAddress: "Proof of Address",
+  lgaPermit: "LGA Permit",
+  gphLicense: "GPH License",
+  nafdacRegistration: "NAFDAC Registration",
+};
+
+function buildDocumentsList(vendor: { [key: string]: unknown } | undefined): { label: string; url: string; type?: string }[] {
+  if (!vendor) return [];
+  const rows: { label: string; url: string; type?: string }[] = [];
+  (["passport", "certificateOfIncorporation", "governmentApprovedId", "proofOfAddress", "lgaPermit", "gphLicense", "nafdacRegistration"] as const).forEach(
+    (key) => {
+      const doc = vendor[key] as DocAsset | undefined;
+      if (doc?.url) rows.push({ label: DOCUMENT_LABELS[key] ?? key, url: doc.url, type: doc.type });
+    }
+  );
+  return rows;
 }
 
 export default function VendorsDetails() {
@@ -58,9 +74,41 @@ export default function VendorsDetails() {
     if (id) approveVendorMutation.mutate(id);
   };
 
-  const vendor = vendorDetails?.data;
+  const vendor = vendorDetails?.data as {
+    Id?: string;
+    businessName?: string;
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    phoneNumber?: { internationalFormat?: string; nationalFormat?: string; number?: string };
+    logo?: { url?: string; path?: string; type?: string };
+    storeCode?: string;
+    registrationNumber?: string;
+    dateOfIncorporation?: string;
+    placeOfIncorporation?: string;
+    businessType?: string;
+    address?: { formatted_address?: string; placeId?: string; state?: string; country?: string };
+    emailVerified?: boolean;
+    approvalStatus?: string;
+    approved?: boolean;
+    suspended?: boolean;
+    typeOfGoodsSold?: string;
+    proprietor?: { name?: string; nationality?: string; state?: string; residentialAddress?: string; declaration?: string };
+    createdAt?: string;
+    updatedAt?: string;
+    wallet?: string;
+  } | undefined;
+
   const joinDate = vendor?.createdAt
     ? new Date(vendor.createdAt).toLocaleDateString(undefined, {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      })
+    : "-";
+
+  const incorporationDate = vendor?.dateOfIncorporation
+    ? new Date(vendor.dateOfIncorporation).toLocaleDateString(undefined, {
         year: "numeric",
         month: "short",
         day: "numeric",
@@ -77,10 +125,12 @@ export default function VendorsDetails() {
     vendor?.phoneNumber?.number ||
     "-";
 
+  const documents = buildDocumentsList(vendor as { [key: string]: unknown } | undefined);
+
   const canApprove =
     vendor &&
     vendor.approvalStatus?.toLowerCase() !== "approved" &&
-    !vendor.accountDeleted;
+    !vendor.suspended;
 
   if (isLoading) {
     return <Loader />;
@@ -120,8 +170,11 @@ export default function VendorsDetails() {
                     <Badge variant="secondary" className="capitalize">
                       {vendor.approvalStatus}
                     </Badge>
-                    {vendor.approvalStatus?.toLowerCase() === "approved" && (
+                    {vendor.approvalStatus?.toLowerCase() === "approved" && !vendor.suspended && (
                       <Badge variant="default">Approved</Badge>
+                    )}
+                    {vendor.suspended && (
+                      <Badge variant="destructive">Suspended</Badge>
                     )}
                   </div>
                   <CardDescription>{displayName}</CardDescription>
@@ -156,15 +209,42 @@ export default function VendorsDetails() {
                     </span>
                   </div>
                   <div className="flex justify-between">
+                    <span>Date of Inc.</span>
+                    <span className="font-medium">{incorporationDate}</span>
+                  </div>
+                  {vendor.address?.formatted_address && (
+                    <div className="flex justify-between">
+                      <span>Address</span>
+                      <span className="font-medium max-w-[60%] text-right">
+                        {vendor.address.formatted_address}
+                      </span>
+                    </div>
+                  )}
+                  {vendor.typeOfGoodsSold && (
+                    <div className="flex justify-between">
+                      <span>Type of goods sold</span>
+                      <span className="font-medium">{vendor.typeOfGoodsSold}</span>
+                    </div>
+                  )}
+                  {vendor.emailVerified !== undefined && (
+                    <div className="flex justify-between items-center">
+                      <span>Email verified</span>
+                      <Badge
+                        variant="outline"
+                        className={
+                          vendor.emailVerified
+                            ? "text-green-600 border-green-600"
+                            : "text-amber-600 border-amber-600"
+                        }
+                      >
+                        {vendor.emailVerified ? "Yes" : "No"}
+                      </Badge>
+                    </div>
+                  )}
+                  <div className="flex justify-between">
                     <span>Store code</span>
                     <span className="font-medium">
                       {vendor.storeCode || "-"}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Referral code</span>
-                    <span className="font-medium">
-                      {vendor.referrerCode || "-"}
                     </span>
                   </div>
                   <div className="flex justify-between">
@@ -192,17 +272,12 @@ export default function VendorsDetails() {
               </Card>
               <Card className="py-3 bg-secondary">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0">
-                  <CardTitle className="text-sm font-medium">
-                    Referral
-                  </CardTitle>
-                  <Gift className="h-5 w-5 text-muted-foreground" />
+                  <CardTitle className="text-sm font-medium">Wallet</CardTitle>
+                  <Wallet className="h-5 w-5 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div
-                    className="text-lg font-bold truncate"
-                    title={vendor.referrerCode}
-                  >
-                    {vendor.referrerCode || "—"}
+                  <div className="text-sm font-medium truncate" title={vendor.wallet}>
+                    {vendor.wallet ? "Connected" : "—"}
                   </div>
                 </CardContent>
               </Card>
@@ -249,7 +324,7 @@ export default function VendorsDetails() {
                     id="account-status"
                     checked={isAccountActive}
                     onCheckedChange={handleAccountToggle}
-                    disabled={vendor.accountDeleted}
+                    disabled={vendor.suspended}
                   />
                 </div>
                 <div className="flex items-center space-x-4 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
@@ -266,7 +341,7 @@ export default function VendorsDetails() {
                     id="wallet-status"
                     checked={isWalletActive}
                     onCheckedChange={handleWalletToggle}
-                    disabled={vendor.accountDeleted}
+                    disabled={vendor.suspended}
                   />
                 </div>
               </CardContent>
@@ -274,6 +349,43 @@ export default function VendorsDetails() {
           </div>
 
           <div className="lg:col-span-2 space-y-6">
+            {(vendor.typeOfGoodsSold || vendor.proprietor) && (
+              <Card className="py-6 bg-secondary">
+                <CardHeader>
+                  <CardTitle>Company details</CardTitle>
+                  <CardDescription>
+                    Type of goods and proprietor information.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {vendor.typeOfGoodsSold && (
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground mb-1">
+                        Type of goods sold
+                      </p>
+                      <p className="text-sm">{vendor.typeOfGoodsSold}</p>
+                    </div>
+                  )}
+                  {vendor.proprietor && (
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground mb-1">
+                        Proprietor
+                      </p>
+                      <div className="text-sm space-y-1">
+                        <p><span className="font-medium">Name:</span> {vendor.proprietor.name || "—"}</p>
+                        <p><span className="font-medium">Nationality:</span> {vendor.proprietor.nationality || "—"}</p>
+                        <p><span className="font-medium">State:</span> {vendor.proprietor.state || "—"}</p>
+                        <p><span className="font-medium">Residential address:</span> {vendor.proprietor.residentialAddress || "—"}</p>
+                        {vendor.proprietor.declaration && (
+                          <p><span className="font-medium">Declaration:</span> {vendor.proprietor.declaration}</p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
             <Card className="py-6 bg-secondary">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -289,20 +401,16 @@ export default function VendorsDetails() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Document</TableHead>
-                      <TableHead className="hidden sm:table-cell">
-                        Upload date
-                      </TableHead>
+                      <TableHead className="hidden sm:table-cell">Type</TableHead>
                       <TableHead className="text-right">Action</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {(vendor.documents || []).map((doc: VendorDocument) => (
-                      <TableRow key={doc.id}>
-                        <TableCell className="font-medium">
-                          {doc.name}
-                        </TableCell>
+                    {documents.map((doc) => (
+                      <TableRow key={doc.label}>
+                        <TableCell className="font-medium">{doc.label}</TableCell>
                         <TableCell className="hidden sm:table-cell text-muted-foreground">
-                          {doc.uploadDate}
+                          {doc.type || "—"}
                         </TableCell>
                         <TableCell className="text-right">
                           <Button variant="outline" size="sm" asChild>
@@ -320,7 +428,7 @@ export default function VendorsDetails() {
                     ))}
                   </TableBody>
                 </Table>
-                {(!vendor.documents || vendor.documents.length === 0) && (
+                {documents.length === 0 && (
                   <div className="text-center py-10 text-muted-foreground">
                     No documents have been uploaded.
                   </div>

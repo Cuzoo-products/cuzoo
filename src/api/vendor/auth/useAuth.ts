@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { registerVendor } from "./authApi";
+import { registerVendor, updateVendorProfile } from "./authApi";
 import { toast } from "sonner";
 
 export const useCreateVendor = () => {
@@ -10,6 +10,18 @@ export const useCreateVendor = () => {
     },
     onError: () => {
       toast.error("Failed to register vendor");
+    },
+  });
+};
+
+export const useUpdateVendorProfile = () => {
+  return useMutation({
+    mutationFn: updateVendorProfile,
+    onSuccess: () => {
+      toast.success("Profile updated successfully");
+    },
+    onError: () => {
+      toast.error("Failed to update profile");
     },
   });
 };

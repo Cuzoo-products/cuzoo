@@ -29,7 +29,7 @@ export type VendorData = {
   email: string;
   approvalStatus: string;
   storeCode: string;
-  phoneNumber: PhoneNumber;
+  phoneNumber?: PhoneNumber;
 };
 
 export const columns: ColumnDef<VendorData>[] = [
@@ -58,7 +58,12 @@ export const columns: ColumnDef<VendorData>[] = [
     },
     cell: ({ row }) => {
       const phoneNumber = row.original.phoneNumber;
-      return <div>{phoneNumber.internationalFormat}</div>;
+      const display =
+        phoneNumber?.internationalFormat ??
+        phoneNumber?.nationalFormat ??
+        phoneNumber?.number ??
+        "—";
+      return <div>{display}</div>;
     },
   },
   {

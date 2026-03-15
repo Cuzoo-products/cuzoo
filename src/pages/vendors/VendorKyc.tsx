@@ -28,75 +28,166 @@ import {
   PopoverTrigger,
   PopoverContent,
 } from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
-import { cn } from "@/lib/utils";
+import { cn, fileToBase64 } from "@/lib/utils";
 import Header2 from "@/components/utilities/header2";
+import { GogglePlace } from "@/components/utilities/GogglePlace";
+import { useUpdateVendorProfile } from "@/api/vendor/auth/useAuth";
+import { useNavigate } from "react-router";
+import { signOut } from "firebase/auth";
+import { auth } from "@/firebase";
+import { logout } from "@/redux/slices/authSlice";
+import { useDispatch } from "react-redux";
 
-// ----------------- SCHEMA -----------------
-const vendorFormSchema = z.object({
-  nameOfBusiness: z.string().min(2),
-  dateOfIncorporation: z.date(),
-  placeOfIncorporation: z.string(),
-  rcNumber: z.string(),
-  typeOfBusiness: z.string(),
-  officialAddress: z.string(),
-  proofOfAddress: z.string(),
-  phone: z.string(),
-  email: z.string().email(),
-  website: z.string().optional(),
-  goodsSold: z.string(),
-  registrationNumberForGoods: z.string().optional(),
-  amountOfWares: z.string(),
-  proprietorName: z.string(),
-  proprietorNationality: z.string(),
-  proprietorState: z.string(),
-  proprietorLga: z.string(),
-  proprietorAddress: z.string(),
-  declaration: z.string(),
-  businessCertificate: z.any(),
-  passportOfProprietor: z.any(),
-  idCard: z.any(),
-  proofOfBusinessAddress: z.any(),
-  ghpLicense: z.any().optional(),
-  nafdacRegistration: z.any().optional(),
+const BUSINESS_TYPES = [
+  "Logistics",
+  "E-commerce",
+  "Retail",
+  "Wholesale",
+  "Manufacturing",
+  "Services",
+  "Other",
+] as const;
+
+const vendorKycSchema = z.object({
+  registrationNumber: z.string().min(1, "Registration number is required"),
+  dateOfIncorporation: z.date({
+    required_error: "Date of incorporation is required",
+  }),
+  placeOfIncorporation: z.string().min(1, "Place of incorporation is required"),
+  businessType: z.enum(BUSINESS_TYPES, {
+    required_error: "Business type is required",
+  }),
+  logo: z.union([z.string(), z.any()]).optional(),
+  addressPlaceId: z.string().min(1, "Business address is required"),
+  typeOfGoodsSold: z.string().min(1, "Type of goods sold is required"),
+  proprietor: z.object({
+    name: z.string().min(1, "Proprietor name is required"),
+    nationality: z.string().min(1, "Nationality is required"),
+    state: z.string().min(1, "State is required"),
+    residentialAddress: z.string().min(1, "Residential address is required"),
+    declaration: z.string().min(1, "Declaration is required"),
+  }),
+  passport: z.any().optional(),
+  certificateOfIncorporation: z.any().optional(),
+  governmentApprovedId: z.any().optional(),
+  proofOfAddress: z.any().optional(),
   lgaPermit: z.any().optional(),
+  gphLicense: z.any().optional(),
+  nafdacRegistration: z.any().optional(),
 });
 
-// ----------------- COMPONENT -----------------
+type VendorKycFormValues = z.infer<typeof vendorKycSchema>;
+
+async function toBase64(
+  value: FileList | File | string | undefined,
+): Promise<string | undefined> {
+  if (value == null) return undefined;
+  if (typeof value === "string") return value;
+  const file = value instanceof FileList ? value[0] : value;
+  if (!file) return undefined;
+  return fileToBase64(file);
+}
+
 export function VendorKycForm() {
-  const form = useForm<z.infer<typeof vendorFormSchema>>({
-    resolver: zodResolver(vendorFormSchema),
+  const { mutate: updateVendorProfile, isPending: isUpdatingProfile } =
+    useUpdateVendorProfile();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const form = useForm<VendorKycFormValues>({
+    resolver: zodResolver(vendorKycSchema),
     defaultValues: {
-      nameOfBusiness: "",
+      registrationNumber: "",
+      dateOfIncorporation: undefined,
       placeOfIncorporation: "",
-      rcNumber: "",
-      typeOfBusiness: "",
-      officialAddress: "",
-      proofOfAddress: "",
-      phone: "",
-      email: "",
-      website: "",
-      goodsSold: "",
-      registrationNumberForGoods: "",
-      amountOfWares: "",
-      proprietorName: "",
-      proprietorNationality: "",
-      proprietorState: "",
-      proprietorLga: "",
-      proprietorAddress: "",
-      declaration: "",
+      businessType: undefined,
+      logo: "",
+      addressPlaceId: "",
+      typeOfGoodsSold: "",
+      proprietor: {
+        name: "",
+        nationality: "",
+        state: "",
+        residentialAddress: "",
+        declaration: "",
+      },
+      passport: undefined,
+      certificateOfIncorporation: undefined,
+      governmentApprovedId: undefined,
+      proofOfAddress: undefined,
+      lgaPermit: undefined,
+      gphLicense: undefined,
+      nafdacRegistration: undefined,
     },
   });
 
   const [step, setStep] = useState(1);
-  const fileRef = form.register;
 
-  function onSubmit(values: z.infer<typeof vendorFormSchema>) {
-    console.log(values);
-    alert("Vendor form submitted!");
+  async function onSubmit(values: VendorKycFormValues) {
+    const payload = {
+      registrationNumber: values.registrationNumber,
+      dateOfIncorporation: values.dateOfIncorporation
+        ? new Date(values.dateOfIncorporation).toISOString()
+        : "",
+      placeOfIncorporation: values.placeOfIncorporation,
+      businessType: values.businessType ?? "",
+      logo:
+        (typeof values.logo === "string"
+          ? values.logo
+          : await toBase64(values.logo as FileList | File)) ?? "",
+      addressPlaceId: values.addressPlaceId,
+      typeOfGoodsSold: values.typeOfGoodsSold,
+      proprietor: values.proprietor,
+      passport:
+        (await toBase64(
+          values.passport as FileList | File | string | undefined,
+        )) ?? "",
+      certificateOfIncorporation:
+        (await toBase64(
+          values.certificateOfIncorporation as
+            | FileList
+            | File
+            | string
+            | undefined,
+        )) ?? "",
+      governmentApprovedId:
+        (await toBase64(
+          values.governmentApprovedId as FileList | File | string | undefined,
+        )) ?? "",
+      proofOfAddress:
+        (await toBase64(
+          values.proofOfAddress as FileList | File | string | undefined,
+        )) ?? "",
+      lgaPermit:
+        (await toBase64(
+          values.lgaPermit as FileList | File | string | undefined,
+        )) ?? "",
+      gphLicense:
+        (await toBase64(
+          values.gphLicense as FileList | File | string | undefined,
+        )) ?? "",
+      nafdacRegistration:
+        (await toBase64(
+          values.nafdacRegistration as FileList | File | string | undefined,
+        )) ?? "",
+    };
+    updateVendorProfile(payload, {
+      onSuccess: async () => {
+        await signOut(auth);
+        dispatch(logout());
+        navigate("/kyc-submitted");
+      },
+    });
   }
 
-  const nextStep = () => setStep((s) => Math.min(s + 1, 4));
+  const nextStep = () => setStep((s) => Math.min(s + 1, 3));
   const prevStep = () => setStep((s) => Math.max(s - 1, 1));
 
   return (
@@ -107,23 +198,31 @@ export function VendorKycForm() {
         <CardHeader>
           <CardTitle>Vendor Registration KYC</CardTitle>
           <CardDescription>
-            Step {step} of 4 — Fill all details carefully
+            Step {step} of 3 — Fill all details carefully
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-              {/* STEP 1: Business Info */}
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (step === 3) {
+                  form.handleSubmit(onSubmit)(e);
+                }
+              }}
+              className="space-y-8"
+            >
+              {/* STEP 1: Business info */}
               {step === 1 && (
                 <div className="grid md:grid-cols-2 gap-6">
                   <FormField
                     control={form.control}
-                    name="nameOfBusiness"
+                    name="registrationNumber"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Name of Business</FormLabel>
+                        <FormLabel>Registration Number (RC)</FormLabel>
                         <FormControl>
-                          <Input placeholder="ABC Ventures Ltd" {...field} />
+                          <Input placeholder="RC123456" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -142,7 +241,7 @@ export function VendorKycForm() {
                                 variant="outline"
                                 className={cn(
                                   "w-full justify-start",
-                                  !field.value && "text-muted-foreground"
+                                  !field.value && "text-muted-foreground",
                                 )}
                               >
                                 {field.value
@@ -152,7 +251,10 @@ export function VendorKycForm() {
                               </Button>
                             </FormControl>
                           </PopoverTrigger>
-                          <PopoverContent align="start" className="p-0">
+                          <PopoverContent
+                            align="start"
+                            className="p-0 bg-background"
+                          >
                             <Calendar
                               mode="single"
                               selected={field.value}
@@ -179,46 +281,48 @@ export function VendorKycForm() {
                   />
                   <FormField
                     control={form.control}
-                    name="rcNumber"
+                    name="businessType"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>RC Number</FormLabel>
-                        <FormControl>
-                          <Input placeholder="RC123456" {...field} />
-                        </FormControl>
+                        <FormLabel>Business Type</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select business type" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent className="bg-background">
+                            {BUSINESS_TYPES.map((t) => (
+                              <SelectItem key={t} value={t}>
+                                {t}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
                   <FormField
                     control={form.control}
-                    name="typeOfBusiness"
+                    name="logo"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Type of Business</FormLabel>
+                        <FormLabel>Logo (optional)</FormLabel>
                         <FormControl>
-                          <Input placeholder="Retail / Wholesale" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              )}
-
-              {/* STEP 2: Contact & Operations */}
-              {step === 2 && (
-                <div className="grid md:grid-cols-2 gap-6">
-                  <FormField
-                    control={form.control}
-                    name="officialAddress"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Official Address</FormLabel>
-                        <FormControl>
-                          <Textarea
-                            placeholder="123 Market Street, Lagos"
-                            {...field}
+                          <Input
+                            type="file"
+                            accept="image/*"
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                const base64 = await fileToBase64(file);
+                                field.onChange(base64);
+                              }
+                            }}
                           />
                         </FormControl>
                         <FormMessage />
@@ -227,12 +331,16 @@ export function VendorKycForm() {
                   />
                   <FormField
                     control={form.control}
-                    name="proofOfAddress"
+                    name="addressPlaceId"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Specify Proof of Address</FormLabel>
+                      <FormItem className="md:col-span-2">
+                        <FormLabel>Business Address</FormLabel>
                         <FormControl>
-                          <Input placeholder="Utility Bill" {...field} />
+                          <GogglePlace
+                            value={field.value}
+                            onChange={field.onChange}
+                            placeholder="Enter business address"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -240,48 +348,9 @@ export function VendorKycForm() {
                   />
                   <FormField
                     control={form.control}
-                    name="phone"
+                    name="typeOfGoodsSold"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Phone</FormLabel>
-                        <FormControl>
-                          <Input placeholder="+2348012345678" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email</FormLabel>
-                        <FormControl>
-                          <Input placeholder="info@vendor.com" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="website"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Website</FormLabel>
-                        <FormControl>
-                          <Input placeholder="www.vendor.com" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="goodsSold"
-                    render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="md:col-span-2">
                         <FormLabel>Type of Goods Sold</FormLabel>
                         <FormControl>
                           <Input
@@ -293,46 +362,15 @@ export function VendorKycForm() {
                       </FormItem>
                     )}
                   />
-                  <FormField
-                    control={form.control}
-                    name="registrationNumberForGoods"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>
-                          Registration Number (if applicable)
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="NAFDAC / Import Reg No"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="amountOfWares"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Amount of Wares Available</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g., 500 units" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
                 </div>
               )}
 
-              {/* STEP 3: Proprietor */}
-              {step === 3 && (
+              {/* STEP 2: Proprietor */}
+              {step === 2 && (
                 <div className="grid md:grid-cols-2 gap-6">
                   <FormField
                     control={form.control}
-                    name="proprietorName"
+                    name="proprietor.name"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Name of Proprietor</FormLabel>
@@ -345,7 +383,7 @@ export function VendorKycForm() {
                   />
                   <FormField
                     control={form.control}
-                    name="proprietorNationality"
+                    name="proprietor.nationality"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Nationality</FormLabel>
@@ -358,7 +396,7 @@ export function VendorKycForm() {
                   />
                   <FormField
                     control={form.control}
-                    name="proprietorState"
+                    name="proprietor.state"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>State</FormLabel>
@@ -371,22 +409,9 @@ export function VendorKycForm() {
                   />
                   <FormField
                     control={form.control}
-                    name="proprietorLga"
+                    name="proprietor.residentialAddress"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>LGA</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Ikeja" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="proprietorAddress"
-                    render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="md:col-span-2">
                         <FormLabel>Residential Address</FormLabel>
                         <FormControl>
                           <Textarea
@@ -400,10 +425,10 @@ export function VendorKycForm() {
                   />
                   <FormField
                     control={form.control}
-                    name="declaration"
+                    name="proprietor.declaration"
                     render={({ field }) => (
-                      <FormItem className="col-span-2">
-                        <FormLabel>Declaration / Signature</FormLabel>
+                      <FormItem className="md:col-span-2">
+                        <FormLabel>Declaration</FormLabel>
                         <FormControl>
                           <Textarea
                             placeholder="I hereby declare..."
@@ -417,19 +442,20 @@ export function VendorKycForm() {
                 </div>
               )}
 
-              {/* STEP 4: Checklist */}
-              {step === 4 && (
+              {/* STEP 3: Documents */}
+              {step === 3 && (
                 <div className="grid md:grid-cols-2 gap-6">
                   <FormField
                     control={form.control}
-                    name="businessCertificate"
-                    render={() => (
+                    name="passport"
+                    render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Business Certificate</FormLabel>
+                        <FormLabel>Passport</FormLabel>
                         <FormControl>
                           <Input
                             type="file"
-                            {...fileRef("businessCertificate")}
+                            accept="image/*,.pdf"
+                            onChange={(e) => field.onChange(e.target.files)}
                           />
                         </FormControl>
                         <FormMessage />
@@ -438,14 +464,15 @@ export function VendorKycForm() {
                   />
                   <FormField
                     control={form.control}
-                    name="passportOfProprietor"
-                    render={() => (
+                    name="certificateOfIncorporation"
+                    render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Passport of Proprietor</FormLabel>
+                        <FormLabel>Certificate of Incorporation</FormLabel>
                         <FormControl>
                           <Input
                             type="file"
-                            {...fileRef("passportOfProprietor")}
+                            accept="image/*,.pdf"
+                            onChange={(e) => field.onChange(e.target.files)}
                           />
                         </FormControl>
                         <FormMessage />
@@ -454,27 +481,15 @@ export function VendorKycForm() {
                   />
                   <FormField
                     control={form.control}
-                    name="idCard"
-                    render={() => (
+                    name="governmentApprovedId"
+                    render={({ field }) => (
                       <FormItem>
-                        <FormLabel>ID Card</FormLabel>
-                        <FormControl>
-                          <Input type="file" {...fileRef("idCard")} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="proofOfBusinessAddress"
-                    render={() => (
-                      <FormItem>
-                        <FormLabel>Proof of Business Address</FormLabel>
+                        <FormLabel>Government Approved ID</FormLabel>
                         <FormControl>
                           <Input
                             type="file"
-                            {...fileRef("proofOfBusinessAddress")}
+                            accept="image/*,.pdf"
+                            onChange={(e) => field.onChange(e.target.files)}
                           />
                         </FormControl>
                         <FormMessage />
@@ -483,29 +498,15 @@ export function VendorKycForm() {
                   />
                   <FormField
                     control={form.control}
-                    name="ghpLicense"
-                    render={() => (
+                    name="proofOfAddress"
+                    render={({ field }) => (
                       <FormItem>
-                        <FormLabel>GHP License (if food vendor)</FormLabel>
-                        <FormControl>
-                          <Input type="file" {...fileRef("ghpLicense")} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="nafdacRegistration"
-                    render={() => (
-                      <FormItem>
-                        <FormLabel>
-                          NAFDAC Registration (if applicable)
-                        </FormLabel>
+                        <FormLabel>Proof of Address</FormLabel>
                         <FormControl>
                           <Input
                             type="file"
-                            {...fileRef("nafdacRegistration")}
+                            accept="image/*,.pdf"
+                            onChange={(e) => field.onChange(e.target.files)}
                           />
                         </FormControl>
                         <FormMessage />
@@ -515,11 +516,51 @@ export function VendorKycForm() {
                   <FormField
                     control={form.control}
                     name="lgaPermit"
-                    render={() => (
+                    render={({ field }) => (
                       <FormItem>
                         <FormLabel>LGA Permit</FormLabel>
                         <FormControl>
-                          <Input type="file" {...fileRef("lgaPermit")} />
+                          <Input
+                            type="file"
+                            accept="image/*,.pdf"
+                            onChange={(e) => field.onChange(e.target.files)}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="gphLicense"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>GPH License (if applicable)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="file"
+                            accept="image/*,.pdf"
+                            onChange={(e) => field.onChange(e.target.files)}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="nafdacRegistration"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          NAFDAC Registration (if applicable)
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            type="file"
+                            accept="image/*,.pdf"
+                            onChange={(e) => field.onChange(e.target.files)}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -528,19 +569,34 @@ export function VendorKycForm() {
                 </div>
               )}
 
-              {/* NAVIGATION */}
               <div className="flex justify-between pt-6">
                 {step > 1 && (
-                  <Button type="button" variant="outline" onClick={prevStep}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      prevStep();
+                    }}
+                  >
                     Previous
                   </Button>
                 )}
-                {step < 4 ? (
-                  <Button type="button" onClick={nextStep}>
+                {step < 3 ? (
+                  <Button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      nextStep();
+                    }}
+                  >
                     Next
                   </Button>
                 ) : (
-                  <Button type="submit">Submit</Button>
+                  <Button type="submit" disabled={isUpdatingProfile}>
+                    {isUpdatingProfile ? "Submitting..." : "Submit"}
+                  </Button>
                 )}
               </div>
             </form>

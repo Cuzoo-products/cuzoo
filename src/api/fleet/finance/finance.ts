@@ -25,7 +25,7 @@ export const deleteBankAccount = async (data: any) => {
   return response.data;
 };
 
-export const accountBalance = async () => {
+export const getWalletDetails = async () => {
   const response = await axiosInstance.get("/fleets/wallet");
   return response.data;
 };

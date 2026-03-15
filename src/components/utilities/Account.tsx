@@ -18,7 +18,6 @@ export function Account() {
   const navigate = useNavigate();
   const { user } = useSelector((state: any) => state.auth);
 
-  console.log(user);
   const handleLogout = async () => {
     try {
       // Sign out from Firebase
