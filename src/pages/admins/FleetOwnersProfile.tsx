@@ -19,7 +19,6 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Download, Truck, Users, FileCheck, ShieldAlert, CheckCircle } from "lucide-react";
-import FinancialReport from "@/components/utilities/Admins/FinancialReport";
 import { useParams } from "react-router";
 import { useGetOneFleet, useApproveFleet } from "@/api/admin/useFleet";
 import { Badge } from "@/components/ui/badge";

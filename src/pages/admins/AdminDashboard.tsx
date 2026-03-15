@@ -14,7 +14,7 @@ const chartData = [
 export type PerformingDriverData = {
   id: number;
   name: string;
-  trips: string;
+  trips: number;
   imageUrl: string;
   initials: string;
 };
@@ -22,35 +22,35 @@ const performingDriverData: PerformingDriverData[] = [
   {
     id: 1,
     name: "John Doe",
-    trips: "129",
+    trips: 129,
     imageUrl: "https://github.com/shadcn.png",
     initials: "JD",
   },
   {
     id: 2,
     name: "Daneil Tosin",
-    trips: "128",
+    trips: 128,
     imageUrl: "https://github.com/shadcn.png",
     initials: "DT",
   },
   {
     id: 3,
     name: "Jane Doe",
-    trips: "123",
+    trips: 123,
     imageUrl: "https://github.com/shadcn.png",
     initials: "JD",
   },
   {
     id: 4,
     name: "James Doe",
-    trips: "121",
+    trips: 121,
     imageUrl: "https://github.com/shadcn.png",
     initials: "JD",
   },
   {
     id: 5,
     name: "Kalu Tinubu",
-    trips: "117",
+    trips: 117,
     imageUrl: "https://github.com/shadcn.png",
     initials: "JD",
   },

@@ -13,6 +13,7 @@ import {
   useAccountBalance,
   useInflow,
   useOutflow,
+  useRequestWithdrawal,
 } from "@/api/vendor/finance/useFinance";
 
 type AccountBalanceResponse = {
@@ -40,6 +41,8 @@ type HistoryResponse = {
 };
 
 export default function VendorFinance() {
+  const { mutate: requestWithdrawal, isPending: isWithdrawing } =
+    useRequestWithdrawal();
   const { data, isLoading, error } = useAccountBalance() as {
     data?: AccountBalanceResponse;
     isLoading: boolean;
@@ -106,7 +109,11 @@ export default function VendorFinance() {
             >
               Manage Banks
             </Link>
-            <WithdrawDialog />
+            <WithdrawDialog
+              balance={wallet?.amount ?? 0}
+              onSubmit={(payload) => requestWithdrawal(payload)}
+              isPending={isWithdrawing}
+            />
           </div>
         </CardHeader>
         <CardContent>

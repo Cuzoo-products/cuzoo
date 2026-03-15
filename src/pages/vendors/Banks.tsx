@@ -54,7 +54,7 @@ export default function VendorBanks() {
   const { mutate: deleteBankAccount, isPending: isDeletingBankAccount } =
     useDeleteBankAccount();
 
-  const [banks, setBanks] = useState<BankAccount[]>(initialBanks);
+  const [banks] = useState<BankAccount[]>(initialBanks);
   const [form, setForm] = useState({
     bankCode: "",
     accountName: "",

@@ -8,7 +8,6 @@ import {
   User,
   Clock,
   Wrench,
-  UserPlus,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -20,7 +19,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ComboboxForm } from "../ComboboxForm";
 import { toast } from "sonner";
 
 type VehicleStatus = "available" | "in use" | "under maintenance" | "disabled";
@@ -43,17 +41,6 @@ interface VehicleDetailsProps {
   };
 }
 
-const availableDrivers = [
-  { label: "John Doe", value: "1" },
-  { label: "Jane Doe", value: "2" },
-  { label: "Barry White", value: "3" },
-  { label: "David Olushegun", value: "4" },
-  { label: "MurFy Doe", value: "5" },
-  { label: "Emma John", value: "6" },
-  { label: "Victor Kenzy", value: "7" },
-  { label: "Tolu Jame", value: "8" },
-  { label: "Larry Blue", value: "9" },
-];
 
 const statusConfig: Record<
   VehicleStatus,

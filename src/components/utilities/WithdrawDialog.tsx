@@ -1,4 +1,3 @@
-import { useRequestWithdrawal } from "@/api/fleet/finance/useFinance";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -20,10 +19,19 @@ const dummyBanks = [
   { id: "9000000000", name: "UBA - 9000000000" },
 ];
 
-export function WithdrawDialog({ balance }: { balance: number }) {
-  const { mutate: requestWithdrawal, isPending: isRequestingWithdrawal } =
-    useRequestWithdrawal();
+export type WithdrawPayload = { accountNumber: string; amount: number };
 
+export type WithdrawDialogProps = {
+  balance: number;
+  onSubmit: (data: WithdrawPayload) => void;
+  isPending?: boolean;
+};
+
+export function WithdrawDialog({
+  balance,
+  onSubmit,
+  isPending = false,
+}: WithdrawDialogProps) {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
@@ -43,7 +51,7 @@ export function WithdrawDialog({ balance }: { balance: number }) {
       return;
     }
 
-    requestWithdrawal({ accountNumber, amount });
+    onSubmit({ accountNumber, amount });
   };
 
   return (
@@ -94,13 +102,13 @@ export function WithdrawDialog({ balance }: { balance: number }) {
               <Button
                 type="button"
                 variant="outline"
-                disabled={isRequestingWithdrawal}
+                disabled={isPending}
               >
                 Cancel
               </Button>
             </DialogClose>
-            <Button type="submit" disabled={isRequestingWithdrawal}>
-              {isRequestingWithdrawal ? "Submitting..." : "Submit"}
+            <Button type="submit" disabled={isPending}>
+              {isPending ? "Submitting..." : "Submit"}
             </Button>
           </DialogFooter>
         </form>

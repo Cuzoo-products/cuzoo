@@ -4,7 +4,6 @@ import {
   UserRoundPen,
   Truck,
   User,
-  Map,
   BusFront,
   WalletMinimal,
   Banknote,

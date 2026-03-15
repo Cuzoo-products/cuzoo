@@ -28,7 +28,6 @@ import {
   Store,
   Gift,
 } from "lucide-react";
-import FinancialReport from "@/components/utilities/Admins/FinancialReport";
 import { useParams } from "react-router";
 import { useApproveVendor, useGetVendor } from "@/api/admin/useVendors";
 import Loader from "@/components/utilities/Loader";
