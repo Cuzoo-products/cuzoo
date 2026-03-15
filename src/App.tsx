@@ -35,8 +35,6 @@ function App() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  console.log(user);
-
   // Listen to Firebase auth state changes
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -77,6 +75,8 @@ function App() {
                 email: userDetails.data.email,
                 accountType: userDetails.data.type,
                 status: userDetails.data.approvalStatus,
+                photoURL: user.photoURL ?? "",
+                displayName: user.displayName ?? "",
               },
             }),
           );

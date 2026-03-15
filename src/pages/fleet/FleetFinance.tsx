@@ -107,7 +107,7 @@ export default function FleetFinance() {
             >
               Manage Banks
             </Link>
-            <WithdrawDialog />
+            <WithdrawDialog balance={wallet?.amount ?? 0} />
           </div>
         </CardHeader>
         <CardContent>

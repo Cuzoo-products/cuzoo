@@ -2,6 +2,7 @@ import { createBrowserRouter } from "react-router";
 import App from "@/App";
 import NotFoundPage from "@/pages/shared/NotFoundPage";
 import VerifyEmail from "@/pages/shared/VerifyEmail";
+import KycSubmitted from "@/pages/shared/KycSubmitted";
 import { ProtectedRoute } from "@/routes/ProtectedRoute";
 import Maps from "@/pages/fleet/Maps";
 import Drivers from "@/pages/fleet/Drivers";
@@ -72,6 +73,10 @@ export const routes = createBrowserRouter([
   {
     path: "/verify-email",
     element: <VerifyEmail />,
+  },
+  {
+    path: "/kyc-submitted",
+    element: <KycSubmitted />,
   },
   {
     path: "/fleet-registration",

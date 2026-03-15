@@ -15,84 +15,160 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Download, Truck, User, Users } from "lucide-react";
+import { Download, Truck, Users, FileCheck, ShieldAlert, CheckCircle } from "lucide-react";
 import FinancialReport from "@/components/utilities/Admins/FinancialReport";
 import { useParams } from "react-router";
-import { useGetOneFleet } from "@/api/admin/useFleet";
+import { useGetOneFleet, useApproveFleet } from "@/api/admin/useFleet";
 import { Badge } from "@/components/ui/badge";
 import Loader from "@/components/utilities/Loader";
 
-interface FleetManagerDocument {
-  id: string;
-  name: string;
-  uploadDate: string;
+interface DocumentAsset {
+  path: string;
   url: string;
+  type: string;
 }
 
-interface FleetApiData {
-  approvalStatus?: string;
-  businessName?: string;
-  companyType?: string;
-  dateOfIncorporation?: { _seconds?: number; _nanoseconds?: number };
-  drivers?: number;
-  email?: string;
-  fleets?: number;
-  id?: string;
-  lastName?: string;
-  phoneNumber?: {
-    internationalFormat?: string;
-    nationalFormat?: string;
-    number?: string;
-    countryCode?: string;
-    countryCallingCode?: string;
-  };
-  placeOfIncorporation?: string;
-  registrationNumber?: string;
-  tinNumber?: string;
-  avatarUrl?: string;
+interface FleetManagerPhone {
+  countryCode?: string;
+  nationalFormat?: string;
+  number?: string;
+  internationalFormat?: string;
+  countryCallingCode?: string;
 }
 
-// Minimal mock data only for documents and financial summary sections
-const mockDocuments: FleetManagerDocument[] = [
-  {
-    id: "doc_fm_1",
-    name: "Company_Incorporation.pdf",
-    uploadDate: "2022-11-21",
-    url: "#",
-  },
-  {
-    id: "doc_fm_2",
-    name: "Insurance_Policy.pdf",
-    uploadDate: "2022-11-22",
-    url: "#",
-  },
-];
+export interface FleetManagerData {
+  Id: string;
+  businessName: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: FleetManagerPhone;
+  address: string;
+  emailVerified: boolean;
+  phoneNumberVerified: boolean;
+  tinNumber: string;
+  registrationNumber: string;
+  dateOfIncorporation: string;
+  placeOfIncorporation: string;
+  companyType: string;
+  approvalStatus: string;
+  approved: boolean;
+  suspended: boolean;
+  directors: string[];
+  servicesRendered: string[];
+  insuranceCoverage: string[];
+  passport?: DocumentAsset;
+  certificateOfIncorporation?: DocumentAsset;
+  governmentApprovedId?: DocumentAsset;
+  proofOfAddress?: DocumentAsset;
+  insuranceCertificate?: DocumentAsset;
+  courierLicense?: DocumentAsset;
+  createdAt: string;
+  updatedAt: string;
+  wallet: string;
+  fleets: number;
+  drivers: number;
+}
+
+const DOCUMENT_LABELS: Record<string, string> = {
+  passport: "Passport",
+  certificateOfIncorporation: "Certificate of Incorporation",
+  governmentApprovedId: "Government Approved ID",
+  proofOfAddress: "Proof of Address",
+  insuranceCertificate: "Insurance Certificate",
+  courierLicense: "Courier License",
+};
+
+function buildDocumentsList(
+  data: FleetManagerData | undefined,
+): { key: string; label: string; doc?: DocumentAsset }[] {
+  if (!data) return [];
+  return [
+    { key: "passport", label: DOCUMENT_LABELS.passport, doc: data.passport },
+    {
+      key: "certificateOfIncorporation",
+      label: DOCUMENT_LABELS.certificateOfIncorporation,
+      doc: data.certificateOfIncorporation,
+    },
+    {
+      key: "governmentApprovedId",
+      label: DOCUMENT_LABELS.governmentApprovedId,
+      doc: data.governmentApprovedId,
+    },
+    {
+      key: "proofOfAddress",
+      label: DOCUMENT_LABELS.proofOfAddress,
+      doc: data.proofOfAddress,
+    },
+    {
+      key: "insuranceCertificate",
+      label: DOCUMENT_LABELS.insuranceCertificate,
+      doc: data.insuranceCertificate,
+    },
+    {
+      key: "courierLicense",
+      label: DOCUMENT_LABELS.courierLicense,
+      doc: data.courierLicense,
+    },
+  ].filter((row) => row.doc?.url);
+}
 
 export default function FleetOwnersProfile() {
   const { id } = useParams();
-  const { data: fleetManager, isLoading } = useGetOneFleet(id!);
-
+  const { data: response, isLoading } = useGetOneFleet(id!);
+  const approveFleetMutation = useApproveFleet(id ?? undefined);
   const [isAccountActive, setIsAccountActive] = useState<boolean>(true);
-  const api: FleetApiData | undefined = (
-    fleetManager as { data?: FleetApiData } | undefined
-  )?.data;
 
-  const joinDate = api?.dateOfIncorporation?._seconds
-    ? new Date(api.dateOfIncorporation._seconds * 1000).toLocaleDateString()
+  const api = (response as { data?: FleetManagerData } | undefined)?.data;
+  const documents = buildDocumentsList(api);
+
+  const displayName = api
+    ? [api.firstName, api.lastName].filter(Boolean).join(" ") ||
+      api.businessName
+    : "-";
+  const phoneDisplay =
+    api?.phoneNumber?.internationalFormat ||
+    api?.phoneNumber?.nationalFormat ||
+    api?.phoneNumber?.number ||
+    "-";
+  const joinDate = api?.createdAt
+    ? new Date(api.createdAt).toLocaleDateString(undefined, {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      })
+    : "-";
+  const incorporationDate = api?.dateOfIncorporation
+    ? new Date(api.dateOfIncorporation).toLocaleDateString(undefined, {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      })
     : "-";
 
   const handleAccountToggle = (checked: boolean) => {
     setIsAccountActive(checked);
-    console.log(
-      `Fleet Manager account is now ${checked ? "enabled" : "disabled"}`
-    );
   };
+
+  const handleApprove = () => {
+    if (id) approveFleetMutation.mutate();
+  };
+
+  const canApprove = api && !api.approved && !api.suspended && api.approvalStatus?.toLowerCase() !== "approved";
 
   if (isLoading) {
     return <Loader />;
+  }
+
+  if (!api) {
+    return (
+      <div className="min-h-screen p-4 sm:p-6 lg:p-8 font-sans flex items-center justify-center">
+        <p className="text-muted-foreground">Fleet manager not found.</p>
+      </div>
+    );
   }
 
   return (
@@ -100,94 +176,128 @@ export default function FleetOwnersProfile() {
       <div className="max-w-7xl mx-auto">
         <div className="my-6">
           <h1 className="text-3xl !font-bold">Fleet Manager Details</h1>
-          <p>Manage fleet manager profile, assets, and documents.</p>
+          <p>Manage fleet manager profile, documents, and status.</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-1 space-y-6">
-            {/* Manager Profile Card */}
             <Card className="py-6 bg-secondary">
               <CardHeader className="flex flex-row items-center space-x-4 pb-4">
                 <Avatar className="h-16 w-16">
-                  <AvatarImage
-                    src={api?.avatarUrl}
-                    alt={(api?.businessName || "Fleet Manager") as string}
-                  />
                   <AvatarFallback>
-                    {api?.avatarUrl ? (
-                      (api?.businessName || "FM").substring(0, 2).toUpperCase()
-                    ) : (
-                      <User className="h-8 w-8 text-muted-foreground" />
-                    )}
+                    {(api.businessName || "FM").substring(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 flex-wrap">
                     <CardTitle className="text-2xl">
-                      {api?.businessName || "-"}
+                      {api.businessName || "-"}
                     </CardTitle>
-                    {api?.approvalStatus && (
-                      <Badge variant="secondary" className="capitalize">
-                        {api.approvalStatus}
-                      </Badge>
+                    <Badge variant="secondary" className="capitalize">
+                      {api.approvalStatus}
+                    </Badge>
+                    {api.suspended && (
+                      <Badge variant="destructive">Suspended</Badge>
+                    )}
+                    {api.approved && !api.suspended && (
+                      <Badge variant="default">Approved</Badge>
                     )}
                   </div>
-                  <CardDescription>
-                    Contact: {api?.lastName || "-"}
-                  </CardDescription>
+                  <CardDescription>{displayName}</CardDescription>
                 </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3 text-sm">
                   <div className="flex justify-between">
                     <span>Email</span>
-                    <span className="font-medium">{api?.email || "-"}</span>
+                    <span className="font-medium">{api.email || "-"}</span>
                   </div>
+                  {api.emailVerified !== undefined && (
+                    <div className="flex justify-between items-center">
+                      <span>Email verified</span>
+                      {api.emailVerified ? (
+                        <Badge
+                          variant="outline"
+                          className="text-green-600 border-green-600"
+                        >
+                          Yes
+                        </Badge>
+                      ) : (
+                        <Badge
+                          variant="outline"
+                          className="text-amber-600 border-amber-600"
+                        >
+                          No
+                        </Badge>
+                      )}
+                    </div>
+                  )}
                   <div className="flex justify-between">
                     <span>Phone</span>
+                    <span className="font-medium">{phoneDisplay}</span>
+                  </div>
+                  {api.phoneNumberVerified !== undefined && (
+                    <div className="flex justify-between items-center">
+                      <span>Phone verified</span>
+                      {api.phoneNumberVerified ? (
+                        <Badge
+                          variant="outline"
+                          className="text-green-600 border-green-600"
+                        >
+                          Yes
+                        </Badge>
+                      ) : (
+                        <Badge
+                          variant="outline"
+                          className="text-amber-600 border-amber-600"
+                        >
+                          No
+                        </Badge>
+                      )}
+                    </div>
+                  )}
+                  {api.address && (
+                    <div className="flex justify-between">
+                      <span>Address</span>
+                      <span className="font-medium max-w-[60%] text-right">
+                        {api.address}
+                      </span>
+                    </div>
+                  )}
+                  <div className="flex justify-between">
+                    <span>Company type</span>
                     <span className="font-medium">
-                      {api?.phoneNumber?.internationalFormat ||
-                        api?.phoneNumber?.number ||
-                        "-"}
+                      {api.companyType || "-"}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Status</span>
-                    <span className="font-medium capitalize">
-                      {api?.approvalStatus || "-"}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Company Type</span>
+                    <span>Place of incorporation</span>
                     <span className="font-medium">
-                      {api?.companyType || "-"}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Place of Incorporation</span>
-                    <span className="font-medium">
-                      {api?.placeOfIncorporation || "-"}
+                      {api.placeOfIncorporation || "-"}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span>Registration No.</span>
                     <span className="font-medium">
-                      {api?.registrationNumber || "-"}
+                      {api.registrationNumber || "-"}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span>TIN</span>
-                    <span className="font-medium">{api?.tinNumber || "-"}</span>
+                    <span className="font-medium">{api.tinNumber || "-"}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Joined On</span>
+                    <span>Date of incorporation</span>
+                    <span className="font-medium">{incorporationDate}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Joined on</span>
                     <span className="font-medium">{joinDate}</span>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Stats Cards */}
             <div className="grid grid-cols-2 gap-6">
               <Card className="py-3 bg-secondary">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0">
@@ -195,7 +305,7 @@ export default function FleetOwnersProfile() {
                   <Truck className="h-5 w-5 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold">{api?.fleets ?? 0}</div>
+                  <div className="text-3xl font-bold">{api.fleets ?? 0}</div>
                 </CardContent>
               </Card>
               <Card className="py-3 bg-secondary">
@@ -204,45 +314,44 @@ export default function FleetOwnersProfile() {
                   <Users className="h-5 w-5 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold">{api?.drivers ?? 0}</div>
+                  <div className="text-3xl font-bold">{api.drivers ?? 0}</div>
                 </CardContent>
               </Card>
             </div>
 
-            {/* Actions Card */}
             <Card className="py-6 bg-secondary">
               <CardHeader>
                 <CardTitle>Actions</CardTitle>
                 <CardDescription>
-                  Enable or disable manager functionalities.
+                  Approve the account or enable or disable manager access.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
-                <div className="flex items-center space-x-4 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
-                  <User className="h-6 w-6 text-gray-500" />
-                  <div className="flex-1">
-                    <Label htmlFor="account-status" className="font-semibold">
-                      Account Status
-                    </Label>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      Disable the manager's ability to log in.
-                    </p>
+                {canApprove && (
+                  <div className="flex items-center space-x-4 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+                    <CheckCircle className="h-6 w-6 text-green-600" />
+                    <div className="flex-1">
+                      <p className="font-semibold">Approve account</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        Approve this fleet manager so they can use the platform.
+                      </p>
+                    </div>
+                    <Button
+                      onClick={handleApprove}
+                      disabled={approveFleetMutation.isPending}
+                    >
+                      {approveFleetMutation.isPending ? "Approving…" : "Approve account"}
+                    </Button>
                   </div>
-                  <Switch
-                    id="account-status"
-                    checked={isAccountActive}
-                    onCheckedChange={handleAccountToggle}
-                  />
-                </div>
-
+                )}
                 <div className="flex items-center space-x-4 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
-                  <User className="h-6 w-6 text-gray-500" />
+                  <ShieldAlert className="h-6 w-6 text-gray-500" />
                   <div className="flex-1">
                     <Label htmlFor="account-status" className="font-semibold">
-                      Wallet Status
+                      Account status
                     </Label>
                     <p className="text-xs text-gray-500 dark:text-gray-400">
-                      Disable the manager's ability to withdraw.
+                      Disable the manager&apos;s ability to log in.
                     </p>
                   </div>
                   <Switch
@@ -255,39 +364,99 @@ export default function FleetOwnersProfile() {
             </Card>
           </div>
 
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 space-y-6">
+            {(api.servicesRendered?.length > 0 ||
+              api.insuranceCoverage?.length > 0 ||
+              api.directors?.length > 0) && (
+              <Card className="py-6 bg-secondary">
+                <CardHeader>
+                  <CardTitle>Company details</CardTitle>
+                  <CardDescription>
+                    Services, insurance, and directors.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {api.servicesRendered?.length > 0 && (
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground mb-1">
+                        Services rendered
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {api.servicesRendered.map((s, i) => (
+                          <Badge key={i} variant="secondary">
+                            {s}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {api.insuranceCoverage?.length > 0 && (
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground mb-1">
+                        Insurance coverage
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {api.insuranceCoverage.map((c, i) => (
+                          <Badge key={i} variant="outline">
+                            {c}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {api.directors?.length > 0 && (
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground mb-1">
+                        Directors
+                      </p>
+                      <ul className="text-sm list-disc list-inside space-y-0.5">
+                        {api.directors.map((d, i) => (
+                          <li key={i}>{d}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
             <Card className="py-6 bg-secondary">
               <CardHeader>
-                <CardTitle>Manager Documents</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <FileCheck className="h-5 w-5" />
+                  Manager documents
+                </CardTitle>
                 <CardDescription>
-                  List of documents provided by the manager for verification.
+                  Documents provided for verification.
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Document Name</TableHead>
+                      <TableHead>Document</TableHead>
                       <TableHead className="hidden sm:table-cell">
-                        Upload Date
+                        Type
                       </TableHead>
                       <TableHead className="text-right">Action</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {mockDocuments.map((doc) => (
-                      <TableRow key={doc.id}>
-                        <TableCell className="font-medium">
-                          {doc.name}
-                        </TableCell>
-                        <TableCell className="hidden sm:table-cell">
-                          {doc.uploadDate}
+                    {documents.map(({ key, label, doc }) => (
+                      <TableRow key={key}>
+                        <TableCell className="font-medium">{label}</TableCell>
+                        <TableCell className="hidden sm:table-cell text-muted-foreground">
+                          {doc?.type || "-"}
                         </TableCell>
                         <TableCell className="text-right">
                           <Button variant="outline" size="sm" asChild>
-                            <a href={doc.url} download>
+                            <a
+                              href={doc?.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
                               <Download className="h-4 w-4 mr-2" />
-                              Download
+                              View / Download
                             </a>
                           </Button>
                         </TableCell>
@@ -295,16 +464,15 @@ export default function FleetOwnersProfile() {
                     ))}
                   </TableBody>
                 </Table>
-                {mockDocuments.length === 0 && (
-                  <div className="text-center py-10 text-gray-500 dark:text-gray-400">
+                {documents.length === 0 && (
+                  <div className="text-center py-10 text-muted-foreground">
                     No documents have been uploaded.
                   </div>
                 )}
               </CardContent>
             </Card>
-            <div className="mt-6">
-              <FinancialReport />
-            </div>
+
+            {/* <FinancialReport /> */}
           </div>
         </div>
       </div>

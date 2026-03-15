@@ -26,7 +26,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
+import { cn, fileToBase64 } from "@/lib/utils";
 import { Check, ChevronsUpDown } from "lucide-react";
 import {
   Command,
@@ -38,25 +38,31 @@ import {
 } from "@/components/ui/command";
 import { useCreateRiders } from "@/api/fleet/rider/useRiderQuery";
 import { GogglePlace } from "@/components/utilities/GogglePlace";
+import { useGetVehicles } from "@/api/fleet/vehicles/useVehicles";
 
-const vehicles = [
-  { label: "Toyota (EKY 321 XV)", value: "1" },
-  { label: "Nissan (SKU 241 Xy)", value: "2" },
-  { label: "Toyota (IKJ 121 UV)", value: "3" },
-  { label: "Nissan (JJJ 221 XY)", value: "4" },
-] as const;
-
-// Utility function to convert file to base64
-const fileToBase64 = (file: File): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = (error) => reject(error);
-  });
+type VehiclesResponse = {
+  data?: {
+    data?: {
+      id: string;
+      model?: string;
+      type?: string;
+      plateNumber?: string;
+    }[];
+  };
 };
 
 function AddDriver() {
+  const { data: vehiclesResponse, isLoading: vehiclesLoading } =
+    useGetVehicles() as {
+      data?: VehiclesResponse;
+      isLoading: boolean;
+    };
+
+  const vehicleList = vehiclesResponse?.data?.data ?? [];
+  const vehicleOptions = vehicleList.map((v) => ({
+    value: v.id,
+    label: `${v.type || v.model || "Vehicle"} (${v.plateNumber || "N/A"})`,
+  }));
   const form = useForm<z.infer<typeof AddDriverFormSchema>>({
     resolver: zodResolver(AddDriverFormSchema),
     defaultValues: {
@@ -75,7 +81,6 @@ function AddDriver() {
   const { mutate: createDriver, isPending } = useCreateRiders();
 
   function onSubmit(data: z.infer<typeof AddDriverFormSchema>) {
-    console.log(data);
     createDriver(data, {
       onSuccess: () => {
         toast.success("Driver added successfully!");
@@ -86,7 +91,6 @@ function AddDriver() {
         console.error("Error adding driver:", error);
       },
     });
-    form.reset();
   }
 
   return (
@@ -173,7 +177,7 @@ function AddDriver() {
                         <SelectTrigger className="h-11 w-full border-[#d6d6d6]">
                           <SelectValue placeholder="Select gender" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="bg-background">
                           <SelectItem value="Male">Male</SelectItem>
                           <SelectItem value="Female">Female</SelectItem>
                         </SelectContent>
@@ -296,7 +300,7 @@ function AddDriver() {
                               field.onChange(base64);
                             } catch (error) {
                               toast.error(
-                                "Error processing driver's license image"
+                                "Error processing driver's license image",
                               );
                               console.error("Error:", error);
                             }
@@ -325,16 +329,19 @@ function AddDriver() {
                         <Button
                           variant="outline"
                           role="combobox"
+                          disabled={vehiclesLoading}
                           className={cn(
                             "w-full justify-between bg-transparent border-[#d6d6d6]",
-                            !field.value && "text-muted-foreground"
+                            !field.value && "text-muted-foreground",
                           )}
                         >
                           {field.value
-                            ? vehicles.find(
-                                (vehicle) => vehicle.value === field.value
+                            ? vehicleOptions.find(
+                                (vehicle) => vehicle.value === field.value,
                               )?.label
-                            : "Select vehicle (optional)"}
+                            : vehiclesLoading
+                              ? "Loading vehicles..."
+                              : "Select vehicle (optional)"}
                           <ChevronsUpDown className="opacity-50" />
                         </Button>
                       </FormControl>
@@ -356,12 +363,12 @@ function AddDriver() {
                               <Check
                                 className={cn(
                                   "mr-2 h-4 w-4",
-                                  !field.value ? "opacity-100" : "opacity-0"
+                                  !field.value ? "opacity-100" : "opacity-0",
                                 )}
                               />
                               No vehicle assigned
                             </CommandItem>
-                            {vehicles.map((vehicle) => (
+                            {vehicleOptions.map((vehicle) => (
                               <CommandItem
                                 value={vehicle.label}
                                 key={vehicle.value}
@@ -374,7 +381,7 @@ function AddDriver() {
                                     "mr-2 h-4 w-4",
                                     vehicle.value === field.value
                                       ? "opacity-100"
-                                      : "opacity-0"
+                                      : "opacity-0",
                                   )}
                                 />
                                 {vehicle.label}

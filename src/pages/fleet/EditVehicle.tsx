@@ -25,7 +25,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
+import { cn, fileToBase64 } from "@/lib/utils";
 import { Check, ChevronsUpDown } from "lucide-react";
 import {
   Command,
@@ -59,16 +59,6 @@ interface Rider {
   approved: boolean;
   regComplete: boolean;
 }
-
-// Utility function to convert file to base64
-const fileToBase64 = (file: File): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = (error) => reject(error);
-  });
-};
 
 function EditVehicle() {
   const { id } = useParams();
@@ -360,12 +350,12 @@ function EditVehicle() {
                           role="combobox"
                           className={cn(
                             "w-full justify-between bg-transparent border-[#d6d6d6]",
-                            !field.value && "text-muted-foreground"
+                            !field.value && "text-muted-foreground",
                           )}
                         >
                           {field.value
                             ? availableDrivers.find(
-                                (driver) => driver.value === field.value
+                                (driver) => driver.value === field.value,
                               )?.label
                             : "Select driver (optional)"}
                           <ChevronsUpDown className="opacity-50" />
@@ -389,7 +379,7 @@ function EditVehicle() {
                               <Check
                                 className={cn(
                                   "mr-2 h-4 w-4",
-                                  !field.value ? "opacity-100" : "opacity-0"
+                                  !field.value ? "opacity-100" : "opacity-0",
                                 )}
                               />
                               No driver assigned
@@ -407,7 +397,7 @@ function EditVehicle() {
                                     "mr-2 h-4 w-4",
                                     driver.value === field.value
                                       ? "opacity-100"
-                                      : "opacity-0"
+                                      : "opacity-0",
                                   )}
                                 />
                                 {driver.label}

@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { useGetPayout } from "@/api/fleet/finance/useFinance";
+import Loader from "@/components/utilities/Loader";
 
 export type PayoutDetailResponse = {
   success: boolean;
@@ -81,14 +82,7 @@ export default function FleetPayoutDetails() {
   }
 
   if (isLoading) {
-    return (
-      <div className="@container/main">
-        <div className="my-6">
-          <h3 className="!font-bold text-3xl">Payout details</h3>
-          <p className="text-muted-foreground">Loading payout…</p>
-        </div>
-      </div>
-    );
+    return <Loader />;
   }
 
   if (error || !payout) {
@@ -105,7 +99,10 @@ export default function FleetPayoutDetails() {
     );
   }
 
-  const statusVariant: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
+  const statusVariant: Record<
+    string,
+    "default" | "secondary" | "destructive" | "outline"
+  > = {
     completed: "default",
     pending: "secondary",
     processing: "outline",
@@ -128,9 +125,7 @@ export default function FleetPayoutDetails() {
           <Badge variant={statusVariant[payout.status] ?? "outline"}>
             {payout.status}
           </Badge>
-          {payout.resolved && (
-            <Badge variant="default">Resolved</Badge>
-          )}
+          {payout.resolved && <Badge variant="default">Resolved</Badge>}
           <Button asChild variant="outline" size="sm">
             <Link to="/fleet/payouts">Back to Payouts</Link>
           </Button>
@@ -142,7 +137,11 @@ export default function FleetPayoutDetails() {
           <div>
             <h4 className="font-semibold mb-1">Amount</h4>
             <p>
-              ₦{payout.amount.toLocaleString("en-NG", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              ₦
+              {payout.amount.toLocaleString("en-NG", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
             </p>
           </div>
           <div>

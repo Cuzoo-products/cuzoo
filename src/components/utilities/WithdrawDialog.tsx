@@ -12,37 +12,47 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
 
 const dummyBanks = [
-  { id: "1", name: "GTBank - 0123456789" },
-  { id: "2", name: "Access Bank - 1234567890" },
-  { id: "3", name: "UBA - 9876543210" },
+  { id: "8140231279", name: "Opay - 8140231279" },
+  { id: "1234567890", name: "Access Bank - 1234567890" },
+  { id: "9000000000", name: "UBA - 9000000000" },
 ];
 
-export function WithdrawDialog() {
+export function WithdrawDialog({ balance }: { balance: number }) {
   const { mutate: requestWithdrawal, isPending: isRequestingWithdrawal } =
     useRequestWithdrawal();
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
-    const amount = (form.elements.namedItem("amount") as HTMLInputElement)
+    const amountVal = (form.elements.namedItem("amount") as HTMLInputElement)
       ?.value;
-    const bankId = (form.elements.namedItem("bankId") as HTMLSelectElement)
-      ?.value;
+    const accountNumber = (
+      form.elements.namedItem("accountNumber") as HTMLSelectElement
+    )?.value;
 
-    if (!amount || !bankId) return;
+    if (!amountVal || !accountNumber) return;
 
-    requestWithdrawal({ amount, bankId });
+    const amount = Number(amountVal);
+    if (Number.isNaN(amount) || amount <= 0) return;
+
+    if (amount > balance) {
+      toast.error("Insufficient balance");
+      return;
+    }
+
+    requestWithdrawal({ accountNumber, amount });
   };
 
   return (
     <Dialog>
-      <form onSubmit={handleSubmit}>
-        <DialogTrigger asChild>
-          <Button>Withdraw</Button>
-        </DialogTrigger>
-        <DialogContent className="sm:max-w-[425px]">
+      <DialogTrigger asChild>
+        <Button>Withdraw</Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px]">
+        <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Withdraw Funds</DialogTitle>
             <DialogDescription>
@@ -51,10 +61,10 @@ export function WithdrawDialog() {
           </DialogHeader>
           <div className="grid gap-4">
             <div className="grid gap-3">
-              <Label htmlFor="bankId">Bank Account</Label>
+              <Label htmlFor="accountNumber">Bank Account</Label>
               <select
-                id="bankId"
-                name="bankId"
+                id="accountNumber"
+                name="accountNumber"
                 className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 defaultValue=""
               >
@@ -79,16 +89,22 @@ export function WithdrawDialog() {
               />
             </div>
           </div>
-          <DialogFooter>
+          <DialogFooter className="mt-4">
             <DialogClose asChild>
-              <Button variant="outline">Cancel</Button>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={isRequestingWithdrawal}
+              >
+                Cancel
+              </Button>
             </DialogClose>
             <Button type="submit" disabled={isRequestingWithdrawal}>
               {isRequestingWithdrawal ? "Submitting..." : "Submit"}
             </Button>
           </DialogFooter>
-        </DialogContent>
-      </form>
+        </form>
+      </DialogContent>
     </Dialog>
   );
 }

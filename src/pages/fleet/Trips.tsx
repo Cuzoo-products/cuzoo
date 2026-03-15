@@ -4,6 +4,7 @@ import {
   columns,
   type TripData,
 } from "@/components/utilities/Fleet/TripsTable";
+import Loader from "@/components/utilities/Loader";
 
 type FleetTrip = {
   id: string;
@@ -67,14 +68,7 @@ function Trips() {
   });
 
   if (isLoading) {
-    return (
-      <div className="@container/main">
-        <div className="my-6">
-          <h3 className="!font-bold text-3xl">Trips</h3>
-          <p>Loading trips...</p>
-        </div>
-      </div>
-    );
+    return <Loader />;
   }
 
   if (error) {

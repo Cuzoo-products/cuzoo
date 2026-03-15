@@ -9,18 +9,7 @@ export const FleetManagerRegFormSchema = z
       .min(1, "Email is required")
       .email("Please enter a valid email address"),
     businessName: z.string().min(1, "Business name is required"),
-    phoneNumber: z
-      .string()
-      .min(6, "Phone number must be at least 6 characters"),
-    registrationNumber: z.string().min(1, "Registration number is required"),
-    tinNumber: z.string().min(1, "TIN number is required"),
-    dateOfIncorporation: z.string().min(1, "Date of incorporation is required"),
-    placeOfIncorporation: z
-      .string()
-      .min(1, "Place of incorporation is required"),
-    companyType: z.enum(["Private Limited Company", "Public Limited Company", "LLC", "Incorporated Trustee"], {
-      required_error: "Please select a company type",
-    }),
+    phoneNumber: z.string().min(1, "Phone number is required"),
     password: z.string().min(6, "Password must be at least 6 characters long"),
     confirmPassword: z
       .string()
@@ -285,111 +274,29 @@ export const ProductFormSchema = z.object({
   image4: z.string().min(1, "Image 4 is required"),
 });
 
-const MAX_FILE_SIZE = 5000000; // 5MB
-const ACCEPTED_FILE_TYPES = [
-  "application/pdf",
-  "image/jpeg",
-  "image/png",
-  "image/jpg",
-];
+// File input values are FileList (or File); schema must accept those, not only string
+const optionalFileSchema = z
+  .union([
+    z.string(),
+    z.instanceof(FileList),
+    z.instanceof(File),
+  ])
+  .optional();
 
+// KYC document uploads: fully optional, no validation (no "required" or format errors)
 export const fleetKycformSchema = z.object({
-  registrationNumber: z.string().min(5, "A valid RC Number is required."),
-  tinNumber: z
-    .string()
-    .min(10, "TIN must be at least 10 characters.")
-    .max(14, "TIN cannot exceed 14 characters."),
-  dateOfIncorporation: z.date({
-    required_error: "Date of incorporation is required.",
-  }),
-  placeOfIncorporation: z
-    .string()
-    .min(2, "Place of incorporation is required."),
-  companyType: z.string({ required_error: "Please select a company type." }),
-  directors: z.array(z.string()).min(1, "You must add at least one director."),
-  servicesRendered: z
-    .array(z.string())
-    .refine((value) => value.some((item) => item), {
-      message: "You have to select at least one service.",
-    }),
-  insuranceCoverage: z
-    .array(z.string())
-    .refine((value) => value.some((item) => item), {
-      message: "You have to select at least one insurance coverage.",
-    }),
-
-  // File Upload Fields
-  passport: z
-    .any()
-    .refine((files) => files?.length == 1, "Passport photograph is required.")
-    .refine(
-      (files) => files?.[0]?.size <= MAX_FILE_SIZE,
-      `Max file size is 5MB.`
-    )
-    .refine(
-      (files) => ACCEPTED_FILE_TYPES.includes(files?.[0]?.type),
-      ".jpg, .jpeg, and .png files are accepted."
-    ),
-  certificateOfIncorporation: z
-    .any()
-    .refine(
-      (files) => files?.length == 1,
-      "Certificate of Incorporation is required."
-    )
-    .refine(
-      (files) => files?.[0]?.size <= MAX_FILE_SIZE,
-      `Max file size is 5MB.`
-    )
-    .refine(
-      (files) => ACCEPTED_FILE_TYPES.includes(files?.[0]?.type),
-
-      ".pdf, .jpg, .jpeg, and .png files are accepted."
-    ),
-  governmentApprovedId: z
-    .any()
-    .refine((files) => files?.length == 1, "Government-issued ID is required.")
-    .refine(
-      (files) => files?.[0]?.size <= MAX_FILE_SIZE,
-      `Max file size is 5MB.`
-    )
-    .refine(
-      (files) => ACCEPTED_FILE_TYPES.includes(files?.[0]?.type),
-      ".pdf, .jpg, .jpeg, and .png files are accepted."
-    ),
-  proofOfAddress: z
-    .any()
-    .refine(
-      (files) => files?.length == 1,
-      "Proof of Address document is required."
-    )
-    .refine(
-      (files) => files?.[0]?.size <= MAX_FILE_SIZE,
-      `Max file size is 5MB.`
-    )
-    .refine(
-      (files) => ACCEPTED_FILE_TYPES.includes(files?.[0]?.type),
-      ".pdf, .jpg, .jpeg, and .png files are accepted."
-    ),
-  insuranceCertificate: z
-    .any()
-    .refine((files) => files?.length == 1, "Insurance Certificate is required.")
-    .refine(
-      (files) => files?.[0]?.size <= MAX_FILE_SIZE,
-      `Max file size is 5MB.`
-    )
-    .refine(
-      (files) => ACCEPTED_FILE_TYPES.includes(files?.[0]?.type),
-      ".pdf, .jpg, .jpeg, and .png files are accepted."
-    ),
-  courierLicense: z
-    .any()
-    .refine((files) => files?.length == 1, "Courier License is required.")
-    .refine(
-      (files) => files?.[0]?.size <= MAX_FILE_SIZE,
-      `Max file size is 5MB.`
-    )
-    .refine(
-      (files) => ACCEPTED_FILE_TYPES.includes(files?.[0]?.type),
-      ".pdf, .jpg, .jpeg, and .png files are accepted."
-    ),
+  registrationNumber: z.string().optional(),
+  tinNumber: z.string().optional(),
+  dateOfIncorporation: z.date().optional(),
+  placeOfIncorporation: z.string().optional(),
+  companyType: z.string().optional(),
+  directors: z.array(z.string()).optional(),
+  servicesRendered: z.array(z.string()).optional(),
+  insuranceCoverage: z.array(z.string()).optional(),
+  passport: optionalFileSchema,
+  certificateOfIncorporation: optionalFileSchema,
+  governmentApprovedId: optionalFileSchema,
+  proofOfAddress: optionalFileSchema,
+  insuranceCertificate: optionalFileSchema,
+  courierLicense: optionalFileSchema,
 });

@@ -16,14 +16,6 @@ import { FleetManagerRegFormSchema } from "@/lib/zodVaildation";
 import truck from "@/assets/truck.jpg";
 import { useCreateFleetManager } from "@/api/fleet/auth/useAuth";
 import { useNavigate } from "react-router";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-
 function FleetRegistration() {
   const navigate = useNavigate();
   const form = useForm<z.infer<typeof FleetManagerRegFormSchema>>({
@@ -34,11 +26,6 @@ function FleetRegistration() {
       email: "",
       businessName: "",
       phoneNumber: "",
-      registrationNumber: "",
-      tinNumber: "",
-      dateOfIncorporation: "",
-      placeOfIncorporation: "",
-      companyType: "Private Limited Company",
       password: "",
       confirmPassword: "",
     },
@@ -152,7 +139,7 @@ function FleetRegistration() {
                   control={form.control}
                   name="phoneNumber"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem className="md:col-span-2">
                       <FormLabel>Phone Number</FormLabel>
                       <FormControl>
                         <Input
@@ -162,114 +149,6 @@ function FleetRegistration() {
                           {...field}
                         />
                       </FormControl>
-                      <FormMessage className="text-red-600" />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="registrationNumber"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Registration Number</FormLabel>
-                      <FormControl>
-                        <Input
-                          className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
-                          type="text"
-                          placeholder="RC1234567"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage className="text-red-600" />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="tinNumber"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>TIN Number</FormLabel>
-                      <FormControl>
-                        <Input
-                          className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
-                          type="text"
-                          placeholder="1234567890"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage className="text-red-600" />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="dateOfIncorporation"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Date of Incorporation</FormLabel>
-                      <FormControl>
-                        <Input
-                          className="border-[#d6d6d6] w-full h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
-                          type="date"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage className="text-red-600" />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="placeOfIncorporation"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Place of Incorporation</FormLabel>
-                      <FormControl>
-                        <Input
-                          className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
-                          type="text"
-                          placeholder="Lagos, Nigeria"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage className="text-red-600" />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="companyType"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Business Type</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger className="h-11 w-full border-[#d6d6d6]">
-                            <SelectValue placeholder="Select business type" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent className="bg-background border-0 shadow-accent shadow-sm">
-                          <SelectItem value="Private Limited Company">
-                            Private Limited Company
-                          </SelectItem>
-                          <SelectItem value="Public Limited Company">
-                            Public Limited Company
-                          </SelectItem>
-                          <SelectItem value="LLC">LLC</SelectItem>
-                          <SelectItem value="Incorporated Trustee">
-                            Incorporated Trustee
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
                       <FormMessage className="text-red-600" />
                     </FormItem>
                   )}

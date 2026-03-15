@@ -9,3 +9,8 @@ export const getOneFleet = async (id: string) => {
   const response = await axiosInstance.get(`/fleets/${id}`);
   return response.data;
 };
+
+export const approveFleet = async (id: string) => {
+  const response = await axiosInstance.patch(`/fleets/${id}/approve`);
+  return response.data;
+};

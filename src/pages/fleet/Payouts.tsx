@@ -4,6 +4,7 @@ import {
   columns,
   type PayoutData,
 } from "@/components/utilities/Fleet/PayoutsDataTable";
+import Loader from "@/components/utilities/Loader";
 
 export type PayoutsListResponse = {
   success: boolean;
@@ -57,7 +58,9 @@ const formatRequestedAt = (value: string) => {
   }
 };
 
-const formatBankAccount = (details: { bankName: string; accountNumber: string } | undefined) => {
+const formatBankAccount = (
+  details: { bankName: string; accountNumber: string } | undefined,
+) => {
   if (!details) return "—";
   const last4 = details.accountNumber?.slice(-4) ?? "****";
   return `${details.bankName} ****${last4}`;
@@ -81,14 +84,7 @@ function FleetPayouts() {
   }));
 
   if (isLoading) {
-    return (
-      <div className="@container/main">
-        <div className="my-6">
-          <h3 className="!font-bold text-3xl">Payouts</h3>
-          <p className="text-muted-foreground">Loading payouts…</p>
-        </div>
-      </div>
-    );
+    return <Loader />;
   }
 
   if (error) {
@@ -106,7 +102,9 @@ function FleetPayouts() {
     <div className="@container/main">
       <div className="my-6">
         <h3 className="!font-bold text-3xl">Payouts</h3>
-        <p className="text-muted-foreground">View your payout requests and status</p>
+        <p className="text-muted-foreground">
+          View your payout requests and status
+        </p>
       </div>
 
       <DataTable columns={columns} data={tableData} />

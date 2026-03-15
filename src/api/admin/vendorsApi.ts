@@ -9,3 +9,8 @@ export const getVendor = async (vendorId: string) => {
   const response = await axiosInstance.get(`/vendors/${vendorId}`);
   return response.data;
 };
+
+export const approveVendor = async (id: string) => {
+  const response = await axiosInstance.patch(`/vendors/${id}/approve`);
+  return response.data;
+};

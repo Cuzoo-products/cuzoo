@@ -250,7 +250,7 @@ export default function VehicleInfo({
       </Card>
 
       {/* Driver assignment */}
-      <Card>
+      {/* <Card>
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
             <UserPlus className="size-5" />
@@ -265,7 +265,7 @@ export default function VehicleInfo({
             <ComboboxForm info={availableDrivers} />
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
 
       {/* Actions */}
       <div className="flex justify-end">

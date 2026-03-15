@@ -138,13 +138,13 @@ function AddProduct() {
                       <SelectTrigger className="h-11 w-full border-[#d6d6d6]">
                         <SelectValue placeholder="Select category" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="bg-background">
                         {(categories?.data || []).map(
                           (cat: { id: string; name: string }) => (
                             <SelectItem key={cat.id} value={cat.id}>
                               {cat.name}
                             </SelectItem>
-                          )
+                          ),
                         )}
                       </SelectContent>
                     </Select>

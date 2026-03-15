@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Link, useNavigate } from "react-router";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { logout } from "@/redux/slices/authSlice";
 import { signOut } from "firebase/auth";
 import { auth } from "@/firebase";
@@ -16,7 +16,9 @@ import { toast } from "sonner";
 export function Account() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { user } = useSelector((state: any) => state.auth);
 
+  console.log(user);
   const handleLogout = async () => {
     try {
       // Sign out from Firebase
@@ -35,13 +37,18 @@ export function Account() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Avatar className="size-10">
-          <AvatarImage src="https://github.com/shadcn.png" />
-          <AvatarFallback className="border-1">CN</AvatarFallback>
+          <AvatarImage src={user?.photoURL ?? ""} />
+          <AvatarFallback className="border-1">
+            {user?.displayName
+              .split(" ")
+              .map((name: string) => name.charAt(0))
+              .join("")}
+          </AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="rounded bg-background border-0 shadow-accent shadow-sm">
         <DropdownMenuItem>
-          <Link to="profile">Charles Ayomike</Link>
+          <Link to="profile">{user?.displayName}</Link>
         </DropdownMenuItem>
         <DropdownMenuItem>
           <Link to="reset-password">Reset Password</Link>

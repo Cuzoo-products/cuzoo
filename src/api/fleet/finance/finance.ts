@@ -40,7 +40,10 @@ export const outflowHistory = async () => {
   return response.data;
 };
 
-export const requestWithdrawal = async (data: any) => {
+export const requestWithdrawal = async (data: {
+  accountNumber: string;
+  amount: number;
+}) => {
   const response = await axiosInstance.post(
     "/fleets/wallet/request-withdrawal",
     data,

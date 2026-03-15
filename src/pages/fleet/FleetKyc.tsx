@@ -4,6 +4,11 @@ import { useForm, useFieldArray } from "react-hook-form";
 import * as z from "zod";
 import { format } from "date-fns";
 import { CalendarIcon, Trash2 } from "lucide-react";
+import { signOut } from "firebase/auth";
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router";
+import { auth } from "@/firebase";
+import { logout } from "@/redux/slices/authSlice";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -37,7 +42,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
+import { cn, fileToBase64 } from "@/lib/utils";
 import { fleetKycformSchema } from "@/lib/zodVaildation";
 import Header2 from "@/components/utilities/header2";
 import { useFleetKyc } from "@/api/fleet/profile/useProfile";
@@ -65,6 +70,9 @@ const insuranceOptions = [
 ];
 
 export function FleetKyc() {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
   const form = useForm<z.infer<typeof fleetKycformSchema>>({
     resolver: zodResolver(fleetKycformSchema),
     defaultValues: {
@@ -89,16 +97,49 @@ export function FleetKyc() {
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
+    // @ts-expect-error - schema has directors as optional array; useFieldArray expects array path
     name: "directors",
   });
 
   const [step, setStep] = useState(1);
 
-  function onSubmit(values: z.infer<typeof fleetKycformSchema>) {
-    mutate(values);
+  const fileFieldKeys = [
+    "passport",
+    "certificateOfIncorporation",
+    "governmentApprovedId",
+    "proofOfAddress",
+    "insuranceCertificate",
+    "courierLicense",
+  ] as const;
+
+  async function toBase64IfFile(
+    value: FileList | File | string | undefined,
+  ): Promise<string | undefined> {
+    if (value === undefined || value === null) return undefined;
+    if (typeof value === "string") return value;
+    const file = value instanceof FileList ? value[0] : value;
+    if (!file) return undefined;
+    return fileToBase64(file);
   }
 
-  const nextStep = () => setStep((prev) => Math.min(prev + 1, 3));
+  async function onSubmit(values: z.infer<typeof fleetKycformSchema>) {
+    const payload = { ...values } as Record<string, unknown>;
+    for (const key of fileFieldKeys) {
+      const v = values[key];
+      payload[key] = await toBase64IfFile(
+        v as FileList | File | string | undefined,
+      );
+    }
+    mutate(payload as z.infer<typeof fleetKycformSchema>, {
+      onSuccess: async () => {
+        await signOut(auth);
+        dispatch(logout());
+        navigate("/kyc-submitted");
+      },
+    });
+  }
+
+  const nextStep = () => setStep((prev) => Math.min(prev + 1, 4));
   const prevStep = () => setStep((prev) => Math.max(prev - 1, 1));
 
   // File input helper
@@ -111,12 +152,20 @@ export function FleetKyc() {
         <CardHeader>
           <CardTitle>Fleet Company KYC Registration</CardTitle>
           <CardDescription>
-            Step {step} of 3 — Please complete all sections
+            Step {step} of 4 — Please complete all sections
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (step === 4) {
+                  form.handleSubmit(onSubmit)(e);
+                }
+              }}
+              className="space-y-8"
+            >
               {/* -------- Step 1 -------- */}
               {step === 1 && (
                 <div>
@@ -166,7 +215,7 @@ export function FleetKyc() {
                                   variant={"outline"}
                                   className={cn(
                                     "w-full pl-3 text-left font-normal",
-                                    !field.value && "text-muted-foreground"
+                                    !field.value && "text-muted-foreground",
                                   )}
                                 >
                                   {field.value ? (
@@ -276,33 +325,32 @@ export function FleetKyc() {
                               key={item.id}
                               control={form.control}
                               name="servicesRendered"
-                              render={({ field }) => (
-                                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                                  <FormControl>
-                                    <Checkbox
-                                      checked={
-                                        Array.isArray(field.value) &&
-                                        field.value.includes(item.id)
-                                      }
-                                      onCheckedChange={(checked) => {
-                                        return checked
-                                          ? field.onChange([
-                                              ...field.value,
-                                              item.id,
-                                            ])
-                                          : field.onChange(
-                                              field.value?.filter(
-                                                (val) => val !== item.id
-                                              )
-                                            );
-                                      }}
-                                    />
-                                  </FormControl>
-                                  <FormLabel className="font-normal">
-                                    {item.label}
-                                  </FormLabel>
-                                </FormItem>
-                              )}
+                              render={({ field }) => {
+                                const prev = Array.isArray(field.value)
+                                  ? field.value
+                                  : [];
+                                return (
+                                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                                    <FormControl>
+                                      <Checkbox
+                                        checked={prev.includes(item.id)}
+                                        onCheckedChange={(checked) => {
+                                          return checked
+                                            ? field.onChange([...prev, item.id])
+                                            : field.onChange(
+                                                prev.filter(
+                                                  (val) => val !== item.id,
+                                                ),
+                                              );
+                                        }}
+                                      />
+                                    </FormControl>
+                                    <FormLabel className="font-normal">
+                                      {item.label}
+                                    </FormLabel>
+                                  </FormItem>
+                                );
+                              }}
                             />
                           ))}
                           <FormMessage />
@@ -323,33 +371,32 @@ export function FleetKyc() {
                               key={item.id}
                               control={form.control}
                               name="insuranceCoverage"
-                              render={({ field }) => (
-                                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                                  <FormControl>
-                                    <Checkbox
-                                      checked={
-                                        Array.isArray(field.value) &&
-                                        field.value.includes(item.id)
-                                      }
-                                      onCheckedChange={(checked) => {
-                                        return checked
-                                          ? field.onChange([
-                                              ...field.value,
-                                              item.id,
-                                            ])
-                                          : field.onChange(
-                                              field.value?.filter(
-                                                (val) => val !== item.id
-                                              )
-                                            );
-                                      }}
-                                    />
-                                  </FormControl>
-                                  <FormLabel className="font-normal">
-                                    {item.label}
-                                  </FormLabel>
-                                </FormItem>
-                              )}
+                              render={({ field }) => {
+                                const prev = Array.isArray(field.value)
+                                  ? field.value
+                                  : [];
+                                return (
+                                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                                    <FormControl>
+                                      <Checkbox
+                                        checked={prev.includes(item.id)}
+                                        onCheckedChange={(checked) => {
+                                          return checked
+                                            ? field.onChange([...prev, item.id])
+                                            : field.onChange(
+                                                prev.filter(
+                                                  (val) => val !== item.id,
+                                                ),
+                                              );
+                                        }}
+                                      />
+                                    </FormControl>
+                                    <FormLabel className="font-normal">
+                                      {item.label}
+                                    </FormLabel>
+                                  </FormItem>
+                                );
+                              }}
                             />
                           ))}
                           <FormMessage />
@@ -538,8 +585,15 @@ export function FleetKyc() {
                     Previous
                   </Button>
                 )}
-                {step < 3 ? (
-                  <Button type="button" onClick={nextStep}>
+                {step < 4 ? (
+                  <Button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      nextStep();
+                    }}
+                  >
                     Next
                   </Button>
                 ) : (
