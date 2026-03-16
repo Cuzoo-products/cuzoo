@@ -1,11 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  confirmPickup,
-  getOrder,
-  getOrders,
-  processOrder,
-  requestOTP,
-} from "./order";
+import { confirmPickup, getOrder, getOrders, processOrder } from "./order";
 import { toast } from "sonner";
 
 export const useGetOrders = () => {
