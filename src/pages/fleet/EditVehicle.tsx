@@ -113,13 +113,41 @@ function EditVehicle() {
   const watchedImage = form.watch("image");
 
   function onSubmit(data: z.infer<typeof EditVehicleFormSchema>) {
-    // If no new image is selected, keep the existing image URL
-    const submitData = {
-      ...data,
-      image: data.image || vehicle?.data?.image?.url || "",
-      type: data.type || vehicle?.data?.type || "",
+    const vehicleData = vehicle?.data;
+    const initialImage = vehicleData?.image?.url || "";
+    const initialValues = {
+      color: vehicleData?.color || "",
+      type: vehicleData?.type || undefined,
+      model: vehicleData?.model || "",
+      plateNumber: vehicleData?.plateNumber || "",
+      riderId: vehicleData?.riderId || "",
+      image: initialImage,
+      year: vehicleData?.year ?? new Date().getFullYear(),
+      status: vehicleData?.status || "available",
     };
 
+    const resolvedImage = data.image || initialImage;
+    const resolvedType = data.type || vehicleData?.type || "";
+
+    const submitData: Record<string, unknown> = {};
+    if (data.color !== initialValues.color) submitData.color = data.color;
+    if (resolvedType !== (initialValues.type || ""))
+      submitData.type = resolvedType;
+    if (data.model !== initialValues.model) submitData.model = data.model;
+    if (data.plateNumber !== initialValues.plateNumber)
+      submitData.plateNumber = data.plateNumber;
+    if ((data.riderId || "") !== (initialValues.riderId || ""))
+      submitData.riderId = data.riderId || undefined;
+    if (resolvedImage !== initialImage) submitData.image = resolvedImage;
+    if (Number(data.year) !== Number(initialValues.year))
+      submitData.year = data.year;
+    if (data.status !== initialValues.status) submitData.status = data.status;
+
+    if (Object.keys(submitData).length === 0) {
+      toast.info("No changes to save");
+      return;
+    }
+    // console.log(submitData);
     updateVehicle({ id: id as string, submitData });
   }
 

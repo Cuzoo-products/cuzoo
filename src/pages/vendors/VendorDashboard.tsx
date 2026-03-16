@@ -1,3 +1,4 @@
+import { useGetVendorProfile } from "@/api/vendor/auth/useAuth";
 import { useGetDashboard } from "@/api/vendor/dashboard/useDashBoard";
 import HighestSellingProducts from "@/components/utilities/Vendors/HighestSellingProducts";
 import VendorChart from "@/components/utilities/Vendors/VendorChart";
@@ -47,6 +48,8 @@ function VendorDashboard() {
     error: unknown;
   };
 
+  const { data: vendorProfile } = useGetVendorProfile();
+
   const dashboard = data?.data;
   const chartData = dashboard?.revenueSalesGraph ?? [];
   const highestSellingProducts: HighestSellingProductsT[] =
@@ -87,7 +90,9 @@ function VendorDashboard() {
           <p>Hello, welcome back</p>
         </div>
         <div>
-          <h3 className="!font-bold text-xl text-muted-foreground">Vendor</h3>
+          <h3 className="!font-bold text-xl text-muted-foreground">
+            Store Code: {vendorProfile?.data?.storeCode}
+          </h3>
         </div>
       </div>
 

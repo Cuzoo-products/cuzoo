@@ -1,5 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createRiders, getRider, getRiders, updateRider } from "./riderApi";
+import {
+  createRiders,
+  getRider,
+  getRiders,
+  releaseRider,
+  suspendRider,
+  updateRider,
+} from "./riderApi";
 import { toast } from "sonner";
 
 export const useGetRiders = () => {
@@ -45,6 +52,38 @@ export const useUpdateRider = () => {
     onError: (error) => {
       const message =
         error.message || "unable to update rider, please try again.";
+      console.log(message);
+      toast.error(message);
+    },
+  });
+};
+
+export const useReleaseRider = () => {
+  return useMutation({
+    mutationFn: releaseRider,
+    onSuccess: (data) => {
+      console.log(data);
+      toast.success("Rider released successfully");
+    },
+    onError: (error) => {
+      const message =
+        error.message || "unable to release rider, please try again.";
+      console.log(message);
+      toast.error(message);
+    },
+  });
+};
+
+export const useSuspendRider = () => {
+  return useMutation({
+    mutationFn: suspendRider,
+    onSuccess: (data) => {
+      console.log(data);
+      toast.success("Rider suspended successfully");
+    },
+    onError: (error) => {
+      const message =
+        error.message || "unable to suspend rider, please try again.";
       console.log(message);
       toast.error(message);
     },

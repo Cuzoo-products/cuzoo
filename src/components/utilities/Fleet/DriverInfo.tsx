@@ -60,6 +60,7 @@ export interface Driver {
   createdAt?: string;
   updatedAt?: string;
   status?: DriverStatus;
+  suspended?: boolean;
 }
 
 const formatDate = (dateString?: string) => {
@@ -92,27 +93,47 @@ const statusConfig: Record<
 export const DriverInfo = ({
   driver,
   availableVehicle,
+  onSuspend,
+  onRelease,
+  isSuspendPending = false,
+  isReleasePending = false,
 }: {
   driver: Driver;
   availableVehicle: ComboData[];
+  onSuspend?: () => void;
+  onRelease?: () => void;
+  isSuspendPending?: boolean;
+  isReleasePending?: boolean;
 }) => {
   const [status, setStatus] = useState<DriverStatus>(driver.status ?? "unassigned");
 
   const name =
     `${driver.firstName ?? ""} ${driver.lastName ?? ""}`.trim() || "Unknown driver";
 
-  const [suspended, setSuspended] = useState(false);
+  const [localSuspended, setLocalSuspended] = useState(false);
+  const useServerSuspended = onSuspend != null && onRelease != null;
+  const suspended = useServerSuspended
+    ? (driver.suspended ?? false)
+    : localSuspended;
 
   const handleAssign = () => {
     setStatus((s) => (s === "assigned" ? "unassigned" : "assigned"));
   };
 
   const handleSuspend = () => {
-    setSuspended(true);
+    if (onSuspend) {
+      onSuspend();
+    } else {
+      setLocalSuspended(true);
+    }
   };
 
   const handleRelease = () => {
-    setSuspended(false);
+    if (onRelease) {
+      onRelease();
+    } else {
+      setLocalSuspended(false);
+    }
   };
 
   const statusStyle = statusConfig[status] ?? statusConfig.unassigned;
@@ -133,6 +154,9 @@ export const DriverInfo = ({
               <CardTitle className="text-2xl truncate">{name}</CardTitle>
               <div className="flex flex-wrap items-center gap-2 mt-2">
                 <Badge variant={statusStyle.variant}>{statusStyle.label}</Badge>
+                {suspended && (
+                  <Badge variant="destructive">Suspended</Badge>
+                )}
                 {driver.gender && (
                   <span className="text-sm text-muted-foreground capitalize">
                     {driver.gender}
@@ -256,12 +280,22 @@ export const DriverInfo = ({
               <Link to="edit">Edit driver</Link>
             </Button>
             {suspended ? (
-              <Button variant="default" size="sm" onClick={handleRelease}>
-                Release driver
+              <Button
+                variant="default"
+                size="sm"
+                onClick={handleRelease}
+                disabled={isReleasePending}
+              >
+                {isReleasePending ? "Releasing…" : "Release from suspension"}
               </Button>
             ) : (
-              <Button variant="destructive" size="sm" onClick={handleSuspend}>
-                Suspend driver
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={handleSuspend}
+                disabled={isSuspendPending}
+              >
+                {isSuspendPending ? "Suspending…" : "Suspend rider"}
               </Button>
             )}
           </div>

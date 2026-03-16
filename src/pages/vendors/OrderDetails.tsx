@@ -20,7 +20,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useParams, Link } from "react-router";
-import { useConfirmPickup, useGetOrder, useProcessOrder, useRequestOTP } from "@/api/vendor/order/useOrder";
+import {
+  useConfirmPickup,
+  useGetOrder,
+  useProcessOrder,
+} from "@/api/vendor/order/useOrder";
 
 type OrderDetailsResponse = {
   success: boolean;
@@ -143,18 +147,25 @@ const formatDate = (value?: string) => {
 };
 
 function OrderActions({
+  status,
   otpLength = 6,
   processOrder,
-  requestOTP,
   confirmPickup,
 }: {
+  status?: string;
   otpLength?: number;
   processOrder: { run: () => void; isPending: boolean };
-  requestOTP: { run: () => void; isPending: boolean };
-  confirmPickup: { run: (payload: { otp: string }) => void; isPending: boolean };
+  confirmPickup: {
+    run: (payload: { otp: string }) => void;
+    isPending: boolean;
+  };
 }) {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [otp, setOtp] = useState("");
+  const isPackaged = status?.toLowerCase() === "packaged";
+  const isPickupConfirmed = status?.toLowerCase() === "success";
+
+  if (isPickupConfirmed) return null;
 
   const handleConfirmSubmit = () => {
     const trimmed = otp.trim();
@@ -166,20 +177,15 @@ function OrderActions({
 
   return (
     <>
-      <Button
-        variant="secondary"
-        onClick={() => processOrder.run()}
-        disabled={processOrder.isPending}
-      >
-        {processOrder.isPending ? "Processing…" : "Process order"}
-      </Button>
-      <Button
-        variant="secondary"
-        onClick={() => requestOTP.run()}
-        disabled={requestOTP.isPending}
-      >
-        {requestOTP.isPending ? "Requesting…" : "Generate pick-up OTP code"}
-      </Button>
+      {!isPackaged && (
+        <Button
+          variant="secondary"
+          onClick={() => processOrder.run()}
+          disabled={processOrder.isPending}
+        >
+          {processOrder.isPending ? "Processing…" : "Process order"}
+        </Button>
+      )}
       <Button
         variant="default"
         onClick={() => setConfirmOpen(true)}
@@ -206,7 +212,10 @@ function OrderActions({
             <Button variant="outline" onClick={() => setConfirmOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleConfirmSubmit} disabled={!otp.trim() || confirmPickup.isPending}>
+            <Button
+              onClick={handleConfirmSubmit}
+              disabled={!otp.trim() || confirmPickup.isPending}
+            >
               Confirm
             </Button>
           </DialogFooter>
@@ -224,9 +233,10 @@ export default function OrderDetailsPage() {
     error: unknown;
   };
 
-  const { mutate: processOrder, isPending: processOrderPending } = useProcessOrder(id as string);
-  const { mutate: requestOTP, isPending: requestOTPPending } = useRequestOTP(id as string);
-  const { mutate: confirmPickup, isPending: confirmPickupPending } = useConfirmPickup(id as string);
+  const { mutate: processOrder, isPending: processOrderPending } =
+    useProcessOrder(id as string);
+  const { mutate: confirmPickup, isPending: confirmPickupPending } =
+    useConfirmPickup(id as string);
 
   if (!id) {
     return (
@@ -384,13 +394,15 @@ export default function OrderDetailsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
           <div>
             <h4 className="font-semibold mb-1">Customer</h4>
-            <p>{order.userDetails?.fullName ?? order.pickup?.customerName ?? "—"}</p>
+            <p>
+              {order.userDetails?.fullName ?? order.pickup?.customerName ?? "—"}
+            </p>
             <p>{order.userDetails?.email ?? order.pickup?.email ?? "—"}</p>
             <p>
               {typeof order.userDetails?.phoneNumber === "object"
-                ? order.userDetails.phoneNumber?.internationalFormat ??
-                  order.userDetails.phoneNumber?.number
-                : order.pickup?.phoneNumber ?? "—"}
+                ? (order.userDetails.phoneNumber?.internationalFormat ??
+                  order.userDetails.phoneNumber?.number)
+                : (order.pickup?.phoneNumber ?? "—")}
             </p>
           </div>
           <div>
@@ -478,14 +490,22 @@ export default function OrderDetailsPage() {
 
         {/* Actions */}
         <div className="flex flex-wrap justify-end gap-3 pt-4">
-          <Button variant="outline" asChild>
-            <Link to={`/vendor/orders/${id}/invoice`}>View Invoice</Link>
-          </Button>
+          {order.status?.toLowerCase() === "success" && (
+            <Button variant="outline" asChild>
+              <Link to={`/vendor/orders/${id}/invoice`}>View Invoice</Link>
+            </Button>
+          )}
           <OrderActions
+            status={order.status}
             otpLength={order.otpLength}
-            processOrder={{ run: processOrder, isPending: processOrderPending }}
-            requestOTP={{ run: requestOTP, isPending: requestOTPPending }}
-            confirmPickup={{ run: confirmPickup, isPending: confirmPickupPending }}
+            processOrder={{
+              run: () => processOrder(),
+              isPending: processOrderPending,
+            }}
+            confirmPickup={{
+              run: confirmPickup,
+              isPending: confirmPickupPending,
+            }}
           />
         </div>
       </div>

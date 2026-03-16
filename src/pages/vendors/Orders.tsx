@@ -7,6 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import Loader from "@/components/utilities/Loader";
 import {
   columns,
   type OrderData,
@@ -38,7 +39,10 @@ type OrdersResponse = {
 };
 
 function Orders() {
-  const { data } = useGetOrders() as { data?: OrdersResponse };
+  const { data, isLoading } = useGetOrders() as {
+    data?: OrdersResponse;
+    isLoading: boolean;
+  };
   const [value, setValue] = useState<string>("All");
 
   const apiOrders = data?.data?.data ?? [];
@@ -49,9 +53,7 @@ function Orders() {
     customer: order.userDetails.fullName,
     items:
       order.items && order.items.length
-        ? order.items
-            .map((item) => `${item.quantity}x ${item.name}`)
-            .join(", ")
+        ? order.items.map((item) => `${item.quantity}x ${item.name}`).join(", ")
         : "—",
     status: order.status,
     payment: order.paymentMethod,
@@ -67,6 +69,9 @@ function Orders() {
       : tableData.filter(
           (order) => order.status.toLowerCase() === value.toLowerCase(),
         );
+
+  if (isLoading) return <Loader />;
+
   return (
     <div className="@container/main">
       <div className="my-6">

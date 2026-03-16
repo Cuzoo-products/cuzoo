@@ -15,11 +15,6 @@ export const processOrder = async (id: string) => {
   return response.data;
 };
 
-export const requestOTP = async (id: string) => {
-  const response = await axiosInstance.put(`/vendors/orders/${id}/request-otp`);
-  return response.data;
-};
-
 export const confirmPickup = async (id: string, data: { otp: string }) => {
   const response = await axiosInstance.put(
     `/vendors/orders/${id}/confirm-pickup`,

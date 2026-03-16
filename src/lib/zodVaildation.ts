@@ -190,6 +190,24 @@ export const FleetManagerProfileFormSchema = z.object({
   approvalStatus: z.string().optional(),
 });
 
+export const VendorProfileFormSchema = z.object({
+  fullName: z.string().min(1, "Full name is required"),
+  email: z
+    .string()
+    .min(1, "Email is required")
+    .email("Please enter a valid email address"),
+  businessName: z.string().min(1, "Business name is required"),
+  phoneNumber: z.string().min(1, "Phone number is required"),
+  storeCode: z.string().optional(),
+  registrationNumber: z.string().optional(),
+  dateOfIncorporation: z.string().optional(),
+  placeOfIncorporation: z.string().optional(),
+  businessType: z.string().optional(),
+  address: z.string().optional(),
+  typeOfGoodsSold: z.string().optional(),
+  approvalStatus: z.string().optional(),
+});
+
 export const FleetManagerChangePWSchema = z
   .object({
     oldPassword: z.string().min(1, "Old password is required"),
@@ -245,13 +263,16 @@ export const ProductFormSchema = z.object({
     .int({ message: "Stock must be a valid integer (0 or more)" }),
   shortDescription: z.string().min(1, "Short description is required"),
   longDescription: z.string().min(1, "Long description is required"),
-  image1: z.string().min(1, "Image 1 is required"),
-
-  image2: z.string().min(1, "Image 2 is required"),
-
-  image3: z.string().min(1, "Image 3 is required"),
-
-  image4: z.string().min(1, "Image 4 is required"),
+  image1: z
+    .string()
+    .min(1, "Image 1 is required")
+    .refine(
+      (val) => val.startsWith("data:image/"),
+      "Please upload a valid image file."
+    ),
+  image2: z.string().optional(),
+  image3: z.string().optional(),
+  image4: z.string().optional(),
 });
 
 // File input values are FileList (or File); schema must accept those, not only string

@@ -36,20 +36,6 @@ export const useProcessOrder = (id: string) => {
   });
 };
 
-export const useRequestOTP = (id: string) => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: () => requestOTP(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["getOrder", id] });
-      toast.success("OTP requested successfully");
-    },
-    onError: () => {
-      toast.error("Failed to request OTP");
-    },
-  });
-};
-
 export const useConfirmPickup = (id: string) => {
   const queryClient = useQueryClient();
   return useMutation({

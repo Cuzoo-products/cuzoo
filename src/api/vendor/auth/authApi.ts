@@ -9,3 +9,8 @@ export const updateVendorProfile = async (userData: unknown) => {
   const response = await axiosInstance.patch("vendors/auth", userData);
   return response.data;
 };
+
+export const getVendorProfile = async () => {
+  const response = await axiosInstance.get("vendors/auth");
+  return response.data;
+};

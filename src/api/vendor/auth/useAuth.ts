@@ -1,5 +1,9 @@
-import { useMutation } from "@tanstack/react-query";
-import { registerVendor, updateVendorProfile } from "./authApi";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import {
+  getVendorProfile,
+  registerVendor,
+  updateVendorProfile,
+} from "./authApi";
 import { toast } from "sonner";
 
 export const useCreateVendor = () => {
@@ -23,5 +27,12 @@ export const useUpdateVendorProfile = () => {
     onError: () => {
       toast.error("Failed to update profile");
     },
+  });
+};
+
+export const useGetVendorProfile = () => {
+  return useQuery({
+    queryKey: ["vendor-profile"],
+    queryFn: getVendorProfile,
   });
 };
