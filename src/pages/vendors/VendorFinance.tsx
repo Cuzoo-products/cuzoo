@@ -41,6 +41,10 @@ type HistoryResponse = {
   };
 };
 
+// Amounts from the API are in minor units (e.g. kobo), normalize to naira for display
+const toMajorUnit = (amount?: number) =>
+  typeof amount === "number" ? amount / 100 : 0;
+
 export default function VendorFinance() {
   const { mutate: requestWithdrawal, isPending: isWithdrawing } =
     useRequestWithdrawal();
@@ -71,7 +75,7 @@ export default function VendorFinance() {
       inflow: 0,
       outflow: 0,
     };
-    existing.inflow += row.amount;
+    existing.inflow += toMajorUnit(row.amount);
     chartMap.set(row.date, existing);
   });
 
@@ -81,7 +85,7 @@ export default function VendorFinance() {
       inflow: 0,
       outflow: 0,
     };
-    existing.outflow += row.amount;
+    existing.outflow += toMajorUnit(row.amount);
     chartMap.set(row.date, existing);
   });
 
@@ -90,9 +94,10 @@ export default function VendorFinance() {
   );
 
   const wallet = data?.data;
+  const walletAmountMajor = toMajorUnit(wallet?.amount);
   const formattedAmount =
     wallet && typeof wallet.amount === "number"
-      ? wallet.amount.toLocaleString("en-NG", {
+      ? walletAmountMajor.toLocaleString("en-NG", {
           minimumFractionDigits: 2,
           maximumFractionDigits: 2,
         })
@@ -111,7 +116,7 @@ export default function VendorFinance() {
               Manage Banks
             </Link>
             <WithdrawDialog
-              balance={wallet?.amount ?? 0}
+              balance={walletAmountMajor}
               onSubmit={(payload) => requestWithdrawal(payload)}
               isPending={isWithdrawing}
               accounts={wallet?.accounts ?? []}
@@ -177,7 +182,7 @@ export default function VendorFinance() {
                       <td>{row.date}</td>
                       <td className="text-right">
                         {wallet?.currency ?? "₦"}
-                        {row.amount.toLocaleString("en-NG", {
+                        {toMajorUnit(row.amount).toLocaleString("en-NG", {
                           minimumFractionDigits: 2,
                           maximumFractionDigits: 2,
                         })}
@@ -218,7 +223,7 @@ export default function VendorFinance() {
                       <td>{row.date}</td>
                       <td className="text-right">
                         {wallet?.currency ?? "₦"}
-                        {row.amount.toLocaleString("en-NG", {
+                        {toMajorUnit(row.amount).toLocaleString("en-NG", {
                           minimumFractionDigits: 2,
                           maximumFractionDigits: 2,
                         })}

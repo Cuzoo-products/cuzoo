@@ -25,6 +25,7 @@ import {
   useGetOrder,
   useProcessOrder,
 } from "@/api/vendor/order/useOrder";
+import Loader from "@/components/utilities/Loader";
 
 type OrderDetailsResponse = {
   success: boolean;
@@ -162,8 +163,10 @@ function OrderActions({
 }) {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [otp, setOtp] = useState("");
-  const isPackaged = status?.toLowerCase() === "packaged";
-  const isPickupConfirmed = status?.toLowerCase() === "success";
+  const normalizedStatus = status?.toLowerCase();
+  const isPrePackaged = normalizedStatus === "pre-packaged";
+  const isPackaged = normalizedStatus === "packaged";
+  const isPickupConfirmed = normalizedStatus === "success";
 
   if (isPickupConfirmed) return null;
 
@@ -177,7 +180,8 @@ function OrderActions({
 
   return (
     <>
-      {!isPackaged && (
+      {/* When pre-packaged: only show Process order */}
+      {(isPrePackaged || !isPackaged) && (
         <Button
           variant="secondary"
           onClick={() => processOrder.run()}
@@ -186,13 +190,16 @@ function OrderActions({
           {processOrder.isPending ? "Processing…" : "Process order"}
         </Button>
       )}
-      <Button
-        variant="default"
-        onClick={() => setConfirmOpen(true)}
-        disabled={confirmPickup.isPending}
-      >
-        {confirmPickup.isPending ? "Confirming…" : "Confirm pick up"}
-      </Button>
+      {/* Hide Confirm pick up when status is pre-packaged; show otherwise */}
+      {!isPrePackaged && (
+        <Button
+          variant="default"
+          onClick={() => setConfirmOpen(true)}
+          disabled={confirmPickup.isPending}
+        >
+          {confirmPickup.isPending ? "Confirming…" : "Confirm pick up"}
+        </Button>
+      )}
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <DialogContent>
           <DialogHeader>
@@ -250,14 +257,7 @@ export default function OrderDetailsPage() {
   }
 
   if (isLoading) {
-    return (
-      <div className="@container/main">
-        <div className="my-6">
-          <h3 className="!font-bold text-3xl">Order Details</h3>
-          <p className="text-sm text-muted-foreground">Loading order...</p>
-        </div>
-      </div>
-    );
+    return <Loader />;
   }
 
   if (error || !data?.data) {
@@ -299,9 +299,6 @@ export default function OrderDetailsPage() {
           <Badge variant={statusColor[order.status] ?? "outline"}>
             {order.status}
           </Badge>
-          <Button asChild variant="outline" size="sm">
-            <Link to={`/vendor/orders/${id}/invoice`}>View Invoice</Link>
-          </Button>
         </div>
       </div>
 
