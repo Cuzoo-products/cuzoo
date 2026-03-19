@@ -14,13 +14,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   Table,
   TableBody,
   TableCell,
@@ -33,8 +26,10 @@ import { toast } from "sonner";
 
 const couponFormSchema = z.object({
   code: z.string().min(1, "Code is required").max(24),
-  discountType: z.enum(["percentage", "fixed"]),
   value: z.coerce.number().min(0.01, "Value must be greater than 0"),
+  // Minimum order subtotal required to apply the coupon.
+  // Use 0 to indicate "no minimum".
+  minAmount: z.coerce.number().min(0, "Minimum amount must be 0 or greater"),
   expiryDate: z.string().min(1, "Expiry date is required"),
   maxUses: z.coerce.number().min(0).optional(),
   description: z.string().max(200).optional(),
@@ -45,8 +40,8 @@ type CouponFormValues = z.infer<typeof couponFormSchema>;
 type Coupon = {
   id: string;
   code: string;
-  discountType: "percentage" | "fixed";
   value: number;
+  minAmount: number;
   expiryDate: string;
   maxUses: number | null;
   usedCount: number;
@@ -60,8 +55,8 @@ const DUMMY_COUPONS: Coupon[] = [
   {
     id: "1",
     code: "WELCOME10",
-    discountType: "percentage",
     value: 10,
+    minAmount: 0,
     expiryDate: "2025-06-30",
     maxUses: 100,
     usedCount: 23,
@@ -71,21 +66,21 @@ const DUMMY_COUPONS: Coupon[] = [
   },
   {
     id: "2",
-    code: "FLAT500",
-    discountType: "fixed",
-    value: 500,
+    code: "SAVE10MIN1000",
+    value: 10,
+    minAmount: 1000,
     expiryDate: "2025-04-20",
     maxUses: 50,
     usedCount: 50,
-    description: "₦500 off",
+    description: "10% off orders from ₦1,000",
     status: "used_up",
     createdAt: "2025-02-01",
   },
   {
     id: "3",
     code: "SUMMER25",
-    discountType: "percentage",
     value: 25,
+    minAmount: 0,
     expiryDate: "2024-12-31",
     maxUses: 200,
     usedCount: 80,
@@ -112,8 +107,8 @@ export default function Coupons() {
     resolver: zodResolver(couponFormSchema),
     defaultValues: {
       code: "",
-      discountType: "percentage",
       value: 10,
+      minAmount: 0,
       expiryDate: "",
       maxUses: undefined,
       description: "",
@@ -128,8 +123,8 @@ export default function Coupons() {
     const newCoupon: Coupon = {
       id: crypto.randomUUID?.() ?? `cp-${Date.now()}`,
       code: data.code.toUpperCase(),
-      discountType: data.discountType,
       value: data.value,
+      minAmount: data.minAmount,
       expiryDate: data.expiryDate,
       maxUses: data.maxUses ?? null,
       usedCount: 0,
@@ -141,8 +136,8 @@ export default function Coupons() {
     toast.success(`Coupon "${newCoupon.code}" created`);
     form.reset({
       code: "",
-      discountType: "percentage",
       value: 10,
+      minAmount: 0,
       expiryDate: "",
       maxUses: undefined,
       description: "",
@@ -156,8 +151,7 @@ export default function Coupons() {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  const formatValue = (c: Coupon) =>
-    c.discountType === "percentage" ? `${c.value}%` : `₦${c.value.toLocaleString("en-NG")}`;
+  const formatValue = (c: Coupon) => `${c.value}%`;
 
   const statusVariant = (
     status: Coupon["status"],
@@ -205,36 +199,13 @@ export default function Coupons() {
                 </FormItem>
               )}
             />
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="discountType"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Discount type</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="percentage">Percentage</SelectItem>
-                        <SelectItem value="fixed">Fixed amount</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage className="text-red-600" />
-                  </FormItem>
-                )}
-              />
+            <div className="grid grid-cols-1 gap-4">
               <FormField
                 control={form.control}
                 name="value"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>
-                      {form.watch("discountType") === "percentage" ? "Percentage (%)" : "Amount (₦)"}
-                    </FormLabel>
+                    <FormLabel>Percentage (%)</FormLabel>
                     <FormControl>
                       <Input type="number" min={0} step={0.01} {...field} />
                     </FormControl>
@@ -243,6 +214,27 @@ export default function Coupons() {
                 )}
               />
             </div>
+
+            <FormField
+              control={form.control}
+              name="minAmount"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Minimum amount (₦)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      min={0}
+                      step={1}
+                      placeholder="0 = no minimum"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage className="text-red-600" />
+                </FormItem>
+              )}
+            />
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
@@ -313,8 +305,8 @@ export default function Coupons() {
             <TableHeader>
               <TableRow>
                 <TableHead>Code</TableHead>
-                <TableHead>Type</TableHead>
                 <TableHead>Value</TableHead>
+                <TableHead>Min Amount</TableHead>
                 <TableHead>Expiry</TableHead>
                 <TableHead>Uses</TableHead>
                 <TableHead>Status</TableHead>
@@ -325,8 +317,12 @@ export default function Coupons() {
               {coupons.map((c) => (
                 <TableRow key={c.id}>
                   <TableCell className="font-mono font-medium">{c.code}</TableCell>
-                  <TableCell className="capitalize">{c.discountType}</TableCell>
                   <TableCell>{formatValue(c)}</TableCell>
+                  <TableCell>
+                    {c.minAmount > 0
+                      ? `₦${c.minAmount.toLocaleString("en-NG")}`
+                      : "—"}
+                  </TableCell>
                   <TableCell>{c.expiryDate}</TableCell>
                   <TableCell>
                     {c.maxUses != null

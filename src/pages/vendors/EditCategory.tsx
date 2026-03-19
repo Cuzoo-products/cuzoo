@@ -1,6 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-// import { toast } from "sonner";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,6 +21,7 @@ import { useParams } from "react-router";
 import { useEffect } from "react";
 import { toast } from "sonner";
 import Loader from "@/components/utilities/Loader";
+import { useNavigate } from "react-router";
 
 // Utility function to convert file to base64
 const fileToBase64 = (file: File): Promise<string> => {
@@ -35,6 +35,7 @@ const fileToBase64 = (file: File): Promise<string> => {
 
 function EditCategory() {
   const { id } = useParams();
+  const navigate = useNavigate();
 
   const { data: category, isLoading } = useGetOneCategory(id as string);
 
@@ -67,7 +68,14 @@ function EditCategory() {
   const { mutate: updateCategory, isPending } = useUpdateCategory();
 
   function onSubmit(data: z.infer<typeof CategoryFormSchema>) {
-    updateCategory({ id: id as string, catData: data });
+    updateCategory(
+      { id: id as string, catData: data },
+      {
+        onSuccess: () => {
+          navigate(-1);
+        },
+      },
+    );
   }
 
   if (isLoading) {

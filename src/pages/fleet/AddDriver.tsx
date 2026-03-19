@@ -39,6 +39,7 @@ import {
 import { useCreateRiders } from "@/api/fleet/rider/useRiderQuery";
 import { GogglePlace } from "@/components/utilities/GogglePlace";
 import { useGetVehicles } from "@/api/fleet/vehicles/useVehicles";
+import { useNavigate } from "react-router";
 
 type VehiclesResponse = {
   data?: {
@@ -52,6 +53,7 @@ type VehiclesResponse = {
 };
 
 function AddDriver() {
+  const navigate = useNavigate();
   const { data: vehiclesResponse, isLoading: vehiclesLoading } =
     useGetVehicles() as {
       data?: VehiclesResponse;
@@ -85,6 +87,7 @@ function AddDriver() {
       onSuccess: () => {
         toast.success("Driver added successfully!");
         form.reset();
+        navigate("/fleet/drivers");
       },
       onError: (error) => {
         toast.error(error.message || "Failed to add driver. Please try again.");

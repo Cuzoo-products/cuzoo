@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Link } from "react-router";
 import { Mail, Phone, MapPin, Calendar, User, FileCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -61,6 +60,12 @@ export interface Driver {
   updatedAt?: string;
   status?: DriverStatus;
   suspended?: boolean;
+  vehicles?: Array<{
+    id?: string;
+    model?: string;
+    type?: string;
+    plateNumber?: string;
+  }>;
 }
 
 const formatDate = (dateString?: string) => {
@@ -105,34 +110,30 @@ export const DriverInfo = ({
   isSuspendPending?: boolean;
   isReleasePending?: boolean;
 }) => {
-  const [status, setStatus] = useState<DriverStatus>(driver.status ?? "unassigned");
+  const hasAssignedVehicle =
+    Array.isArray(driver.vehicles) && driver.vehicles.length > 0;
+  const status: DriverStatus = hasAssignedVehicle ? "assigned" : "unassigned";
+  const assignedPlateNumbers = hasAssignedVehicle
+    ? driver.vehicles
+        ?.map((v) => v.plateNumber?.trim())
+        .filter((plate): plate is string => Boolean(plate))
+    : [];
+  const primaryPlateNumber = assignedPlateNumbers?.[0] ?? null;
 
   const name =
     `${driver.firstName ?? ""} ${driver.lastName ?? ""}`.trim() || "Unknown driver";
 
-  const [localSuspended, setLocalSuspended] = useState(false);
-  const useServerSuspended = onSuspend != null && onRelease != null;
-  const suspended = useServerSuspended
-    ? (driver.suspended ?? false)
-    : localSuspended;
-
-  const handleAssign = () => {
-    setStatus((s) => (s === "assigned" ? "unassigned" : "assigned"));
-  };
+  const suspended = driver.suspended ?? false;
 
   const handleSuspend = () => {
     if (onSuspend) {
       onSuspend();
-    } else {
-      setLocalSuspended(true);
     }
   };
 
   const handleRelease = () => {
     if (onRelease) {
       onRelease();
-    } else {
-      setLocalSuspended(false);
     }
   };
 
@@ -226,7 +227,13 @@ export const DriverInfo = ({
               <User className="size-4 text-muted-foreground mt-0.5 shrink-0" />
               <div>
                 <p className="font-medium text-muted-foreground">Vehicle</p>
-                <p>{status === "assigned" ? "Assigned" : "Unassigned"}</p>
+                <p>
+                  {primaryPlateNumber
+                    ? primaryPlateNumber
+                    : hasAssignedVehicle
+                      ? "Assigned"
+                      : "Unassigned"}
+                </p>
               </div>
             </div>
           </div>
@@ -262,15 +269,19 @@ export const DriverInfo = ({
           <CardTitle className="text-lg">Actions</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {status !== "assigned" ? (
+          {!hasAssignedVehicle ? (
             <div className="space-y-2">
               <p className="text-sm font-medium">Assign vehicle</p>
               <ComboboxForm info={availableVehicle} />
             </div>
           ) : (
-            <Button variant="outline" onClick={handleAssign}>
-              Unassign from vehicle
-            </Button>
+            <p className="text-sm text-muted-foreground">
+              Driver is assigned to{" "}
+              <span className="font-medium text-foreground">
+                {primaryPlateNumber ?? "a vehicle"}
+              </span>
+              .
+            </p>
           )}
 
           <Separator />

@@ -32,6 +32,7 @@ import { Loader } from "lucide-react";
 import { useGetCategories } from "@/api/vendor/categories/useCategories";
 import type { CategoryData } from "@/components/utilities/Vendors/CategoryDataTable";
 import { toast } from "sonner";
+import { useNavigate } from "react-router";
 
 const fileToBase64 = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -44,7 +45,7 @@ const fileToBase64 = (file: File): Promise<string> => {
 
 function EditProduct() {
   const { id } = useParams();
-
+  const navigate = useNavigate();
   const { data: product, isLoading } = useGetOneProduct(id as string);
   const { data: categories, isLoading: categoriesLoading } = useGetCategories();
 
@@ -124,8 +125,14 @@ function EditProduct() {
       delete payload.image4;
     }
 
-    console.log(payload);
-    updateProduct({ id: id as string, productData: payload });
+    updateProduct(
+      { id: id as string, productData: payload },
+      {
+        onSuccess: () => {
+          navigate(-1);
+        },
+      },
+    );
   }
 
   useEffect(() => {

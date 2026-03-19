@@ -24,6 +24,7 @@ import {
 import { useCreateProduct } from "@/api/vendor/products/useProducts";
 import { useGetCategories } from "@/api/vendor/categories/useCategories";
 import { toast } from "sonner";
+import { useNavigate } from "react-router";
 
 // Utility function to convert file to base64
 const fileToBase64 = (file: File): Promise<string> => {
@@ -36,6 +37,7 @@ const fileToBase64 = (file: File): Promise<string> => {
 };
 
 function AddProduct() {
+  const navigate = useNavigate();
   const { data: categories } = useGetCategories();
   const form = useForm<z.infer<typeof ProductFormSchema>>({
     resolver: zodResolver(ProductFormSchema),
@@ -56,7 +58,11 @@ function AddProduct() {
   const { mutate: createProduct, isPending } = useCreateProduct();
 
   function onSubmit(data: z.infer<typeof ProductFormSchema>) {
-    createProduct(data);
+    createProduct(data, {
+      onSuccess: () => {
+        navigate("/vendor/products");
+      },
+    });
   }
 
   return (

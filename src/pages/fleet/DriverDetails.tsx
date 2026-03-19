@@ -26,9 +26,10 @@ function DriverDetails() {
   const { id } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
   const { data: rider, isLoading, error } = useGetRider(id as string);
-  const { mutate: suspendRider, isPending: isSuspendPending } = useSuspendRider();
-  const { mutate: releaseRider, isPending: isReleasePending } = useReleaseRider();
-
+  const { mutate: suspendRider, isPending: isSuspendPending } =
+    useSuspendRider();
+  const { mutate: releaseRider, isPending: isReleasePending } =
+    useReleaseRider();
   const handleSuspend = () => {
     if (!id) return;
     suspendRider(id, {
@@ -90,32 +91,6 @@ function DriverDetails() {
             </Link>{" "}
             and try another.
           </p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!rider) {
-    return (
-      <div className="@container/main">
-        <div className="my-6 flex items-center gap-3">
-          <Button variant="ghost" size="icon" asChild>
-            <Link to="/fleet/drivers">
-              <ArrowLeft className="size-5" />
-              <span className="sr-only">Back to drivers</span>
-            </Link>
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold">Driver not found</h1>
-            <p className="text-sm text-muted-foreground">
-              No driver data was received.
-            </p>
-          </div>
-        </div>
-        <div className="rounded-lg border border-line-1 bg-muted/30 p-6 text-center">
-          <Button asChild variant="outline">
-            <Link to="/fleet/drivers">Back to drivers</Link>
-          </Button>
         </div>
       </div>
     );

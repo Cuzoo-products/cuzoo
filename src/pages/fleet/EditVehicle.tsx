@@ -36,7 +36,7 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import Image from "@/components/ui/image";
-import { useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 
 import {
   useGetVehicle,
@@ -62,6 +62,7 @@ interface Rider {
 
 function EditVehicle() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { data: vehicle, isLoading, error } = useGetVehicle(id as string);
   const { mutate: updateVehicle, isPending } = useUpdateVehicle();
   const { data: riders } = useGetRiders();
@@ -147,8 +148,15 @@ function EditVehicle() {
       toast.info("No changes to save");
       return;
     }
-    // console.log(submitData);
-    updateVehicle({ id: id as string, submitData });
+    if (!id) return;
+    updateVehicle(
+      { id: id as string, submitData },
+      {
+        onSuccess: () => {
+          navigate(-1);
+        },
+      },
+    );
   }
 
   if (isLoading) {
@@ -345,7 +353,12 @@ function EditVehicle() {
                 <FormItem>
                   <FormLabel>Vehicle Status</FormLabel>
                   <FormControl>
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={
+                        field.value || vehicle?.data?.status || "available"
+                      }
+                    >
                       <SelectTrigger className="h-11 w-full border-[#d6d6d6]">
                         <SelectValue placeholder="Select Vehicle Status" />
                       </SelectTrigger>

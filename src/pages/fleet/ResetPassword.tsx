@@ -1,5 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { useState } from "react";
 // import { toast } from "sonner";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -14,8 +15,13 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { FleetManagerChangePWSchema } from "@/lib/zodVaildation";
+import { Eye, EyeOff } from "lucide-react";
 
 function ResetPassword() {
+  const [showOldPassword, setShowOldPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const form = useForm<z.infer<typeof FleetManagerChangePWSchema>>({
     resolver: zodResolver(FleetManagerChangePWSchema),
     defaultValues: {
@@ -48,12 +54,26 @@ function ResetPassword() {
                 <FormItem>
                   <FormLabel>Old Password</FormLabel>
                   <FormControl>
-                    <Input
-                      type="password"
-                      className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
-                      placeholder="********"
-                      {...field}
-                    />
+                    <div className="relative">
+                      <Input
+                        type={showOldPassword ? "text" : "password"}
+                        className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3] pr-12"
+                        placeholder="********"
+                        {...field}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowOldPassword((s) => !s)}
+                        className="absolute inset-y-0 right-3 flex items-center text-muted-foreground"
+                        aria-label={showOldPassword ? "Hide old password" : "Show old password"}
+                      >
+                        {showOldPassword ? (
+                          <EyeOff className="w-4 h-4" />
+                        ) : (
+                          <Eye className="w-4 h-4" />
+                        )}
+                      </button>
+                    </div>
                   </FormControl>
                   <FormMessage className="text-red-600" />
                 </FormItem>
@@ -67,12 +87,26 @@ function ResetPassword() {
                 <FormItem>
                   <FormLabel>New Password</FormLabel>
                   <FormControl>
-                    <Input
-                      className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
-                      type="password"
-                      placeholder="••••••••"
-                      {...field}
-                    />
+                    <div className="relative">
+                      <Input
+                        className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3] pr-12"
+                        type={showNewPassword ? "text" : "password"}
+                        placeholder="••••••••"
+                        {...field}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowNewPassword((s) => !s)}
+                        className="absolute inset-y-0 right-3 flex items-center text-muted-foreground"
+                        aria-label={showNewPassword ? "Hide new password" : "Show new password"}
+                      >
+                        {showNewPassword ? (
+                          <EyeOff className="w-4 h-4" />
+                        ) : (
+                          <Eye className="w-4 h-4" />
+                        )}
+                      </button>
+                    </div>
                   </FormControl>
                   <FormMessage className="text-red-600" />
                 </FormItem>
@@ -86,12 +120,32 @@ function ResetPassword() {
                 <FormItem>
                   <FormLabel>Confirm New Password</FormLabel>
                   <FormControl>
-                    <Input
-                      className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
-                      type="password"
-                      placeholder="••••••••"
-                      {...field}
-                    />
+                    <div className="relative">
+                      <Input
+                        className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3] pr-12"
+                        type={showConfirmPassword ? "text" : "password"}
+                        placeholder="••••••••"
+                        {...field}
+                      />
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setShowConfirmPassword((s) => !s)
+                        }
+                        className="absolute inset-y-0 right-3 flex items-center text-muted-foreground"
+                        aria-label={
+                          showConfirmPassword
+                            ? "Hide confirm password"
+                            : "Show confirm password"
+                        }
+                      >
+                        {showConfirmPassword ? (
+                          <EyeOff className="w-4 h-4" />
+                        ) : (
+                          <Eye className="w-4 h-4" />
+                        )}
+                      </button>
+                    </div>
                   </FormControl>
                   <FormMessage className="text-red-600" />
                 </FormItem>

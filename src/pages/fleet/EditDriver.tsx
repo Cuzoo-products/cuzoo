@@ -21,16 +21,26 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import Image from "@/components/ui/image";
-import { useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import { useGetRider, useUpdateRider } from "@/api/fleet/rider/useRiderQuery";
 import { GogglePlace } from "@/components/utilities/GogglePlace";
 import { toast } from "sonner";
 import { useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import { fileToBase64 } from "@/lib/utils";
+import Loader from "@/components/utilities/Loader";
+
+const normalizeToE164 = (value?: string) => {
+  if (!value) return "";
+  let cleaned = value.replace(/[^\d+]/g, "");
+  if (cleaned && !cleaned.startsWith("+")) cleaned = `+${cleaned}`;
+  if (cleaned.length > 16) cleaned = cleaned.slice(0, 16);
+  return cleaned;
+};
 
 function EditDriver() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const form = useForm<z.infer<typeof EditDriverFormSchema>>({
     resolver: zodResolver(EditDriverFormSchema),
     defaultValues: {
@@ -63,30 +73,54 @@ function EditDriver() {
           passport: driverData.passport?.url || "",
           driversLicense: driverData.driversLicense?.url || "",
           address: driverData.address?.placeId || "",
-          phoneNumber: driverData.phoneNumber?.internationalFormat || "",
+          phoneNumber: normalizeToE164(
+            driverData.phoneNumber?.internationalFormat || "",
+          ),
           dateOfBirth: driverData.dateOfBirth
             ? new Date(driverData.dateOfBirth).toISOString().split("T")[0]
             : "",
-          emergencyContact:
+          emergencyContact: normalizeToE164(
             driverData.emergencyContact?.internationalFormat || "",
+          ),
         });
       }
     }
   }, [rider, form]);
 
   function onSubmit(data: z.infer<typeof EditDriverFormSchema>) {
-    console.log(data);
-    updateDriver({ id: id as string, data });
+    if (!id) return;
+    const currentDriver = Array.isArray(rider?.data)
+      ? rider.data[0]
+      : rider?.data;
+    const initialPassport = currentDriver?.passport?.url || "";
+    const initialDriversLicense = currentDriver?.driversLicense?.url || "";
+
+    const payload: Record<string, unknown> = {
+      ...data,
+      phoneNumber: normalizeToE164(data.phoneNumber),
+      emergencyContact: normalizeToE164(data.emergencyContact),
+    };
+
+    // Only send image fields when they were changed
+    if ((data.passport || "") === initialPassport) {
+      delete payload.passport;
+    }
+    if ((data.driversLicense || "") === initialDriversLicense) {
+      delete payload.driversLicense;
+    }
+
+    updateDriver(
+      { id: id as string, data: payload },
+      {
+        onSuccess: () => {
+          navigate(-1);
+        },
+      },
+    );
   }
 
   if (isLoading) {
-    return (
-      <div className="@container/main">
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#4D37B3]"></div>
-        </div>
-      </div>
-    );
+    return <Loader />;
   }
 
   if (error || !rider?.data) {

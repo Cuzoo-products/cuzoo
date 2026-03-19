@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { CategoryFormSchema } from "@/lib/zodVaildation";
 import { useCreateCategory } from "@/api/vendor/categories/useCategories";
 import { toast } from "sonner";
+import { useNavigate } from "react-router";
 
 // Utility function to convert file to base64
 const fileToBase64 = (file: File): Promise<string> => {
@@ -27,6 +28,7 @@ const fileToBase64 = (file: File): Promise<string> => {
 };
 
 function AddCategory() {
+  const navigate = useNavigate();
   const form = useForm<z.infer<typeof CategoryFormSchema>>({
     resolver: zodResolver(CategoryFormSchema),
     defaultValues: {
@@ -43,8 +45,11 @@ function AddCategory() {
       icon: data.CategoryIcon,
     };
 
-    console.log(CatInfo);
-    mutate(CatInfo);
+    mutate(CatInfo, {
+      onSuccess: () => {
+        navigate("/vendor/categories");
+      },
+    });
   }
 
   return (

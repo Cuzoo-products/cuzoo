@@ -53,7 +53,7 @@ function Orders() {
     customer: order.userDetails.fullName,
     items:
       order.items && order.items.length
-        ? order.items.map((item) => `${item.quantity}x ${item.name}`).join(", ")
+        ? order.items.map((item) => `${item.quantity}x ${item.name}`).join("\n")
         : "—",
     status: order.status,
     payment: order.paymentMethod,

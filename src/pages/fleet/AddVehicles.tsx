@@ -37,6 +37,7 @@ import {
 } from "@/components/ui/command";
 import { useAddVehicles } from "@/api/fleet/vehicles/useVehicles";
 import { useGetRiders } from "@/api/fleet/rider/useRiderQuery";
+import { useNavigate } from "react-router";
 
 // Interface for rider data structure
 interface Rider {
@@ -54,6 +55,7 @@ interface Rider {
 }
 
 function AddVehicles() {
+  const navigate = useNavigate();
   const form = useForm<z.infer<typeof AddVehicleFormSchema>>({
     resolver: zodResolver(AddVehicleFormSchema),
     defaultValues: {
@@ -85,8 +87,12 @@ function AddVehicles() {
     })) || [];
 
   function onSubmit(data: z.infer<typeof AddVehicleFormSchema>) {
-    addVehicles(data);
-    form.reset();
+    addVehicles(data, {
+      onSuccess: () => {
+        form.reset();
+        navigate("/fleet/fleets");
+      },
+    });
   }
 
   return (
