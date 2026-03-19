@@ -41,7 +41,7 @@ export const columns: ColumnDef<OrderData>[] = [
     header: ({ column }) => {
       return <DataTableColumnHeader column={column} title="Items" />;
     },
-    cell: ({ row, getValue }) => {
+    cell: ({ getValue }) => {
       const raw = (getValue() as string) ?? "";
       if (!raw || raw === "—") return <span className="text-muted-foreground">—</span>;
 
