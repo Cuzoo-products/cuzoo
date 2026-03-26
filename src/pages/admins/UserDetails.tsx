@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, type ReactNode } from "react";
+
+import { toast } from "sonner";
 
 import {
   Mail,
@@ -8,6 +10,7 @@ import {
   ShieldCheck,
   Send,
   Gift,
+  Wallet,
 } from "lucide-react";
 
 import { Avatar } from "@/components/ui/avatar";
@@ -24,36 +27,20 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useUser } from "@/api/admin/useUsers";
+import {
+  useUser,
+  useUserAccountAction,
+  useUserWalletAction,
+} from "@/api/admin/users/useUsers";
 import { useParams } from "react-router";
 import Loader from "@/components/utilities/Loader";
+import { useSendOneNotification } from "@/api/admin/notification/useNotification";
 
-// interface UserData {
-//   id: string;
-//   firstName: string;
-//   lastName: string;
-//   email: string;
-//   emailVerified: boolean;
-//   phoneNumber: {
-//     internationalFormat: string;
-//     nationalFormat: string;
-//     number: string;
-//     countryCode: string;
-//     countryCallingCode: string;
-//   };
-//   gender: string;
-//   country: string;
-//   state: string;
-//   referrerCode: string;
-//   createdAt: string;
-//   updatedAt: string;
-//   fcmToken?: string;
-// }
 
-// --- TYPE DEFINITION FOR INFOROW PROPS ---
 type InfoRowProps = {
-  icon: React.ReactNode;
+  icon: ReactNode;
   label: string;
   value: string | number;
 };
@@ -61,11 +48,26 @@ type InfoRowProps = {
 function UserDetails() {
   const { id } = useParams();
   const { data: userData, isLoading } = useUser(id as string);
+  const userAccountMutation = useUserAccountAction(id ?? "");
+  const userWalletMutation = useUserWalletAction(id ?? "");
+ const { mutate: sendOneNotification, isPending: isSendingOneNotification } = useSendOneNotification();
+  
   const user = userData?.data;
 
-  const [isAccountActive, setIsAccountActive] = useState(true);
+  const defaultAccountActive = useMemo(
+    () => !user?.suspended,
+    [user?.suspended],
+  );
+  const defaultWalletActive = useMemo(
+    () => !(user?.wallet?.suspended ?? user?.suspended),
+    [user?.wallet?.suspended, user?.suspended],
+  );
+
+  const [isAccountActive, setIsAccountActive] = useState(defaultAccountActive);
+  const [isWalletActive, setIsWalletActive] = useState(defaultWalletActive);
   const [message, setMessage] = useState("");
-  const [messageType, setMessageType] = useState("email");
+  const [notificationSubject, setNotificationSubject] = useState("");
+  const [messageType, setMessageType] = useState<"email" | "push">("email");
   const [hasChanges, setHasChanges] = useState(false);
 
   // Format date for display
@@ -84,27 +86,88 @@ function UserDetails() {
     }
   };
 
-  // Effect to track if the account status has changed
   useEffect(() => {
-    if (user) {
-      const statusChanged =
-        (isAccountActive ? "Active" : "Disabled") !==
-        (user?.status || "Active");
-      setHasChanges(statusChanged);
-    }
-  }, [isAccountActive, user]);
-
-  const handleUpdateStatus = () => {
-    const newStatus = isAccountActive ? "Active" : "Disabled";
-    console.log("Updating status to:", newStatus);
+    setIsAccountActive(defaultAccountActive);
+    setIsWalletActive(defaultWalletActive);
     setHasChanges(false);
+  }, [defaultAccountActive, defaultWalletActive]);
+
+  useEffect(() => {
+    const accountChanged = isAccountActive !== defaultAccountActive;
+    const walletChanged = isWalletActive !== defaultWalletActive;
+    setHasChanges(accountChanged || walletChanged);
+  }, [
+    isAccountActive,
+    isWalletActive,
+    defaultAccountActive,
+    defaultWalletActive,
+  ]);
+
+  const isSavingChanges =
+    userAccountMutation.isPending || userWalletMutation.isPending;
+
+  const handleSaveChanges = async () => {
+    const accountChanged = isAccountActive !== defaultAccountActive;
+    const walletChanged = isWalletActive !== defaultWalletActive;
+    if (!accountChanged && !walletChanged) return;
+
+    try {
+      if (accountChanged) {
+        await userAccountMutation.mutateAsync(
+          isAccountActive ? "release" : "suspend",
+        );
+      }
+      if (walletChanged) {
+        await userWalletMutation.mutateAsync(
+          isWalletActive ? "release" : "suspend",
+        );
+      }
+      setHasChanges(false);
+      toast.success("User settings updated successfully.");
+    } catch {
+      // hook-level toasts handle errors
+    }
   };
 
   const handleSendMessage = () => {
-    if (!message.trim()) return;
-    console.log(`Sending ${messageType} to ${user.email}:`, message);
-    setMessage("");
+    const body = message.trim();
+    if (!body) {
+      toast.error("Message is required.");
+      return;
+    }
+    if (!id) return;
+
+    const subject =
+      messageType === "email"
+        ? notificationSubject.trim()
+        : notificationSubject.trim() || "Notification";
+    if (messageType === "email" && !subject) {
+      toast.error("Subject is required for email.");
+      return;
+    }
+
+    sendOneNotification(
+      {
+        id,
+        recipient: "user",
+        data: {
+          type: messageType,
+          subject,
+          message: body,
+        },
+      },
+      {
+        onSuccess: () => {
+          setMessage("");
+          setNotificationSubject("");
+        },
+      },
+    );
   };
+
+  const canSendNotification =
+    Boolean(message.trim()) &&
+    (messageType === "push" || Boolean(notificationSubject.trim()));
 
   const InfoRow = ({ icon, label, value }: InfoRowProps) => (
     <div className="flex items-start space-x-3">
@@ -190,7 +253,9 @@ function UserDetails() {
             <CardContent className="space-y-4">
               <RadioGroup
                 value={messageType}
-                onValueChange={setMessageType}
+                onValueChange={(v) =>
+                  setMessageType(v as "email" | "push")
+                }
                 className="flex space-x-4"
               >
                 <div className="flex items-center space-x-2">
@@ -208,17 +273,50 @@ function UserDetails() {
                   </Label>
                 </div>
               </RadioGroup>
-              <Textarea
-                placeholder={`Write your ${messageType} to ${userData.name}...`}
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                rows={5}
-              />
+              {messageType === "email" && (
+                <div className="space-y-2">
+                  <Label htmlFor="notification-subject">Subject</Label>
+                  <Input
+                    id="notification-subject"
+                    value={notificationSubject}
+                    onChange={(e) => setNotificationSubject(e.target.value)}
+                    placeholder="e.g., Account update"
+                  />
+                </div>
+              )}
+              {messageType === "push" && (
+                <div className="space-y-2">
+                  <Label htmlFor="notification-push-subject">
+                    Title (optional)
+                  </Label>
+                  <Input
+                    id="notification-push-subject"
+                    value={notificationSubject}
+                    onChange={(e) => setNotificationSubject(e.target.value)}
+                    placeholder="Defaults to “Notification” if empty"
+                  />
+                </div>
+              )}
+              <div className="space-y-2">
+                <Label htmlFor="notification-message">Message</Label>
+                <Textarea
+                  id="notification-message"
+                  placeholder={`Write your ${messageType} to ${user.email}...`}
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  rows={5}
+                />
+              </div>
             </CardContent>
             <CardFooter>
-              <Button onClick={handleSendMessage} disabled={!message.trim()}>
+              <Button
+                onClick={handleSendMessage}
+                disabled={
+                  !canSendNotification || isSendingOneNotification || !id
+                }
+              >
                 <Send className="w-4 h-4 mr-2" />
-                Send Message
+                {isSendingOneNotification ? "Sending…" : "Send message"}
               </Button>
             </CardFooter>
           </Card>
@@ -254,7 +352,31 @@ function UserDetails() {
                   id="disable-account-switch"
                   checked={isAccountActive}
                   onCheckedChange={setIsAccountActive}
+                  disabled={isSavingChanges}
                   aria-label="Toggle account status"
+                />
+              </div>
+              <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg mt-4">
+                <div>
+                  <Label
+                    htmlFor="disable-wallet-switch"
+                    className="font-medium flex items-center"
+                  >
+                    <Wallet className="w-5 h-5 mr-2 text-amber-600" />
+                    User Wallet
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    {isWalletActive
+                      ? "Disabling will suspend wallet transactions."
+                      : "Enabling will restore wallet transactions."}
+                  </p>
+                </div>
+                <Switch
+                  id="disable-wallet-switch"
+                  checked={isWalletActive}
+                  onCheckedChange={setIsWalletActive}
+                  disabled={isSavingChanges}
+                  aria-label="Toggle wallet status"
                 />
               </div>
             </CardContent>
@@ -262,10 +384,10 @@ function UserDetails() {
               <div className="flex justify-end w-full">
                 <Button
                   variant="destructive"
-                  onClick={handleUpdateStatus}
-                  disabled={!hasChanges}
+                  onClick={handleSaveChanges}
+                  disabled={!hasChanges || isSavingChanges}
                 >
-                  Update Status
+                  {isSavingChanges ? "Saving..." : "Save Changes"}
                 </Button>
               </div>
             </CardFooter>

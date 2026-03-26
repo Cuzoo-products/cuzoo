@@ -15,7 +15,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useGetAdmin, useToggleReleaseAdmin } from "@/api/admin/useAdmin";
+import { useGetAdmin, useToggleReleaseAdmin } from "@/api/admin/admin/useAdmin";
 import { useParams } from "react-router";
 import Loader from "@/components/utilities/Loader";
 
@@ -74,7 +74,7 @@ function AdminDetails() {
         onError: () => {
           setIsAccountActive(!isAccountActive);
         },
-      }
+      },
     );
   };
 
@@ -111,7 +111,7 @@ function AdminDetails() {
 
   const handleRoleChange = (
     role: string,
-    checked: boolean | "indeterminate"
+    checked: boolean | "indeterminate",
   ) => {
     setSelectedRole((prevData) => {
       if (checked) {

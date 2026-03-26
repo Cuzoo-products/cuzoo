@@ -1,6 +1,6 @@
 import { DataTable } from "@/components/ui/data-table";
 import { columns } from "@/components/utilities/Admins/AdminsDataTable";
-import { useGetAllAdmins } from "@/api/admin/useAdmin";
+import { useGetAllAdmins } from "@/api/admin/admin/useAdmin";
 import Loader from "@/components/utilities/Loader";
 
 function Admins() {

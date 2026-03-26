@@ -7,7 +7,25 @@ import {
 } from "@/components/ui/card";
 import { BriefcaseBusiness, Car, Users, Wallet } from "lucide-react";
 
-function DashboardCards() {
+function DashboardCards({
+  finance,
+  vendors,
+  drivers,
+  fleets,
+}: {
+  finance?: number;
+  vendors?: number;
+  drivers?: number;
+  fleets?: number;
+}) {
+  const formattedFinance =
+    typeof finance === "number"
+      ? finance.toLocaleString("en-NG", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })
+      : "0.00";
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4  gap-2">
       <Card className="bg-primary text-white gap-0 pt-4 pb-2">
@@ -15,7 +33,7 @@ function DashboardCards() {
           <Wallet />
         </CardHeader>
         <CardContent className="mt-1">
-          <h3 className="text-3xl">₦340000</h3>
+          <h3 className="text-3xl">₦{formattedFinance}</h3>
         </CardContent>
         <CardFooter>
           <CardTitle>Finance</CardTitle>
@@ -27,7 +45,7 @@ function DashboardCards() {
           <Car />
         </CardHeader>
         <CardContent className="mt-1">
-          <h3 className="text-3xl">24</h3>
+          <h3 className="text-3xl">{drivers ?? 0}</h3>
         </CardContent>
         <CardFooter>
           <CardTitle>Drivers</CardTitle>
@@ -39,7 +57,7 @@ function DashboardCards() {
           <Users />
         </CardHeader>
         <CardContent className="mt-1">
-          <h3 className="text-3xl">30</h3>
+          <h3 className="text-3xl">{fleets ?? 0}</h3>
         </CardContent>
         <CardFooter>
           <CardTitle>Fleet</CardTitle>
@@ -51,7 +69,7 @@ function DashboardCards() {
           <BriefcaseBusiness />
         </CardHeader>
         <CardContent className="mt-1">
-          <h3 className="text-3xl">12</h3>
+          <h3 className="text-3xl">{vendors ?? 0}</h3>
         </CardContent>
         <CardFooter>
           <CardTitle>Vendors</CardTitle>

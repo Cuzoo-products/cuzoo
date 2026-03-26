@@ -1,6 +1,5 @@
-import { useState } from "react";
-
-// --- UI COMPONENT IMPORTS (ASSUMED FROM SHADCN/UI) ---
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -28,74 +27,227 @@ import {
 } from "@/components/ui/alert-dialog";
 
 import { Percent, ShieldAlert, Wrench, Send } from "lucide-react";
+import {
+  useGeneralSetting,
+  useUpdateGeneralSetting,
+} from "@/api/admin/settings/useSettings";
+import Loader from "@/components/utilities/Loader";
+import { type GeneralSetting } from "@/api/admin/settings/settings";
+import { useSendManyNotifications } from "@/api/admin/notification/useNotification";
 
-// --- TYPESCRIPT INTERFACE ---
-interface GlobalSettings {
-  commissionFleet: number;
-  commissionVendor: number;
-  commissionRider: number;
-  chargePerKm: number;
-  lockAllWallets: boolean;
-  lockRiderWallets: boolean;
-  lockFleetWallets: boolean;
+/** Inner `data` from GET /settings (see API envelope). */
+type SettingsApiData = {
+  pricingPerKm?: {
+    car?: number;
+    van?: number;
+    truck?: number;
+    bike?: number;
+    bicycle?: number;
+    rickshaw?: number;
+  };
+  lockAllWallet?: boolean;
+  lockAllRidersWallet?: boolean;
+  lockAllVendorsWallet?: boolean;
+  lockAllUsersWallet?: boolean;
+  lockAllFleetManagersWallet?: boolean;
+  maintenanceMode?: boolean;
+  fleetCommission?: number;
+  vendorCommission?: number;
+  riderCommission?: number;
+  searchRadius?: number;
+};
+
+type PricingPerKmForm = {
+  car: number;
+  van: number;
+  truck: number;
+  bike: number;
+  bicycle: number;
+  rickshaw: number;
+};
+
+/** Mirrors backend; notification fields are UI-only (not from API). */
+interface SettingsForm {
+  fleetCommission: number;
+  vendorCommission: number;
+  riderCommission: number;
+  searchRadius: number;
+  pricingPerKm: PricingPerKmForm;
+  lockAllWallet: boolean;
+  lockAllVendorsWallet: boolean;
+  lockAllRidersWallet: boolean;
+  lockAllUsersWallet: boolean;
+  lockAllFleetManagersWallet: boolean;
   maintenanceMode: boolean;
   notificationType: "email" | "push";
   notificationSubject: string;
   notificationBody: string;
 }
 
-const initialSettings: GlobalSettings = {
-  commissionFleet: 15,
-  commissionVendor: 20,
-  commissionRider: 10,
-  chargePerKm: 50,
-  lockAllWallets: false,
-  lockRiderWallets: false,
-  lockFleetWallets: false,
+const emptyPricingPerKm = (): PricingPerKmForm => ({
+  car: 0,
+  van: 0,
+  truck: 0,
+  bike: 0,
+  bicycle: 0,
+  rickshaw: 0,
+});
+
+const emptyForm = (): SettingsForm => ({
+  fleetCommission: 0,
+  vendorCommission: 0,
+  riderCommission: 0,
+  searchRadius: 0,
+  pricingPerKm: emptyPricingPerKm(),
+  lockAllWallet: false,
+  lockAllVendorsWallet: false,
+  lockAllRidersWallet: false,
+  lockAllUsersWallet: false,
+  lockAllFleetManagersWallet: false,
   maintenanceMode: false,
   notificationType: "push",
   notificationSubject: "",
   notificationBody: "",
-};
+});
+
+function mapApiToForm(api: SettingsApiData): SettingsForm {
+  const p = api.pricingPerKm ?? {};
+  return {
+    fleetCommission: api.fleetCommission ?? 0,
+    vendorCommission: api.vendorCommission ?? 0,
+    riderCommission: api.riderCommission ?? 0,
+    searchRadius: api.searchRadius ?? 0,
+    pricingPerKm: {
+      car: p.car ?? 0,
+      van: p.van ?? 0,
+      truck: p.truck ?? 0,
+      bike: p.bike ?? 0,
+      bicycle: p.bicycle ?? 0,
+      rickshaw: p.rickshaw ?? 0,
+    },
+    lockAllWallet: api.lockAllWallet ?? false,
+    lockAllVendorsWallet: api.lockAllVendorsWallet ?? false,
+    lockAllRidersWallet: api.lockAllRidersWallet ?? false,
+    lockAllUsersWallet: api.lockAllUsersWallet ?? false,
+    lockAllFleetManagersWallet: api.lockAllFleetManagersWallet ?? false,
+    maintenanceMode: api.maintenanceMode ?? false,
+    notificationType: "push",
+    notificationSubject: "",
+    notificationBody: "",
+  };
+}
+
+const PRICING_LABELS: { key: keyof PricingPerKmForm; label: string }[] = [
+  { key: "car", label: "Car" },
+  { key: "van", label: "Van" },
+  { key: "truck", label: "Truck" },
+  { key: "bike", label: "Bike" },
+  { key: "bicycle", label: "Bicycle" },
+  { key: "rickshaw", label: "Rickshaw" },
+];
 
 export default function Settings() {
-  const [settings, setSettings] = useState<GlobalSettings>(initialSettings);
-  const [pendingChanges, setPendingChanges] = useState<Partial<GlobalSettings>>(
-    {}
+  const { data, isLoading, isError } = useGeneralSetting();
+  const [settings, setSettings] = useState<SettingsForm>(() => emptyForm());
+  const [pendingChanges, setPendingChanges] = useState<Partial<SettingsForm>>(
+    {},
   );
+  const { mutate: updateGeneralSetting, isPending } = useUpdateGeneralSetting();
+  const { mutate: sendManyNotifications, isPending: isSendingManyNotifications } = useSendManyNotifications();
 
-  const handleValueChange = (id: keyof GlobalSettings, value: unknown) => {
+  useEffect(() => {
+    const backend = (data as { data?: SettingsApiData } | undefined)?.data;
+    if (!backend) return;
+
+    setSettings((prev) => {
+      const fromApi = mapApiToForm(backend);
+      return {
+        ...fromApi,
+        notificationType: prev.notificationType,
+        notificationSubject: prev.notificationSubject,
+        notificationBody: prev.notificationBody,
+      };
+    });
+    setPendingChanges({});
+  }, [data]);
+
+  if (isLoading) {
+    return <Loader />;
+  }
+
+  if (isError) {
+    return (
+      <div className="min-h-screen p-6">
+        <p className="text-destructive">Failed to load settings.</p>
+      </div>
+    );
+  }
+
+  const handleValueChange = (id: keyof SettingsForm, value: unknown) => {
     setSettings((s) => ({ ...s, [id]: value }));
     setPendingChanges((p) => ({ ...p, [id]: value }));
   };
 
-  const handleSendNotification = () => {
-    const { notificationType, notificationSubject, notificationBody } =
-      settings;
-    console.log("Sending Notification:", {
-      type: notificationType,
-      subject: notificationSubject,
-      body: notificationBody,
-    });
-    // API call to send notification would go here
-    alert(`Notification sent as ${notificationType}!`);
-    // Clear fields after sending
+  const handlePricingChange = (key: keyof PricingPerKmForm, raw: string) => {
+    const num = raw === "" ? 0 : Number(raw);
+    const v = Number.isNaN(num) ? 0 : num;
     setSettings((s) => ({
       ...s,
-      notificationSubject: "",
-      notificationBody: "",
+      pricingPerKm: { ...s.pricingPerKm, [key]: v },
+    }));
+    setPendingChanges((p) => ({
+      ...p,
+      pricingPerKm: {
+        ...(p.pricingPerKm ?? settings.pricingPerKm),
+        [key]: v,
+      },
     }));
   };
 
+  const handleSendNotification = () => {
+    const message = settings.notificationBody.trim();
+    if (!message) {
+      toast.error("Message is required.");
+      return;
+    }
+    const subject =
+      settings.notificationType === "email"
+        ? settings.notificationSubject.trim()
+        : settings.notificationSubject.trim() || "Notification";
+    if (settings.notificationType === "email" && !subject) {
+      toast.error("Subject is required for email.");
+      return;
+    }
+
+    sendManyNotifications(
+      {
+        type: settings.notificationType,
+        subject,
+        message,
+      },
+      {
+        onSuccess: () => {
+          setSettings((s) => ({
+            ...s,
+            notificationSubject: "",
+            notificationBody: "",
+          }));
+        },
+      },
+    );
+  };
+
   const handleSaveChanges = () => {
-    console.log("Saving changes:", pendingChanges);
-    // API call to save the pendingChanges would go here
-    // e.g., fetch('/api/settings', { method: 'PATCH', body: JSON.stringify(pendingChanges) });
     setPendingChanges({});
-    alert("Settings saved successfully!");
+    updateGeneralSetting(settings as GeneralSetting);
   };
 
   const hasPendingChanges = Object.keys(pendingChanges).length > 0;
+
+  const canSendNotification =
+    Boolean(settings.notificationBody.trim()) &&
+    (settings.notificationType === "push" ||
+      Boolean(settings.notificationSubject.trim()));
 
   return (
     <div className="min-h-screen p-4 sm:p-6 lg:p-8 font-sans">
@@ -107,10 +259,10 @@ export default function Settings() {
           </div>
           <Button
             onClick={handleSaveChanges}
-            disabled={!hasPendingChanges}
+            disabled={!hasPendingChanges || isPending}
             className="mt-4 sm:mt-0"
           >
-            Save Changes
+            {isPending ? "Saving..." : "Save Changes"}
           </Button>
         </div>
 
@@ -122,72 +274,87 @@ export default function Settings() {
                 <div>
                   <CardTitle>Financials</CardTitle>
                   <CardDescription>
-                    Set commissions and delivery pricing.
+                    Commissions, search radius, and pricing per km from the API.
                   </CardDescription>
                 </div>
               </div>
             </CardHeader>
             <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label htmlFor="commissionFleet">Fleet Commission (%)</Label>
+                <Label htmlFor="fleetCommission">Fleet Commission (%)</Label>
                 <Input
-                  id="commissionFleet"
+                  id="fleetCommission"
                   type="number"
-                  value={settings.commissionFleet}
+                  value={settings.fleetCommission}
                   onChange={(e) =>
                     handleValueChange(
-                      "commissionFleet",
-                      e.target.value === "" ? "" : Number(e.target.value)
+                      "fleetCommission",
+                      e.target.value === "" ? 0 : Number(e.target.value),
                     )
                   }
-                  placeholder="e.g., 15"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="commissionVendor">Vendor Commission (%)</Label>
+                <Label htmlFor="vendorCommission">Vendor Commission (%)</Label>
                 <Input
-                  id="commissionVendor"
+                  id="vendorCommission"
                   type="number"
-                  value={settings.commissionVendor}
+                  value={settings.vendorCommission}
                   onChange={(e) =>
                     handleValueChange(
-                      "commissionVendor",
-                      e.target.value === "" ? "" : Number(e.target.value)
+                      "vendorCommission",
+                      e.target.value === "" ? 0 : Number(e.target.value),
                     )
                   }
-                  placeholder="e.g., 20"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="commissionRider">Rider Commission (%)</Label>
+                <Label htmlFor="riderCommission">Rider Commission (%)</Label>
                 <Input
-                  id="commissionRider"
+                  id="riderCommission"
                   type="number"
-                  value={settings.commissionRider}
+                  value={settings.riderCommission}
                   onChange={(e) =>
                     handleValueChange(
-                      "commissionRider",
-                      e.target.value === "" ? "" : Number(e.target.value)
+                      "riderCommission",
+                      e.target.value === "" ? 0 : Number(e.target.value),
                     )
                   }
-                  placeholder="e.g., 10"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="chargePerKm">Charge Per Km (NGN)</Label>
+                <Label htmlFor="searchRadius">Search radius</Label>
                 <Input
-                  id="chargePerKm"
+                  id="searchRadius"
                   type="number"
-                  value={settings.chargePerKm}
+                  value={settings.searchRadius}
                   onChange={(e) =>
                     handleValueChange(
-                      "chargePerKm",
-                      e.target.value === "" ? "" : Number(e.target.value)
+                      "searchRadius",
+                      e.target.value === "" ? 0 : Number(e.target.value),
                     )
                   }
-                  placeholder="e.g., 50"
                 />
               </div>
+            </CardContent>
+            <CardHeader className="pt-2">
+              <CardTitle className="text-base">Pricing per km (NGN)</CardTitle>
+              <CardDescription>
+                One amount per vehicle type (pricing per km, NGN).
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {PRICING_LABELS.map(({ key, label }) => (
+                <div key={key} className="space-y-2">
+                  <Label htmlFor={`price-${key}`}>{label}</Label>
+                  <Input
+                    id={`price-${key}`}
+                    type="number"
+                    value={settings.pricingPerKm[key]}
+                    onChange={(e) => handlePricingChange(key, e.target.value)}
+                  />
+                </div>
+              ))}
             </CardContent>
           </Card>
 
@@ -215,40 +382,13 @@ export default function Settings() {
                       Maintenance Mode
                     </Label>
                   </div>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Switch
-                        id="maintenanceMode"
-                        checked={settings.maintenanceMode}
-                        onCheckedChange={(c) =>
-                          handleValueChange("maintenanceMode", c)
-                        }
-                      />
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Confirm Action</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          This will{" "}
-                          {settings.maintenanceMode ? "disable" : "enable"}{" "}
-                          maintenance mode. Are you sure?
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={() =>
-                            handleValueChange(
-                              "maintenanceMode",
-                              !settings.maintenanceMode
-                            )
-                          }
-                        >
-                          Continue
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                  <Switch
+                    id="maintenanceMode"
+                    checked={settings.maintenanceMode}
+                    onCheckedChange={(c) =>
+                      handleValueChange("maintenanceMode", c)
+                    }
+                  />
                 </div>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                   Temporarily disable public access to the app.
@@ -270,75 +410,49 @@ export default function Settings() {
               </div>
             </CardHeader>
             <CardContent className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div
-                className={`p-4 rounded-lg border ${
-                  settings.lockAllWallets
-                    ? "border-red-500 bg-red-900/20"
-                    : "border-gray-200 dark:border-gray-700"
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="lockAllWallets" className="font-semibold">
-                    Lock All Wallets
-                  </Label>
-                  <Switch
-                    id="lockAllWallets"
-                    checked={settings.lockAllWallets}
-                    onCheckedChange={(c) =>
-                      handleValueChange("lockAllWallets", c)
-                    }
-                  />
-                </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  Freezes transactions for all vendors.
-                </p>
-              </div>
-              <div
-                className={`p-4 rounded-lg border ${
-                  settings.lockRiderWallets
-                    ? "border-red-500 bg-red-900/20"
-                    : "border-gray-200 dark:border-gray-700"
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="lockRiderWallets" className="font-semibold">
-                    Lock Rider Wallets
-                  </Label>
-                  <Switch
-                    id="lockRiderWallets"
-                    checked={settings.lockRiderWallets}
-                    onCheckedChange={(c) =>
-                      handleValueChange("lockRiderWallets", c)
-                    }
-                  />
-                </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  Freezes transactions for all riders.
-                </p>
-              </div>
-              <div
-                className={`p-4 rounded-lg border ${
-                  settings.lockFleetWallets
-                    ? "border-red-500 bg-red-900/20 dark:bg-red-900/20"
-                    : "border-gray-200 dark:border-gray-700"
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="lockFleetWallets" className="font-semibold">
-                    Lock Fleet Wallets
-                  </Label>
-                  <Switch
-                    id="lockFleetWallets"
-                    checked={settings.lockFleetWallets}
-                    onCheckedChange={(c) =>
-                      handleValueChange("lockFleetWallets", c)
-                    }
-                  />
-                </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  Freezes transactions for all fleet managers.
-                </p>
-              </div>
+              <WalletToggle
+                id="lockAllWallet"
+                label="Lock all wallets"
+                description="lockAllWallet"
+                checked={settings.lockAllWallet}
+                onCheckedChange={(c) => handleValueChange("lockAllWallet", c)}
+              />
+              <WalletToggle
+                id="lockAllVendorsWallet"
+                label="Lock vendor wallets"
+                description="lockAllVendorsWallet"
+                checked={settings.lockAllVendorsWallet}
+                onCheckedChange={(c) =>
+                  handleValueChange("lockAllVendorsWallet", c)
+                }
+              />
+              <WalletToggle
+                id="lockAllRidersWallet"
+                label="Lock rider wallets"
+                description="lockAllRidersWallet"
+                checked={settings.lockAllRidersWallet}
+                onCheckedChange={(c) =>
+                  handleValueChange("lockAllRidersWallet", c)
+                }
+              />
+              <WalletToggle
+                id="lockAllUsersWallet"
+                label="Lock user wallets"
+                description="lockAllUsersWallet"
+                checked={settings.lockAllUsersWallet}
+                onCheckedChange={(c) =>
+                  handleValueChange("lockAllUsersWallet", c)
+                }
+              />
+              <WalletToggle
+                id="lockAllFleetManagersWallet"
+                label="Lock fleet manager wallets"
+                description="lockAllFleetManagersWallet"
+                checked={settings.lockAllFleetManagersWallet}
+                onCheckedChange={(c) =>
+                  handleValueChange("lockAllFleetManagersWallet", c)
+                }
+              />
             </CardContent>
           </Card>
 
@@ -349,7 +463,7 @@ export default function Settings() {
                 <div>
                   <CardTitle>Global Notifications</CardTitle>
                   <CardDescription>
-                    Send a message to all users via email or push notification.
+                    Send General Notifications to all users
                   </CardDescription>
                 </div>
               </div>
@@ -411,7 +525,7 @@ export default function Settings() {
                 <AlertDialogTrigger asChild>
                   <Button
                     variant="default"
-                    disabled={!settings.notificationBody}
+                    disabled={!canSendNotification || isSendingManyNotifications}
                   >
                     <Send className="h-4 w-4 mr-2" />
                     Send Notification
@@ -428,8 +542,11 @@ export default function Settings() {
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleSendNotification}>
-                      Yes, Send Now
+                    <AlertDialogAction
+                      onClick={handleSendNotification}
+                      disabled={isSendingManyNotifications}
+                    >
+                      {isSendingManyNotifications ? "Sending…" : "Yes, send now"}
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
@@ -438,6 +555,40 @@ export default function Settings() {
           </Card>
         </div>
       </div>
+    </div>
+  );
+}
+
+function WalletToggle({
+  id,
+  label,
+  description,
+  checked,
+  onCheckedChange,
+}: {
+  id: string;
+  label: string;
+  description: string;
+  checked: boolean;
+  onCheckedChange: (c: boolean) => void;
+}) {
+  return (
+    <div
+      className={`p-4 rounded-lg border ${
+        checked
+          ? "border-red-500 bg-red-900/20"
+          : "border-gray-200 dark:border-gray-700"
+      }`}
+    >
+      <div className="flex items-center justify-between">
+        <Label htmlFor={id} className="font-semibold">
+          {label}
+        </Label>
+        <Switch id={id} checked={checked} onCheckedChange={onCheckedChange} />
+      </div>
+      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+        {description}
+      </p>
     </div>
   );
 }

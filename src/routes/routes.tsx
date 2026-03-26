@@ -55,6 +55,12 @@ import AdminDashboard from "@/pages/admins/AdminDashboard";
 import AdminFinance from "@/pages/admins/AdminFinance";
 import IndivdualDriverTrips from "@/pages/admins/IndivdualDriverTrips";
 import IndividualDriverTipDetails from "@/pages/admins/IndividualDriverTipDetails";
+import AdminRidersPayouts from "@/pages/admins/AdminRidersPayouts";
+import AdminVendorsPayouts from "@/pages/admins/AdminVendorsPayouts";
+import AdminFleetsPayouts from "@/pages/admins/AdminFleetsPayouts";
+import AdminPayoutDetails from "@/pages/admins/AdminPayoutDetails";
+import AdminOrders from "@/pages/admins/AdminOrders";
+import AdminOrderDetails from "@/pages/admins/AdminOrderDetails";
 import { FleetKyc } from "@/pages/fleet/FleetKyc";
 import { VendorKycForm } from "@/pages/vendors/VendorKyc";
 import VendorBanks from "@/pages/vendors/Banks";
@@ -350,10 +356,33 @@ export const routes = createBrowserRouter([
         element: <VendorsDetails />,
       },
       {
+        path: "orders",
+        element: <AdminOrders />,
+      },
+      {
+        path: "orders/:id",
+        element: <AdminOrderDetails />,
+      },
+      {
         path: "financials",
         element: <AdminFinance />,
       },
-
+      {
+        path: "payouts/riders",
+        element: <AdminRidersPayouts />,
+      },
+      {
+        path: "payouts/vendors",
+        element: <AdminVendorsPayouts />,
+      },
+      {
+        path: "payouts/fleets",
+        element: <AdminFleetsPayouts />,
+      },
+      {
+        path: "payouts/:type/:id",
+        element: <AdminPayoutDetails />,
+      },
       {
         path: "settings",
         element: <Settings />,
@@ -369,3 +398,4 @@ export const routes = createBrowserRouter([
     ],
   },
 ]);
+

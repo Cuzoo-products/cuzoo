@@ -6,9 +6,9 @@ import {
   Settings,
   CarFront,
   ShieldUser,
-  Map,
   WalletMinimal,
   Plus,
+  ShoppingBag,
 } from "lucide-react";
 
 import {
@@ -57,8 +57,28 @@ const items = [
     icon: UserRoundPen,
   },
   {
+    title: "Orders",
+    url: "orders",
+    icon: ShoppingBag,
+  },
+  {
     title: "Finance",
     url: "financials",
+    icon: WalletMinimal,
+  },
+  {
+    title: "Rider Payouts",
+    url: "payouts/riders",
+    icon: WalletMinimal,
+  },
+  {
+    title: "Vendor Payouts",
+    url: "payouts/vendors",
+    icon: WalletMinimal,
+  },
+  {
+    title: "Fleet Payouts",
+    url: "payouts/fleets",
     icon: WalletMinimal,
   },
   {
@@ -76,11 +96,11 @@ const items = [
     url: "settings",
     icon: Settings,
   },
-  {
-    title: "Map",
-    url: "map",
-    icon: Map,
-  },
+  // {
+  //   title: "Map",
+  //   url: "map",
+  //   icon: Map,
+  // },
 ];
 
 export default function AdminSideBar() {

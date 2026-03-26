@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -23,9 +24,10 @@ export type WithdrawAccount = {
 
 export type WithdrawDialogProps = {
   balance: number;
-  onSubmit: (data: WithdrawPayload) => void;
+  onSubmit: (data: WithdrawPayload) => Promise<boolean | void> | boolean | void;
   isPending?: boolean;
   accounts?: WithdrawAccount[];
+  disabled?: boolean;
 };
 
 export function WithdrawDialog({
@@ -33,8 +35,11 @@ export function WithdrawDialog({
   onSubmit,
   isPending = false,
   accounts = [],
+  disabled = false,
 }: WithdrawDialogProps) {
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const [open, setOpen] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
     const amountVal = (form.elements.namedItem("amount") as HTMLInputElement)
@@ -53,13 +58,17 @@ export function WithdrawDialog({
       return;
     }
 
-    onSubmit({ accountNumber, amount });
+    const result = await onSubmit({ accountNumber, amount });
+    if (result !== false) {
+      setOpen(false);
+      form.reset();
+    }
   };
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>Withdraw</Button>
+        <Button disabled={disabled}>Withdraw</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <form onSubmit={handleSubmit}>

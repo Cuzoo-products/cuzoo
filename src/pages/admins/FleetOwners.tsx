@@ -1,4 +1,4 @@
-import { useGetAllFleets } from "@/api/admin/useFleet";
+import { useGetAllFleets } from "@/api/admin/fleet/useFleet";
 import { DataTable } from "@/components/ui/data-table";
 import { columns } from "@/components/utilities/Admins/FleetManagersDataTable";
 import Loader from "@/components/utilities/Loader";

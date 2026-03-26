@@ -1,6 +1,6 @@
 import { DataTable } from "@/components/ui/data-table";
 import { columns } from "@/components/utilities/Admins/UsersDataTable";
-import { useUsers } from "@/api/admin/useUsers";
+import { useUsers } from "@/api/admin/users/useUsers";
 import Loader from "@/components/utilities/Loader";
 
 function Users() {

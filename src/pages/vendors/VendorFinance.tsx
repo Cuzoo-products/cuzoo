@@ -46,13 +46,14 @@ const toMajorUnit = (amount?: number) =>
   typeof amount === "number" ? amount / 100 : 0;
 
 export default function VendorFinance() {
-  const { mutate: requestWithdrawal, isPending: isWithdrawing } =
+  const { mutateAsync: requestWithdrawal, isPending: isWithdrawing } =
     useRequestWithdrawal();
   const { data, isLoading, error } = useWalletDetails() as {
     data?: WalletDetailsResponse;
     isLoading: boolean;
     error: unknown;
   };
+  
 
   const { data: inflow } = useInflow() as { data?: HistoryResponse };
   const { data: outflow } = useOutflow() as { data?: HistoryResponse };
@@ -117,9 +118,17 @@ export default function VendorFinance() {
             </Link>
             <WithdrawDialog
               balance={walletAmountMajor}
-              onSubmit={(payload) => requestWithdrawal(payload)}
+              onSubmit={async (payload) => {
+                try {
+                  await requestWithdrawal(payload);
+                  return true;
+                } catch {
+                  return false;
+                }
+              }}
               isPending={isWithdrawing}
               accounts={wallet?.accounts ?? []}
+              disabled={Boolean(wallet?.suspended)}
             />
           </div>
         </CardHeader>

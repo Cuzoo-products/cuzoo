@@ -1,4 +1,4 @@
-import axiosInstance from "../axiosInstances";
+import axiosInstance from "@/api/axiosInstances";
 
 export const createAdmin = async (adminData: unknown) => {
   const response = await axiosInstance.post("/admins", adminData);

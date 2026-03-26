@@ -1,4 +1,4 @@
-import axiosInstance from "../axiosInstances";
+import axiosInstance from "@/api/axiosInstances";
 
 export const getVendors = async () => {
   const response = await axiosInstance.get("/vendors");
@@ -12,5 +12,15 @@ export const getVendor = async (vendorId: string) => {
 
 export const approveVendor = async (id: string) => {
   const response = await axiosInstance.patch(`/vendors/${id}/approve`);
+  return response.data;
+};
+
+export const vendorWalletAction = async (id: string, action: string) => {
+  const response = await axiosInstance.patch(`/vendors/${id}/wallet`, { action });
+  return response.data;
+};
+
+export const vendorAccountAction = async (id: string, action: string) => {
+  const response = await axiosInstance.patch(`/vendors/${id}/account`, { action });
   return response.data;
 };

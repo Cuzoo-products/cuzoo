@@ -1,6 +1,6 @@
 import { DataTable } from "@/components/ui/data-table";
 import { columns } from "@/components/utilities/Admins/VendorDataTable";
-import { useVendors } from "@/api/admin/useVendors";
+import { useVendors } from "@/api/admin/vendors/useVendors";
 import Loader from "@/components/utilities/Loader";
 
 function AdminVendor() {
