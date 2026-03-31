@@ -177,7 +177,7 @@ export default function VendorProfile() {
   const sendEmail = () => {
     const email = profile.email?.trim();
     if (!email) return;
-    sendVerificationEmail({ email, accountType: "vendor" });
+    sendVerificationEmail({ email, accountType: "users" });
   };
 
   const addr = profile.address;

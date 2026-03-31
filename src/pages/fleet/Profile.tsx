@@ -161,7 +161,7 @@ export default function Profile() {
   const sendEmail = () => {
     const email = profile.email?.trim();
     if (!email) return;
-    sendVerificationEmail({ email, accountType: "fleet" });
+    sendVerificationEmail({ email, accountType: "users" });
   };
 
   const docs: Array<[string, Asset | undefined]> = [
@@ -334,7 +334,7 @@ export default function Profile() {
           </CardContent>
         </Card>
 
-        <Card className="bg-secondary">
+        <Card className="bg-secondary py-4">
           <CardHeader>
             <CardTitle>Timestamps</CardTitle>
           </CardHeader>
