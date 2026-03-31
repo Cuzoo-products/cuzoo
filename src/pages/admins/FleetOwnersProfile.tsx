@@ -216,13 +216,7 @@ export default function FleetOwnersProfile() {
                     Email not verified
                   </Badge>
                 )}
-                {fleet.phoneNumberVerified ? (
-                  <Badge variant="outline">Phone verified</Badge>
-                ) : (
-                  <Badge variant="outline" className="text-muted-foreground">
-                    Phone not verified
-                  </Badge>
-                )}
+
                 {fleet.suspended ? (
                   <Badge variant="destructive">Suspended</Badge>
                 ) : null}
@@ -298,7 +292,7 @@ export default function FleetOwnersProfile() {
                 mode="email-only"
                 description="Send an email to this fleet manager."
               />
-              <Card className="bg-secondary">
+              <Card className="bg-secondary py-4">
                 <CardHeader className="py-4">
                   <CardTitle>Fleet links</CardTitle>
                   <CardDescription>

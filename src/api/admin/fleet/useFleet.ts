@@ -21,8 +21,12 @@ export const useApproveFleet = (id: string | undefined) => {
   return useMutation({
     mutationFn: () => approveFleet(id!),
     onSuccess: () => {
+      toast.success("Fleet approved successfully");
       if (id) queryClient.invalidateQueries({ queryKey: ["fleet", id] });
       queryClient.invalidateQueries({ queryKey: ["fleets"] });
+    },
+    onError: () => {
+      toast.error("Failed to approve fleet");
     },
   });
 };

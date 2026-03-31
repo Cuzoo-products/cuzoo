@@ -9,6 +9,14 @@ export type CouponData = {
   minimumSpend: number;
 };
 
+/** Firestore Timestamp JSON shape sometimes returned by the API. */
+export type FirestoreTimestampLike = {
+  _seconds?: number;
+  _nanoseconds?: number;
+  seconds?: number;
+  nanoseconds?: number;
+};
+
 /** One coupon row from GET /vendors/coupons (supports Id or id). */
 export type VendorCouponRow = {
   Id?: string;
@@ -16,13 +24,24 @@ export type VendorCouponRow = {
   vendorId?: string;
   code: string;
   value: number;
-  expiryDate: string;
+  /** ISO string, or Firestore `{ _seconds, _nanoseconds }` — see `normalizeCouponRow`. */
+  expiryDate: string | FirestoreTimestampLike;
   maxUsage: number;
   usage: number;
   minimumSpend: number;
   createdAt?: string;
   updatedAt?: string;
 };
+
+function normalizeCouponRow(row: unknown): VendorCouponRow {
+  const r = row as Record<string, unknown>;
+  const expiryRaw =
+    r.expiryDate ?? r.ExpiryDate ?? r.expiry_date ?? r.expiry;
+  return {
+    ...(row as VendorCouponRow),
+    expiryDate: (expiryRaw ?? "") as VendorCouponRow["expiryDate"],
+  };
+}
 
 type CouponsListEnvelope = {
   success?: boolean;
@@ -43,14 +62,14 @@ export function parseVendorCouponsResponse(
   const root = payload as CouponsListEnvelope & { data?: unknown };
   const d = root.data;
   if (d == null) return [];
-  if (Array.isArray(d)) return d;
+  if (Array.isArray(d)) return d.map(normalizeCouponRow);
   if (typeof d === "object") {
     const inner = (d as { data?: unknown }).data;
-    if (Array.isArray(inner)) return inner as VendorCouponRow[];
+    if (Array.isArray(inner)) return inner.map(normalizeCouponRow);
     if (inner && typeof inner === "object" && "code" in inner) {
-      return [inner as VendorCouponRow];
+      return [normalizeCouponRow(inner)];
     }
-    if ("code" in (d as object)) return [d as VendorCouponRow];
+    if ("code" in (d as object)) return [normalizeCouponRow(d)];
   }
   return [];
 }

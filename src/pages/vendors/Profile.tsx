@@ -1,21 +1,24 @@
-import { useEffect } from "react";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { VendorProfileFormSchema } from "@/lib/zodVaildation";
-import { useGetVendorProfile, useUpdateVendorProfile } from "@/api/vendor/auth/useAuth";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import Loader from "@/components/utilities/Loader";
+import { useGetVendorProfile } from "@/api/vendor/auth/useAuth";
+import { useSendVerificationMail } from "@/api/shared/useAuth";
 
 type PhoneNumberPayload = {
   countryCode?: string;
@@ -25,12 +28,21 @@ type PhoneNumberPayload = {
   countryCallingCode?: string;
 };
 
-type DocAsset = { path?: string; url?: string; type?: string };
+type Asset = {
+  path?: string;
+  url?: string;
+  type?: string;
+};
+
+type AddressGeometry = {
+  location?: { lat?: number; lng?: number };
+};
 
 type AddressPayload = {
   formatted_address?: string;
   description?: string;
   placeId?: string;
+  geometry?: AddressGeometry;
   landMark?: string;
   country?: string;
   state?: string;
@@ -47,17 +59,26 @@ type ProprietorPayload = {
   declaration?: string;
 };
 
+/** Firestore Timestamp serialized in JSON (e.g. from API). */
+type FirestoreTimestampLike = {
+  _seconds?: number;
+  _nanoseconds?: number;
+  seconds?: number;
+  nanoseconds?: number;
+};
+
 export type VendorProfilePayload = {
-  Id: string;
-  businessName: string;
-  firstName: string;
-  lastName: string;
-  email: string;
+  Id?: string;
+  id?: string;
+  businessName?: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
   phoneNumber?: PhoneNumberPayload;
-  logo?: DocAsset;
+  logo?: Asset;
   storeCode?: string;
   registrationNumber?: string;
-  dateOfIncorporation?: string;
+  dateOfIncorporation?: string | FirestoreTimestampLike;
   placeOfIncorporation?: string;
   businessType?: string;
   address?: AddressPayload;
@@ -67,15 +88,15 @@ export type VendorProfilePayload = {
   suspended?: boolean;
   typeOfGoodsSold?: string;
   proprietor?: ProprietorPayload;
-  passport?: DocAsset;
-  certificateOfIncorporation?: DocAsset;
-  governmentApprovedId?: DocAsset;
-  proofOfAddress?: DocAsset;
-  lgaPermit?: DocAsset;
-  gphLicense?: DocAsset;
-  nafdacRegistration?: DocAsset;
-  createdAt?: string;
-  updatedAt?: string;
+  passport?: Asset;
+  certificateOfIncorporation?: Asset;
+  governmentApprovedId?: Asset;
+  proofOfAddress?: Asset;
+  lgaPermit?: Asset;
+  gphLicense?: Asset;
+  nafdacRegistration?: Asset;
+  createdAt?: string | FirestoreTimestampLike;
+  updatedAt?: string | FirestoreTimestampLike;
 };
 
 type VendorProfileResponse = {
@@ -84,104 +105,61 @@ type VendorProfileResponse = {
   data: VendorProfilePayload;
 };
 
-function VendorProfile() {
+const EM_DASH = "—";
+
+function toDate(value: unknown): Date | null {
+  if (value == null || value === "") return null;
+  if (typeof value === "string" || typeof value === "number") {
+    const d = new Date(value);
+    return Number.isNaN(d.getTime()) ? null : d;
+  }
+  if (typeof value === "object" && value !== null) {
+    const o = value as FirestoreTimestampLike;
+    const sec = o._seconds ?? o.seconds;
+    if (typeof sec === "number") {
+      return new Date(sec * 1000);
+    }
+  }
+  return null;
+}
+
+function formatDate(value: unknown): string {
+  const d = toDate(value);
+  if (d) {
+    return d.toLocaleString("en-NG", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
+  if (typeof value === "string" && value.trim() !== "") return value;
+  return EM_DASH;
+}
+
+function fullName(p?: VendorProfilePayload): string {
+  return `${p?.firstName ?? ""} ${p?.lastName ?? ""}`.trim() || EM_DASH;
+}
+
+function formatCoord(lat?: number, lng?: number): string {
+  if (typeof lat === "number" && typeof lng === "number") {
+    return `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+  }
+  return EM_DASH;
+}
+
+export default function VendorProfile() {
   const { data, isLoading, error } = useGetVendorProfile() as {
     data?: VendorProfileResponse;
     isLoading: boolean;
     error: unknown;
   };
 
-  const { mutate: updateProfile, isPending: isUpdating } = useUpdateVendorProfile();
+  const { mutate: sendVerificationEmail, isPending: isSendingVerification } =
+    useSendVerificationMail();
 
-  const form = useForm<z.infer<typeof VendorProfileFormSchema>>({
-    resolver: zodResolver(VendorProfileFormSchema),
-    defaultValues: {
-      fullName: "",
-      email: "",
-      businessName: "",
-      phoneNumber: "",
-      storeCode: "",
-      registrationNumber: "",
-      dateOfIncorporation: "",
-      placeOfIncorporation: "",
-      businessType: "",
-      address: "",
-      typeOfGoodsSold: "",
-      approvalStatus: "",
-    },
-  });
-
-  useEffect(() => {
-    const payload = data?.data;
-    if (!payload) return;
-
-    const fullName = `${payload.firstName ?? ""} ${payload.lastName ?? ""}`.trim();
-    const phoneNumber =
-      payload.phoneNumber?.internationalFormat ??
-      payload.phoneNumber?.nationalFormat ??
-      payload.phoneNumber?.number ??
-      "";
-    const raw = payload.dateOfIncorporation as string | Date | number | { toDate: () => Date } | undefined;
-    let dateOfIncorporation = "";
-    if (typeof raw === "string") {
-      dateOfIncorporation = raw.slice(0, 10);
-    } else if (raw instanceof Date) {
-      dateOfIncorporation = raw.toISOString().slice(0, 10);
-    } else if (raw && typeof raw === "object" && "toDate" in raw && typeof (raw as { toDate: () => Date }).toDate === "function") {
-      dateOfIncorporation = (raw as { toDate: () => Date }).toDate().toISOString().slice(0, 10);
-    } else if (typeof raw === "number") {
-      dateOfIncorporation = new Date(raw).toISOString().slice(0, 10);
-    }
-    const address =
-      payload.address?.formatted_address ??
-      payload.address?.description ??
-      "";
-
-    form.reset({
-      fullName,
-      email: payload.email ?? "",
-      businessName: payload.businessName ?? "",
-      phoneNumber,
-      storeCode: payload.storeCode ?? "",
-      registrationNumber: payload.registrationNumber ?? "",
-      dateOfIncorporation,
-      placeOfIncorporation: payload.placeOfIncorporation ?? "",
-      businessType: payload.businessType ?? "",
-      address,
-      typeOfGoodsSold: payload.typeOfGoodsSold ?? "",
-      approvalStatus: payload.approvalStatus ?? "",
-    });
-  }, [data, form]);
-
-  function onSubmit(values: z.infer<typeof VendorProfileFormSchema>) {
-    const [firstName, ...lastParts] = (values.fullName || "").trim().split(/\s+/);
-    const lastName = lastParts.join(" ") || firstName;
-    updateProfile({
-      firstName: firstName || undefined,
-      lastName: lastName || undefined,
-      email: values.email,
-      businessName: values.businessName,
-      phoneNumber: values.phoneNumber,
-      storeCode: values.storeCode || undefined,
-      registrationNumber: values.registrationNumber || undefined,
-      dateOfIncorporation: values.dateOfIncorporation || undefined,
-      placeOfIncorporation: values.placeOfIncorporation || undefined,
-      businessType: values.businessType || undefined,
-      typeOfGoodsSold: values.typeOfGoodsSold || undefined,
-    });
-  }
-
-  if (isLoading) {
-    return (
-      <div className="@container/main">
-        <div className="my-6">
-          <h3 className="!font-bold text-3xl">Profile</h3>
-          <p className="text-muted-foreground">Loading profile...</p>
-        </div>
-        <Loader />
-      </div>
-    );
-  }
+  if (isLoading) return <Loader />;
 
   if (error || !data?.data) {
     return (
@@ -196,12 +174,35 @@ function VendorProfile() {
 
   const profile = data.data;
 
+  const sendEmail = () => {
+    const email = profile.email?.trim();
+    if (!email) return;
+    sendVerificationEmail({ email, accountType: "vendor" });
+  };
+
+  const addr = profile.address;
+  const primaryAddress =
+    addr?.formatted_address?.trim() ||
+    addr?.description?.trim() ||
+    [addr?.landMark, addr?.state, addr?.country].filter(Boolean).join(", ") ||
+    "";
+
+  const docs: Array<[string, Asset | undefined]> = [
+    ["Passport", profile.passport],
+    ["Certificate of Incorporation", profile.certificateOfIncorporation],
+    ["Government Approved ID", profile.governmentApprovedId],
+    ["Proof of Address", profile.proofOfAddress],
+    ["LGA Permit", profile.lgaPermit],
+    ["GPH License", profile.gphLicense],
+    ["NAFDAC Registration", profile.nafdacRegistration],
+  ];
+
   return (
     <div className="@container/main">
       <div className="my-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h3 className="!font-bold text-3xl">Profile</h3>
-          <p className="text-muted-foreground">View and edit your vendor profile</p>
+          <p className="text-muted-foreground">Vendor profile</p>
         </div>
         <div className="flex items-center gap-3">
           <Avatar className="h-14 w-14">
@@ -213,250 +214,261 @@ function VendorProfile() {
             </AvatarFallback>
           </Avatar>
           <div>
-            <p className="font-medium">{profile.businessName}</p>
+            <p className="font-medium">{profile.businessName ?? EM_DASH}</p>
             <p className="text-xs text-muted-foreground capitalize">
-              {profile.approvalStatus}
+              {profile.approvalStatus ?? EM_DASH}
             </p>
           </div>
         </div>
       </div>
 
-      <div className="bg-secondary max-w-3xl mx-auto p-6 rounded-lg space-y-4">
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="w-4/5 md:w-3/4 lg:w-2/3 space-y-6 mx-auto"
-          >
-            <FormField
-              control={form.control}
-              name="fullName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Full Name</FormLabel>
-                  <FormControl>
-                    <Input
-                      className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
-                      placeholder="John Doe"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage className="text-red-600" />
-                </FormItem>
-              )}
-            />
+      <div className="space-y-6 max-w-5xl mx-auto">
+        <Card className="bg-secondary py-4">
+          <CardHeader>
+            <CardTitle>Account</CardTitle>
+            <CardDescription>Core account and verification details.</CardDescription>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+            <div>
+              <p className="text-muted-foreground text-xs">Vendor ID</p>
+              <p className="font-mono break-all">{profile.Id ?? profile.id ?? EM_DASH}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground text-xs">Full name</p>
+              <p>{fullName(profile)}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground text-xs">Business name</p>
+              <p>{profile.businessName ?? EM_DASH}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground text-xs">Email</p>
+              <p>{profile.email ?? EM_DASH}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground text-xs">Store code</p>
+              <p>{profile.storeCode ?? EM_DASH}</p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant={profile.emailVerified ? "default" : "secondary"}>
+                {profile.emailVerified ? "Email verified" : "Email not verified"}
+              </Badge>
+              {!profile.emailVerified ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={sendEmail}
+                  disabled={!profile.email?.trim() || isSendingVerification}
+                >
+                  {isSendingVerification ? "Sending…" : "Verify email"}
+                </Button>
+              ) : null}
+            </div>
+            <div className="flex flex-wrap items-center gap-2 sm:col-span-2">
+             
+              {profile.suspended ? <Badge variant="destructive">Suspended</Badge> : null}
+             
+            </div>
+          </CardContent>
+        </Card>
 
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input
-                      className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
-                      type="email"
-                      placeholder="user@example.com"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage className="text-red-600" />
-                </FormItem>
-              )}
-            />
+        <Card className="bg-secondary py-4">
+          <CardHeader>
+            <CardTitle>Business</CardTitle>
+            <CardDescription>Registration and offering details.</CardDescription>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+            <div>
+              <p className="text-muted-foreground text-xs">Registration number</p>
+              <p>{profile.registrationNumber ?? EM_DASH}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground text-xs">Date of incorporation</p>
+              <p>{formatDate(profile.dateOfIncorporation)}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground text-xs">Place of incorporation</p>
+              <p>{profile.placeOfIncorporation ?? EM_DASH}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground text-xs">Business type</p>
+              <p>{profile.businessType ?? EM_DASH}</p>
+            </div>
+            <div className="sm:col-span-2">
+              <p className="text-muted-foreground text-xs">Type of goods sold</p>
+              <p>{profile.typeOfGoodsSold ?? EM_DASH}</p>
+            </div>
+          </CardContent>
+        </Card>
 
-            <FormField
-              control={form.control}
-              name="businessName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Business Name</FormLabel>
-                  <FormControl>
-                    <Input
-                      className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
-                      placeholder="Your business name"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage className="text-red-600" />
-                </FormItem>
-              )}
-            />
+        <Card className="bg-secondary py-4">
+          <CardHeader>
+            <CardTitle>Address</CardTitle>
+            <CardDescription>Location and place details from your profile.</CardDescription>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+            <div className="sm:col-span-2">
+              <p className="text-muted-foreground text-xs">Primary</p>
+              <p>{primaryAddress || EM_DASH}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground text-xs">Formatted address</p>
+              <p>{addr?.formatted_address ?? EM_DASH}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground text-xs">Description</p>
+              <p>{addr?.description ?? EM_DASH}</p>
+            </div>
+            
+            <div>
+              <p className="text-muted-foreground text-xs">Landmark</p>
+              <p>{addr?.landMark ?? EM_DASH}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground text-xs">Country</p>
+              <p>{addr?.country ?? EM_DASH}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground text-xs">State</p>
+              <p>{addr?.state ?? EM_DASH}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground text-xs">Direction</p>
+              <p>{addr?.direction ?? EM_DASH}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground text-xs">Distance / duration</p>
+              <p>
+                {addr?.distance != null || addr?.duration != null
+                  ? `${addr?.distance ?? EM_DASH} / ${addr?.duration ?? EM_DASH}`
+                  : EM_DASH}
+              </p>
+            </div>
+            <div>
+              <p className="text-muted-foreground text-xs">Coordinates (lat, lng)</p>
+              <p className="font-mono text-xs">
+                {formatCoord(addr?.geometry?.location?.lat, addr?.geometry?.location?.lng)}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
 
-            <FormField
-              control={form.control}
-              name="phoneNumber"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Phone Number</FormLabel>
-                  <FormControl>
-                    <Input
-                      className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
-                      type="tel"
-                      placeholder="+234..."
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage className="text-red-600" />
-                </FormItem>
-              )}
-            />
+        <Card className="bg-secondary py-4">
+          <CardHeader>
+            <CardTitle>Contact</CardTitle>
+            <CardDescription>Phone numbers on file.</CardDescription>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+            <div>
+              <p className="text-muted-foreground text-xs">International</p>
+              <p>{profile.phoneNumber?.internationalFormat ?? EM_DASH}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground text-xs">National</p>
+              <p>{profile.phoneNumber?.nationalFormat ?? EM_DASH}</p>
+            </div>
+           
+            <div>
+              <p className="text-muted-foreground text-xs">Country code</p>
+              <p>{profile.phoneNumber?.countryCode ?? EM_DASH}</p>
+            </div>
+          </CardContent>
+        </Card>
 
-            <FormField
-              control={form.control}
-              name="storeCode"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Store Code</FormLabel>
-                  <FormControl>
-                    <Input
-                      className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
-                      placeholder="Store code"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage className="text-red-600" />
-                </FormItem>
-              )}
-            />
+        <Card className="bg-secondary py-4">
+          <CardHeader>
+            <CardTitle>Proprietor</CardTitle>
+            <CardDescription>Registered proprietor details.</CardDescription>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+            <div>
+              <p className="text-muted-foreground text-xs">Name</p>
+              <p>{profile.proprietor?.name ?? EM_DASH}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground text-xs">Nationality</p>
+              <p>{profile.proprietor?.nationality ?? EM_DASH}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground text-xs">State</p>
+              <p>{profile.proprietor?.state ?? EM_DASH}</p>
+            </div>
+            <div className="sm:col-span-2">
+              <p className="text-muted-foreground text-xs">Residential address</p>
+              <p>{profile.proprietor?.residentialAddress ?? EM_DASH}</p>
+            </div>
+            <div className="sm:col-span-2">
+              <p className="text-muted-foreground text-xs">Declaration</p>
+              <p className="whitespace-pre-wrap">{profile.proprietor?.declaration ?? EM_DASH}</p>
+            </div>
+          </CardContent>
+        </Card>
 
-            <FormField
-              control={form.control}
-              name="registrationNumber"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Registration Number (RC)</FormLabel>
-                  <FormControl>
-                    <Input
-                      className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
-                      placeholder="RC123456"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage className="text-red-600" />
-                </FormItem>
-              )}
-            />
+        
 
-            <FormField
-              control={form.control}
-              name="dateOfIncorporation"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Date of Incorporation</FormLabel>
-                  <FormControl>
-                    <Input
-                      className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
-                      type="date"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage className="text-red-600" />
-                </FormItem>
-              )}
-            />
+        <Card className="bg-secondary py-4">
+          <CardHeader>
+            <CardTitle>Verification documents</CardTitle>
+            <CardDescription>KYC assets linked to this vendor profile.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Document</TableHead>
+                  <TableHead className="hidden sm:table-cell">Type</TableHead>
+                  <TableHead className="hidden md:table-cell">Path</TableHead>
+                  <TableHead className="text-right">Action</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {docs.filter(([, d]) => d?.url).length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={4} className="text-center text-muted-foreground">
+                      No document URLs on file.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  docs
+                    .filter(([, d]) => !!d?.url)
+                    .map(([name, d]) => (
+                      <TableRow key={name}>
+                        <TableCell>{name}</TableCell>
+                        <TableCell className="hidden sm:table-cell">{d?.type ?? EM_DASH}</TableCell>
+                        <TableCell className="hidden md:table-cell max-w-[220px] truncate text-muted-foreground">
+                          {d?.path ?? EM_DASH}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button asChild variant="outline" size="sm">
+                            <a href={d?.url} target="_blank" rel="noopener noreferrer">
+                              View
+                            </a>
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                )}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
 
-            <FormField
-              control={form.control}
-              name="placeOfIncorporation"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Place of Incorporation</FormLabel>
-                  <FormControl>
-                    <Input
-                      className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
-                      placeholder="e.g. Lagos"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage className="text-red-600" />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="businessType"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Business Type</FormLabel>
-                  <FormControl>
-                    <Input
-                      className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
-                      placeholder="e.g. Logistics, E-commerce"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage className="text-red-600" />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="address"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Address</FormLabel>
-                  <FormControl>
-                    <Input
-                      className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
-                      placeholder="Business address"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage className="text-red-600" />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="typeOfGoodsSold"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Type of Goods Sold</FormLabel>
-                  <FormControl>
-                    <Input
-                      className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
-                      placeholder="e.g. Cosmetics, Food, Electronics"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage className="text-red-600" />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="approvalStatus"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Approval Status</FormLabel>
-                  <FormControl>
-                    <Input
-                      className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3] bg-muted"
-                      disabled
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage className="text-red-600" />
-                </FormItem>
-              )}
-            />
-
-            <Button
-              type="submit"
-              className="w-full bg-[#4D37B3] text-white mt-3"
-              disabled={isUpdating}
-            >
-              {isUpdating ? "Saving…" : "Save changes"}
-            </Button>
-          </form>
-        </Form>
+        <Card className="bg-secondary py-4">
+          <CardHeader>
+            <CardTitle>Timestamps</CardTitle>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+            <div>
+              <p className="text-muted-foreground text-xs">Created at</p>
+              <p>{formatDate(profile.createdAt)}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground text-xs">Updated at</p>
+              <p>{formatDate(profile.updatedAt)}</p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
 }
-
-export default VendorProfile;

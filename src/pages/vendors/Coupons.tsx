@@ -26,6 +26,7 @@ import { toast } from "sonner";
 import { useCreateCoupon, useGetCoupons } from "@/api/vendor/coupon/useCoupon";
 import {
   parseVendorCouponsResponse,
+  type FirestoreTimestampLike,
   type VendorCouponRow,
 } from "@/api/vendor/coupon/coupon";
 import { payoutRecordId } from "@/lib/payoutId";
@@ -60,23 +61,46 @@ function randomCode(length = 8): string {
   return result;
 }
 
-function formatCouponDate(iso?: string): string {
-  if (!iso) return "—";
-  try {
-    return new Date(iso).toLocaleString("en-NG", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    });
-  } catch {
-    return iso;
+function couponDateToMillis(value: unknown): number | null {
+  if (value == null || value === "") return null;
+  if (typeof value === "number") {
+    const t = new Date(value).getTime();
+    return Number.isNaN(t) ? null : t;
   }
+  if (typeof value === "string") {
+    const t = new Date(value).getTime();
+    return Number.isNaN(t) ? null : t;
+  }
+  if (typeof value === "object" && value !== null) {
+    const o = value as FirestoreTimestampLike;
+    const sec = o._seconds ?? o.seconds;
+    if (typeof sec === "number") return sec * 1000;
+  }
+  return null;
 }
 
-function isCouponExpired(expiryDate?: string): boolean {
-  if (!expiryDate) return false;
-  const t = new Date(expiryDate).getTime();
-  return !Number.isNaN(t) && t < Date.now();
+/** Renders API expiry values: ISO strings, Firestore timestamps, or numeric epoch. */
+function formatCouponDate(value: unknown): string {
+  const ms = couponDateToMillis(value);
+  if (ms == null) {
+    if (typeof value === "string" && value.trim() !== "") return value.trim();
+    return "—";
+  }
+  return new Date(ms).toLocaleString("en-NG", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true,
+  });
+}
+
+function isCouponExpired(expiryDate: unknown): boolean {
+  const ms = couponDateToMillis(expiryDate);
+  if (ms == null) return false;
+  return ms < Date.now();
 }
 
 function usageLabel(c: VendorCouponRow): string {
@@ -114,16 +138,20 @@ export default function Coupons() {
   };
 
   const onSubmit = (data: CouponFormValues) => {
+    const parsed = new Date(data.expiryDate);
+    const expiryIso = Number.isNaN(parsed.getTime())
+      ? data.expiryDate
+      : parsed.toISOString();
     const newCoupon: CreateCouponPayload = {
       code: data.code.toUpperCase(),
       value: data.value,
       minimumSpend: data.minimumSpend,
-      expiryDate: data.expiryDate,
+      expiryDate: expiryIso,
       maxUsage: data.maxUsage ?? null,
       description: data.description ?? "",
     };
 
-    console.log(newCoupon);
+  console.log(newCoupon);
     createCoupon(newCoupon, {
       onSuccess: () => {
         form.reset({
@@ -232,9 +260,9 @@ export default function Coupons() {
                 name="expiryDate"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Expiry date</FormLabel>
+                    <FormLabel>Expiry date and time</FormLabel>
                     <FormControl>
-                      <Input type="date" {...field} />
+                      <Input type="datetime-local" {...field} step={60} />
                     </FormControl>
                     <FormMessage className="text-red-600" />
                   </FormItem>

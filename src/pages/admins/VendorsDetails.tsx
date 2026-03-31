@@ -309,13 +309,7 @@ export default function VendorsDetails() {
                 disabled={accountMutation.isPending || walletMutation.isPending}
               />
             </div>
-            {routeId ? (
-              <Button asChild variant="outline" className="w-full">
-                <Link to={`/admins/vendors/${routeId}/orders`}>
-                  View vendor orders
-                </Link>
-              </Button>
-            ) : null}
+
             <Button
               variant="destructive"
               className="w-full"
@@ -340,13 +334,22 @@ export default function VendorsDetails() {
                 mode="email-only"
                 description="Send an email to this vendor."
               />
-              <div className="flex justify-end">
-                <Button asChild>
-                  <Link to={`/admins/vendors/${routeId}/orders`}>
-                    Orders for this vendor
-                  </Link>
-                </Button>
-              </div>
+
+              <Card className="bg-secondary py-4">
+                <CardHeader className="py-4">
+                  <CardTitle>Vendor links</CardTitle>
+                  <CardDescription>
+                    Explore this vendor's orders.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="flex flex-col sm:flex-row gap-2">
+                  <Button asChild variant="outline" className="w-full">
+                    <Link to={`/admins/vendors/${routeId}/orders`}>
+                      View vendor orders
+                    </Link>
+                  </Button>
+                </CardContent>
+              </Card>
             </>
           ) : null}
           <Card className="bg-secondary">
