@@ -1,7 +1,7 @@
 import axiosInstance from "@/api/axiosInstances";
 
-export const getOrdersForAdmin = async () => {
-  const response = await axiosInstance.get("/admins/orders");
+export const getOrdersForAdmin = async (orderTypes) => {
+  const response = await axiosInstance.get(`/admins/orders?orderType=${orderTypes}`);
   return response.data;
 };
 

@@ -11,6 +11,8 @@ import {
   columns,
   type AdminOrderData,
 } from "@/components/utilities/Admins/AdminOrdersDataTable";
+import { useGetOrdersForAdmin } from "@/api/admin/orders/useOrders";
+import Loader from "@/components/utilities/Loader";
 
 type AdminOrderItem = {
   id: string;
@@ -79,6 +81,17 @@ const orders: AdminOrderItem[] = [
 
 export default function AdminOrders() {
   const [value, setValue] = useState<string>("All");
+  const { data: ordersData, isLoading: isLoadingOrders, isError: isErrorOrders } = useGetOrdersForAdmin("Package");
+
+  console.log(ordersData)
+
+  if (isLoadingOrders) {
+    return <Loader />;
+  }
+
+  if (isErrorOrders) {
+    return <div>Error loading orders</div>;
+  }
 
   const tableData: AdminOrderData[] = orders.map((order) => ({
     id: order.id,

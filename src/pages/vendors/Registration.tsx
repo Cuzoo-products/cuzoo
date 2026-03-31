@@ -42,7 +42,9 @@ function VendorRegistration() {
   function onSubmit(data: z.infer<typeof VendorRegistrationFormSchema>) {
     createVendor(data, {
       onSuccess: () => {
-        navigate("/verify-email");
+        navigate("/verify-email", {
+          state: { email: data.email, accountType: "vendor" as const },
+        });
       },
     });
   }

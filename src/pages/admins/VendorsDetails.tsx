@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { useParams } from "react-router";
+import { Link, useParams } from "react-router";
 import { toast } from "sonner";
 import { CheckCircle, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,10 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Loader from "@/components/utilities/Loader";
 import { ContactNotificationCard } from "@/components/utilities/Admins/ContactNotificationCard";
+import {
+  PayoutAccountsTable,
+  type WalletPayoutAccount,
+} from "@/components/utilities/Admins/PayoutAccountsTable";
 import { formatApiDate } from "@/lib/utils";
 import {
   useApproveVendor,
@@ -75,7 +79,7 @@ type VendorWallet = {
   currency?: string;
   suspended?: boolean;
   updatedAt?: string;
-  payoutAccounts?: unknown[];
+  payoutAccounts?: WalletPayoutAccount[];
 } & Record<string, unknown>;
 
 type VendorUploadedDoc = {
@@ -134,12 +138,6 @@ function Field({
       <p className="break-words mt-0.5">{children}</p>
     </div>
   );
-}
-
-function formatWalletValue(v: unknown): string {
-  if (v === null || v === undefined) return "—";
-  if (typeof v === "object") return JSON.stringify(v);
-  return String(v);
 }
 
 export default function VendorsDetails() {
@@ -244,8 +242,9 @@ export default function VendorsDetails() {
                 {vendor.businessName || "Vendor"}
               </CardTitle>
               <CardDescription className="mt-1">
-                {[vendor.firstName, vendor.lastName].filter(Boolean).join(" ") ||
-                  "—"}
+                {[vendor.firstName, vendor.lastName]
+                  .filter(Boolean)
+                  .join(" ") || "—"}
               </CardDescription>
               <div className="flex flex-wrap gap-1.5 mt-2">
                 {vendor.approvalStatus ? (
@@ -267,11 +266,16 @@ export default function VendorsDetails() {
           <CardContent className="space-y-3 text-sm py-2">
             <Field label="Email">{vendor.email || "—"}</Field>
             <Field label="Phone (international)">
-              {phone?.internationalFormat || phone?.nationalFormat || phone?.number || "—"}
+              {phone?.internationalFormat ||
+                phone?.nationalFormat ||
+                phone?.number ||
+                "—"}
             </Field>
             <Field label="Store code">{vendor.storeCode || "—"}</Field>
             <Field label="Created">{formatApiDate(vendor.createdAt)}</Field>
-            <Field label="Profile updated">{formatApiDate(vendor.updatedAt)}</Field>
+            <Field label="Profile updated">
+              {formatApiDate(vendor.updatedAt)}
+            </Field>
             {vendor.logo?.type ? (
               <Field label="Logo type">{vendor.logo.type}</Field>
             ) : null}
@@ -305,6 +309,13 @@ export default function VendorsDetails() {
                 disabled={accountMutation.isPending || walletMutation.isPending}
               />
             </div>
+            {routeId ? (
+              <Button asChild variant="outline" className="w-full">
+                <Link to={`/admins/vendors/${routeId}/orders`}>
+                  View vendor orders
+                </Link>
+              </Button>
+            ) : null}
             <Button
               variant="destructive"
               className="w-full"
@@ -322,12 +333,21 @@ export default function VendorsDetails() {
 
         <div className="lg:col-span-2 space-y-6">
           {routeId ? (
-            <ContactNotificationCard
-              entityId={routeId}
-              recipient="vendor"
-              mode="email-only"
-              description="Send an email to this vendor."
-            />
+            <>
+              <ContactNotificationCard
+                entityId={routeId}
+                recipient="vendor"
+                mode="email-only"
+                description="Send an email to this vendor."
+              />
+              <div className="flex justify-end">
+                <Button asChild>
+                  <Link to={`/admins/vendors/${routeId}/orders`}>
+                    Orders for this vendor
+                  </Link>
+                </Button>
+              </div>
+            </>
           ) : null}
           <Card className="bg-secondary">
             <CardHeader className="py-4">
@@ -356,21 +376,25 @@ export default function VendorsDetails() {
           <Card className="bg-secondary">
             <CardHeader className="py-4">
               <CardTitle>Phone</CardTitle>
-              <CardDescription>All fields from phoneNumber.</CardDescription>
+              <CardDescription>Phone number of the vendor.</CardDescription>
             </CardHeader>
             <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm py-2">
-              <Field label="International">{phone?.internationalFormat || "—"}</Field>
+              <Field label="International">
+                {phone?.internationalFormat || "—"}
+              </Field>
               <Field label="National">{phone?.nationalFormat || "—"}</Field>
               <Field label="Raw number">{phone?.number || "—"}</Field>
               <Field label="Country code">{phone?.countryCode || "—"}</Field>
-              <Field label="Calling code">{phone?.countryCallingCode || "—"}</Field>
+              <Field label="Calling code">
+                {phone?.countryCallingCode || "—"}
+              </Field>
             </CardContent>
           </Card>
 
           <Card className="bg-secondary">
             <CardHeader className="py-4">
               <CardTitle>Address</CardTitle>
-              <CardDescription>Structured address from the API.</CardDescription>
+              <CardDescription>Address of the vendor.</CardDescription>
             </CardHeader>
             <CardContent className="grid grid-cols-1 gap-4 text-sm py-2">
               <Field label="Formatted address">
@@ -419,7 +443,7 @@ export default function VendorsDetails() {
             <CardHeader className="py-4">
               <CardTitle>Wallet</CardTitle>
               <CardDescription>
-                Balance, escrow, and payout account info from the API.
+                Balance, escrow, and payout account info of the vendor.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4 text-sm py-2">
@@ -439,12 +463,15 @@ export default function VendorsDetails() {
                     <Field label="Wallet updated">
                       {formatApiDate(wallet.updatedAt)}
                     </Field>
-                    {wallet.payoutAccounts != null ? (
-                      <Field label="Payout accounts" className="sm:col-span-2">
-                        {formatWalletValue(wallet.payoutAccounts)}
-                      </Field>
-                    ) : null}
                   </div>
+                  {wallet.payoutAccounts != null ? (
+                    <div className="space-y-2 pt-2">
+                      <p className="text-muted-foreground text-xs font-medium">
+                        Payout accounts
+                      </p>
+                      <PayoutAccountsTable accounts={wallet.payoutAccounts} />
+                    </div>
+                  ) : null}
                 </>
               ) : (
                 <p className="text-muted-foreground">No wallet data.</p>
@@ -456,21 +483,27 @@ export default function VendorsDetails() {
             <Card className="bg-secondary">
               <CardHeader className="py-4">
                 <CardTitle>Uploaded documents</CardTitle>
-                <CardDescription>Files from the documents array.</CardDescription>
+                <CardDescription>
+                  Documents uploaded by the vendor.
+                </CardDescription>
               </CardHeader>
               <CardContent className="py-2">
                 <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead>Name</TableHead>
-                      <TableHead className="hidden sm:table-cell">Uploaded</TableHead>
+                      <TableHead className="hidden sm:table-cell">
+                        Uploaded
+                      </TableHead>
                       <TableHead className="text-right">Action</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {(vendor.documents ?? []).map((doc) => (
                       <TableRow key={doc.id}>
-                        <TableCell className="font-medium">{doc.name}</TableCell>
+                        <TableCell className="font-medium">
+                          {doc.name}
+                        </TableCell>
                         <TableCell className="hidden sm:table-cell">
                           {doc.uploadDate}
                         </TableCell>

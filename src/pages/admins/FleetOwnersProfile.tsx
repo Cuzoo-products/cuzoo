@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { useParams } from "react-router";
+import { Link, useParams } from "react-router";
 import { toast } from "sonner";
 import { CheckCircle, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,10 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import Loader from "@/components/utilities/Loader";
 import { ContactNotificationCard } from "@/components/utilities/Admins/ContactNotificationCard";
+import {
+  PayoutAccountsTable,
+  type WalletPayoutAccount,
+} from "@/components/utilities/Admins/PayoutAccountsTable";
 import { formatApiDate } from "@/lib/utils";
 import {
   useApproveFleet,
@@ -49,7 +53,7 @@ type FleetWallet = {
   currency?: string;
   suspended?: boolean;
   updatedAt?: string;
-  payoutAccounts?: unknown[];
+  payoutAccounts?: WalletPayoutAccount[];
 } & Record<string, unknown>;
 
 type FleetData = {
@@ -102,12 +106,6 @@ function Field({
       <p className="break-words mt-0.5">{children}</p>
     </div>
   );
-}
-
-function formatWalletValue(v: unknown): string {
-  if (v === null || v === undefined) return "—";
-  if (typeof v === "object") return JSON.stringify(v);
-  return String(v);
 }
 
 export default function FleetOwnersProfile() {
@@ -293,12 +291,39 @@ export default function FleetOwnersProfile() {
 
         <div className="lg:col-span-2 space-y-6">
           {routeId ? (
-            <ContactNotificationCard
-              entityId={routeId}
-              recipient="fleet"
-              mode="email-only"
-              description="Send an email to this fleet manager."
-            />
+            <>
+              <ContactNotificationCard
+                entityId={routeId}
+                recipient="fleet"
+                mode="email-only"
+                description="Send an email to this fleet manager."
+              />
+              <Card className="bg-secondary">
+                <CardHeader className="py-4">
+                  <CardTitle>Fleet links</CardTitle>
+                  <CardDescription>
+                    Explore this fleet manager's riders, vehicles and rides.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="flex flex-col sm:flex-row gap-2">
+                  <Button asChild variant="outline">
+                    <Link to={`/admins/fleet_managers/${routeId}/riders`}>
+                      Fleet riders
+                    </Link>
+                  </Button>
+                  <Button asChild variant="outline">
+                    <Link to={`/admins/fleet_managers/${routeId}/vehicles`}>
+                      Fleet vehicles
+                    </Link>
+                  </Button>
+                  <Button asChild>
+                    <Link to={`/admins/fleet_managers/${routeId}/rides`}>
+                      Riders' rides
+                    </Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            </>
           ) : null}
           <Card className="bg-secondary">
             <CardHeader className="py-4">
@@ -421,26 +446,31 @@ export default function FleetOwnersProfile() {
             </CardHeader>
             <CardContent className="space-y-4 text-sm py-2">
               {wallet && Object.keys(wallet).length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <Field label="Status">
-                    {wallet.suspended ? "Suspended" : "Active"}
-                  </Field>
-                  <Field label="Currency">{wallet.currency ?? "NGN"}</Field>
-                  <Field label="Amount">
-                    {(wallet.amount ?? 0).toLocaleString()}
-                  </Field>
-                  <Field label="Escrow">
-                    {(wallet.escrow ?? 0).toLocaleString()}
-                  </Field>
-                  <Field label="Wallet updated">
-                    {formatApiDate(wallet.updatedAt)}
-                  </Field>
-                  {wallet.payoutAccounts != null ? (
-                    <Field label="Payout accounts" className="sm:col-span-2">
-                      {formatWalletValue(wallet.payoutAccounts)}
+                <>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <Field label="Status">
+                      {wallet.suspended ? "Suspended" : "Active"}
                     </Field>
+                    <Field label="Currency">{wallet.currency ?? "NGN"}</Field>
+                    <Field label="Amount">
+                      {(wallet.amount ?? 0).toLocaleString()}
+                    </Field>
+                    <Field label="Escrow">
+                      {(wallet.escrow ?? 0).toLocaleString()}
+                    </Field>
+                    <Field label="Wallet updated">
+                      {formatApiDate(wallet.updatedAt)}
+                    </Field>
+                  </div>
+                  {wallet.payoutAccounts != null ? (
+                    <div className="space-y-2 pt-2">
+                      <p className="text-muted-foreground text-xs font-medium">
+                        Payout accounts
+                      </p>
+                      <PayoutAccountsTable accounts={wallet.payoutAccounts} />
+                    </div>
                   ) : null}
-                </div>
+                </>
               ) : (
                 <p className="text-muted-foreground">No wallet data.</p>
               )}

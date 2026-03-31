@@ -72,9 +72,13 @@ export const columns: ColumnDef<PayoutData>[] = [
             <DropdownMenuItem onClick={() => navigator.clipboard.writeText(payout.referenceNo)}>
               Copy Reference No.
             </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Link to={`${payout.id}`}>View details</Link>
-            </DropdownMenuItem>
+            {payout.id ? (
+              <DropdownMenuItem asChild>
+                <Link to={payout.id}>View details</Link>
+              </DropdownMenuItem>
+            ) : (
+              <DropdownMenuItem disabled>View details (no id)</DropdownMenuItem>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       );

@@ -14,7 +14,7 @@ export const rejectVendorPayout = async (
   id: string,
   reason: { reason: string },
 ) => {
-  const response = await axiosInstance.post(
+  const response = await axiosInstance.put(
     `/admins/vendors/payouts/${id}/reject`,
     reason,
   );
@@ -22,7 +22,7 @@ export const rejectVendorPayout = async (
 };
 
 export const approveVendorPayout = async (id: string) => {
-  const response = await axiosInstance.post(
+  const response = await axiosInstance.put(
     `/admins/vendors/payouts/${id}/approve`,
   );
   return response.data;
@@ -42,7 +42,7 @@ export const rejectFleetPayout = async (
   id: string,
   reason: { reason: string },
 ) => {
-  const response = await axiosInstance.post(
+  const response = await axiosInstance.put(
     `/admins/fleets/payouts/${id}/reject`,
     reason,
   );
@@ -50,7 +50,7 @@ export const rejectFleetPayout = async (
 };
 
 export const approveFleetPayout = async (id: string) => {
-  const response = await axiosInstance.post(
+  const response = await axiosInstance.put(
     `/admins/fleets/payouts/${id}/approve`,
   );
   return response.data;
@@ -70,7 +70,7 @@ export const rejectRiderPayout = async (
   id: string,
   reason: { reason: string },
 ) => {
-  const response = await axiosInstance.post(
+  const response = await axiosInstance.put(
     `/admins/riders/payouts/${id}/reject`,
     reason,
   );
@@ -78,7 +78,7 @@ export const rejectRiderPayout = async (
 };
 
 export const approveRiderPayout = async (id: string) => {
-  const response = await axiosInstance.post(
+  const response = await axiosInstance.put(
     `/admins/riders/payouts/${id}/approve`,
   );
   return response.data;

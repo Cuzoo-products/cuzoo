@@ -42,7 +42,7 @@ function firebaseChangePasswordMessage(code: string): string {
   }
 }
 
-function VendorResetPassword() {
+function AdminResetPassword() {
   const [showOldPassword, setShowOldPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -230,4 +230,4 @@ function VendorResetPassword() {
   );
 }
 
-export default VendorResetPassword;
+export default AdminResetPassword;

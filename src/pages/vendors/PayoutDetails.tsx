@@ -3,21 +3,24 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { useGetPayout } from "@/api/vendor/finance/useFinance";
+import { sanitizePayoutRouteId, payoutRecordId } from "@/lib/payoutId";
+import { displayRecipientLine } from "@/lib/payoutDetailsHelpers";
 
 export type PayoutDetailResponse = {
   success: boolean;
   statusCode: number;
   data: {
-    type: string;
+    type?: string;
     vendorId?: string;
-    Id: string;
+    Id?: string;
+    id?: string;
     amount: number;
     recipient: string;
     reference: string;
     resolved: boolean;
-    ownerId: string;
+    ownerId?: string;
     transactionId: string;
-    details: {
+    details?: {
       accountName: string;
       accountNumber: string;
       bankName: string;
@@ -55,7 +58,7 @@ const maskAccount = (acc: string) => {
 };
 
 export default function VendorPayoutDetails() {
-  const { id } = useParams<{ id: string }>();
+  const id = sanitizePayoutRouteId(useParams<{ id: string }>().id);
   const { data, isLoading, error } = useGetPayout(id ?? "") as {
     data?: PayoutDetailResponse;
     isLoading: boolean;
@@ -103,7 +106,10 @@ export default function VendorPayoutDetails() {
     );
   }
 
-  const statusVariant: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
+  const statusVariant: Record<
+    string,
+    "default" | "secondary" | "destructive" | "outline"
+  > = {
     completed: "default",
     pending: "secondary",
     processing: "outline",
@@ -112,6 +118,8 @@ export default function VendorPayoutDetails() {
   };
 
   const details = payout.details;
+  const payoutIdDisplay = payoutRecordId(payout);
+  const recipientLine = displayRecipientLine(payout.recipient, details?.accountName);
 
   return (
     <div className="@container/main">
@@ -119,16 +127,14 @@ export default function VendorPayoutDetails() {
         <div>
           <h3 className="!font-bold text-3xl">Payout details</h3>
           <p className="text-sm text-muted-foreground">
-            Reference: {payout.reference}
+            {payout.reference ? `Reference · ${payout.reference}` : "Payout request"}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Badge variant={statusVariant[payout.status] ?? "outline"}>
             {payout.status}
           </Badge>
-          {payout.resolved && (
-            <Badge variant="default">Resolved</Badge>
-          )}
+          {payout.resolved && <Badge variant="default">Resolved</Badge>}
           <Button asChild variant="outline" size="sm">
             <Link to="/vendor/payouts">Back to Payouts</Link>
           </Button>
@@ -136,24 +142,36 @@ export default function VendorPayoutDetails() {
       </div>
 
       <div className="bg-secondary max-w-3xl mx-auto mb-10 p-6 rounded-lg space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 text-sm">
           <div>
             <h4 className="font-semibold mb-1">Amount</h4>
             <p>
-              ₦{payout.amount.toLocaleString("en-NG", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              ₦
+              {payout.amount.toLocaleString("en-NG", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
             </p>
           </div>
           <div>
+            <h4 className="font-semibold mb-1">Payout ID</h4>
+            <p className="font-mono text-xs break-all">{payoutIdDisplay || "—"}</p>
+          </div>
+          <div>
+            <h4 className="font-semibold mb-1">Reference</h4>
+            <p className="font-mono text-xs break-all">{payout.reference || "—"}</p>
+          </div>
+          <div>
             <h4 className="font-semibold mb-1">Recipient</h4>
-            <p>{payout.recipient || "—"}</p>
+            <p>{recipientLine || "—"}</p>
           </div>
           <div>
             <h4 className="font-semibold mb-1">Resolved</h4>
             <p>{payout.resolved ? "Yes" : "No"}</p>
           </div>
-          <div>
+          <div className="md:col-span-2">
             <h4 className="font-semibold mb-1">Transaction ID</h4>
-            <p className="font-mono text-xs">{payout.transactionId || "—"}</p>
+            <p className="font-mono text-xs break-all">{payout.transactionId || "—"}</p>
           </div>
         </div>
 
@@ -167,19 +185,31 @@ export default function VendorPayoutDetails() {
           </>
         ) : null}
 
-        {details && (
+        {details &&
+        (details.bankName?.trim() || details.accountNumber?.trim()) ? (
           <>
             <Separator />
-            <div className="space-y-2 text-sm">
-              <h4 className="font-semibold mb-2">Bank account</h4>
-              <p>{details.bankName}</p>
-              <p>{details.accountName}</p>
-              <p className="text-muted-foreground font-mono">
-                {maskAccount(details.accountNumber)}
-              </p>
+            <div className="space-y-3 text-sm">
+              <h4 className="font-semibold">Bank details</h4>
+              <dl className="grid gap-3">
+                {details.bankName?.trim() ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-[10rem_1fr] gap-1 sm:gap-3">
+                    <dt className="text-muted-foreground">Bank</dt>
+                    <dd>{details.bankName.trim()}</dd>
+                  </div>
+                ) : null}
+                {details.accountNumber?.trim() ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-[10rem_1fr] gap-1 sm:gap-3">
+                    <dt className="text-muted-foreground">Account number</dt>
+                    <dd className="font-mono">
+                      {maskAccount(details.accountNumber.trim())}
+                    </dd>
+                  </div>
+                ) : null}
+              </dl>
             </div>
           </>
-        )}
+        ) : null}
 
         <Separator />
 
@@ -197,12 +227,17 @@ export default function VendorPayoutDetails() {
         {payout.attendedBy && (
           <>
             <Separator />
-            <div className="text-sm">
+            <div className="text-sm space-y-1">
               <h4 className="font-semibold mb-2">Attended by</h4>
               <p>
                 {payout.attendedBy.firstName} {payout.attendedBy.lastName}
               </p>
               <p className="text-muted-foreground">{payout.attendedBy.email}</p>
+              {payout.attendedBy.id ? (
+                <p className="font-mono text-xs text-muted-foreground break-all">
+                  Staff ID: {payout.attendedBy.id}
+                </p>
+              ) : null}
             </div>
           </>
         )}

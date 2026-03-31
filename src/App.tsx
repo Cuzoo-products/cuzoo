@@ -19,7 +19,7 @@ import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { login } from "@/redux/slices/authSlice";
 import { useGetUserDetails } from "@/api/shared/useAuth";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 
 import { auth } from "./firebase";
 import {
@@ -221,6 +221,15 @@ function App() {
                   </FormItem>
                 )}
               />
+
+              <div className="flex justify-end -mt-2">
+                <Link
+                  to="/forgot-password"
+                  className="text-sm text-[#4D37B3] hover:underline"
+                >
+                  Forgot password?
+                </Link>
+              </div>
 
               <Button
                 type="submit"

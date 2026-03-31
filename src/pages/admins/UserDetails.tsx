@@ -34,7 +34,7 @@ import {
   useUserAccountAction,
   useUserWalletAction,
 } from "@/api/admin/users/useUsers";
-import { useParams } from "react-router";
+import { Link, useParams } from "react-router";
 import Loader from "@/components/utilities/Loader";
 import { useSendOneNotification } from "@/api/admin/notification/useNotification";
 
@@ -242,6 +242,24 @@ function UserDetails() {
 
         {/* Right Column: Actions */}
         <div className="lg:col-span-2 space-y-8">
+          {id ? (
+            <Card className="bg-secondary py-4">
+              <CardHeader>
+                <CardTitle>User Links</CardTitle>
+                <CardDescription>
+                  View only this user's orders and rides.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="flex flex-col sm:flex-row gap-2">
+                <Button asChild variant="outline">
+                  <Link to={`/admins/users/${id}/orders`}>User orders</Link>
+                </Button>
+                <Button asChild>
+                  <Link to={`/admins/users/${id}/rides`}>User rides</Link>
+                </Button>
+              </CardContent>
+            </Card>
+          ) : null}
           {/* Send Message Card */}
           <Card className="bg-secondary py-4">
             <CardHeader>

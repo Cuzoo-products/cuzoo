@@ -2,6 +2,7 @@ import { useRidersPayouts } from "@/api/admin/payouts/usePayouts";
 import { DataTable } from "@/components/ui/data-table";
 import Loader from "@/components/utilities/Loader";
 import { columns, type PayoutData } from "@/components/utilities/Vendors/PayoutsDataTable";
+import { payoutRecordId } from "@/lib/payoutId";
 
 const formatRequestedAt = (value: string) => {
   try {
@@ -34,7 +35,7 @@ export default function AdminRidersPayouts() {
   if (error) return <div className="text-red-500">Failed to load rider payouts.</div>;
 
   const tableData: PayoutData[] = (data?.data?.data ?? []).map((p: any) => ({
-    id: p.Id,
+    id: payoutRecordId(p),
     referenceNo: p.reference,
     amount: `₦${Number(p.amount ?? 0).toLocaleString("en-NG", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
     status: p.status ?? "—",

@@ -5,6 +5,7 @@ import {
   type PayoutData,
 } from "@/components/utilities/Fleet/PayoutsDataTable";
 import Loader from "@/components/utilities/Loader";
+import { payoutRecordId } from "@/lib/payoutId";
 
 export type PayoutsListResponse = {
   success: boolean;
@@ -14,7 +15,8 @@ export type PayoutsListResponse = {
     lastCursor: number;
     limit: number;
     data: {
-      Id: string;
+      Id?: string;
+      id?: string;
       amount: number;
       recipient: string;
       reference: string;
@@ -75,7 +77,7 @@ function FleetPayouts() {
 
   const apiPayouts = data?.data?.data ?? [];
   const tableData: PayoutData[] = apiPayouts.map((p) => ({
-    id: p.Id,
+    id: payoutRecordId(p),
     referenceNo: p.reference,
     amount: `₦${p.amount.toLocaleString("en-NG", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
     status: p.status,

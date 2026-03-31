@@ -2,6 +2,7 @@ import { createBrowserRouter } from "react-router";
 import App from "@/App";
 import NotFoundPage from "@/pages/shared/NotFoundPage";
 import VerifyEmail from "@/pages/shared/VerifyEmail";
+import ForgotPassword from "@/pages/shared/ForgotPassword";
 import KycSubmitted from "@/pages/shared/KycSubmitted";
 import { ProtectedRoute } from "@/routes/ProtectedRoute";
 import Maps from "@/pages/fleet/Maps";
@@ -42,6 +43,8 @@ import Admins from "@/pages/admins/Admins";
 import AdminDetails from "@/pages/admins/AdminDetails";
 import Users from "@/pages/admins/Users";
 import UserDetails from "@/pages/admins/UserDetails";
+import AdminUserOrdersByUser from "@/pages/admins/AdminUserOrdersByUser";
+import AdminUserRidesByUser from "@/pages/admins/AdminUserRidesByUser";
 import DriversInAdmin from "@/pages/admins/Drivers";
 import Map from "@/pages/admins/Map";
 import AdminDriverDetails from "@/pages/admins/AdminDriverDetails";
@@ -61,6 +64,11 @@ import AdminFleetsPayouts from "@/pages/admins/AdminFleetsPayouts";
 import AdminPayoutDetails from "@/pages/admins/AdminPayoutDetails";
 import AdminOrders from "@/pages/admins/AdminOrders";
 import AdminOrderDetails from "@/pages/admins/AdminOrderDetails";
+import AdminVendorOrdersByVendor from "@/pages/admins/AdminVendorOrdersByVendor";
+import AdminFleetRidersByFleet from "@/pages/admins/AdminFleetRidersByFleet";
+import AdminFleetVehiclesByFleet from "@/pages/admins/AdminFleetVehiclesByFleet";
+import AdminFleetRidesByFleet from "@/pages/admins/AdminFleetRidesByFleet";
+import AdminResetPassword from "@/pages/admins/ResetPassword";
 import { FleetKyc } from "@/pages/fleet/FleetKyc";
 import { VendorKycForm } from "@/pages/vendors/VendorKyc";
 import VendorBanks from "@/pages/vendors/Banks";
@@ -81,6 +89,10 @@ export const routes = createBrowserRouter([
   {
     path: "/verify-email",
     element: <VerifyEmail />,
+  },
+  {
+    path: "/forgot-password",
+    element: <ForgotPassword />,
   },
   {
     path: "/kyc-submitted",
@@ -304,6 +316,18 @@ export const routes = createBrowserRouter([
         element: <FleetOwnersProfile />,
       },
       {
+        path: "fleet_managers/:id/riders",
+        element: <AdminFleetRidersByFleet />,
+      },
+      {
+        path: "fleet_managers/:id/vehicles",
+        element: <AdminFleetVehiclesByFleet />,
+      },
+      {
+        path: "fleet_managers/:id/rides",
+        element: <AdminFleetRidesByFleet />,
+      },
+      {
         path: "admins",
         element: <Admins />,
       },
@@ -318,6 +342,14 @@ export const routes = createBrowserRouter([
       {
         path: "users/:id",
         element: <UserDetails />,
+      },
+      {
+        path: "users/:id/orders",
+        element: <AdminUserOrdersByUser />,
+      },
+      {
+        path: "users/:id/rides",
+        element: <AdminUserRidesByUser />,
       },
       {
         path: "drivers",
@@ -356,6 +388,10 @@ export const routes = createBrowserRouter([
         element: <VendorsDetails />,
       },
       {
+        path: "vendors/:id/orders",
+        element: <AdminVendorOrdersByVendor />,
+      },
+      {
         path: "orders",
         element: <AdminOrders />,
       },
@@ -386,6 +422,10 @@ export const routes = createBrowserRouter([
       {
         path: "settings",
         element: <Settings />,
+      },
+      {
+        path: "reset-password",
+        element: <AdminResetPassword />,
       },
       {
         path: "drivers/:id/trips",

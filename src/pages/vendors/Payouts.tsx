@@ -4,6 +4,9 @@ import {
   columns,
   type PayoutData,
 } from "@/components/utilities/Vendors/PayoutsDataTable";
+import Loader from "@/components/utilities/Loader";
+import { payoutRecordId } from "@/lib/payoutId";
+
 
 export type PayoutsListResponse = {
   success: boolean;
@@ -13,7 +16,8 @@ export type PayoutsListResponse = {
     lastCursor: number;
     limit: number;
     data: {
-      Id: string;
+      Id?: string;
+      id?: string;
       amount: number;
       recipient: string;
       reference: string;
@@ -72,7 +76,7 @@ function VendorPayouts() {
 
   const apiPayouts = data?.data?.data ?? [];
   const tableData: PayoutData[] = apiPayouts.map((p) => ({
-    id: p.Id,
+    id: payoutRecordId(p),
     referenceNo: p.reference,
     amount: `₦${p.amount.toLocaleString("en-NG", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
     status: p.status,
@@ -81,14 +85,7 @@ function VendorPayouts() {
   }));
 
   if (isLoading) {
-    return (
-      <div className="@container/main">
-        <div className="my-6">
-          <h3 className="!font-bold text-3xl">Payouts</h3>
-          <p className="text-muted-foreground">Loading payouts…</p>
-        </div>
-      </div>
-    );
+    return <Loader />;
   }
 
   if (error) {

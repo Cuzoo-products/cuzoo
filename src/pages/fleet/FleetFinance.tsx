@@ -41,9 +41,8 @@ type HistoryResponse = {
   };
 };
 
-// Amounts from the API are in minor units (e.g. kobo), normalize to naira for display
-const toMajorUnit = (amount?: number) =>
-  typeof amount === "number" ? amount / 100 : 0;
+const amountOrZero = (amount?: number) =>
+  typeof amount === "number" ? amount : 0;
 
 export default function FleetFinance() {
   const { mutateAsync: requestWithdrawal, isPending: isWithdrawing } =
@@ -75,7 +74,7 @@ export default function FleetFinance() {
       inflow: 0,
       outflow: 0,
     };
-    existing.inflow += toMajorUnit(row.amount);
+    existing.inflow += amountOrZero(row.amount);
     chartMap.set(row.date, existing);
   });
 
@@ -85,7 +84,7 @@ export default function FleetFinance() {
       inflow: 0,
       outflow: 0,
     };
-    existing.outflow += toMajorUnit(row.amount);
+    existing.outflow += amountOrZero(row.amount);
     chartMap.set(row.date, existing);
   });
 
@@ -94,10 +93,10 @@ export default function FleetFinance() {
   );
 
   const wallet = data?.data;
-  const walletAmountMajor = toMajorUnit(wallet?.amount);
+  const walletBalance = amountOrZero(wallet?.amount);
   const formattedAmount =
     wallet && typeof wallet.amount === "number"
-      ? walletAmountMajor.toLocaleString("en-NG", {
+      ? walletBalance.toLocaleString("en-NG", {
           minimumFractionDigits: 2,
           maximumFractionDigits: 2,
         })
@@ -116,7 +115,7 @@ export default function FleetFinance() {
               Manage Banks
             </Link>
             <WithdrawDialog
-              balance={walletAmountMajor}
+              balance={walletBalance}
               onSubmit={async (payload) => {
                 try {
                   await requestWithdrawal(payload);
@@ -190,7 +189,7 @@ export default function FleetFinance() {
                       <td>{row.date}</td>
                       <td className="text-right">
                         {wallet?.currency ?? "₦"}
-                        {toMajorUnit(row.amount).toLocaleString("en-NG", {
+                        {amountOrZero(row.amount).toLocaleString("en-NG", {
                           minimumFractionDigits: 2,
                           maximumFractionDigits: 2,
                         })}
@@ -231,7 +230,7 @@ export default function FleetFinance() {
                       <td>{row.date}</td>
                       <td className="text-right">
                         {wallet?.currency ?? "₦"}
-                        {toMajorUnit(row.amount).toLocaleString("en-NG", {
+                        {amountOrZero(row.amount).toLocaleString("en-NG", {
                           minimumFractionDigits: 2,
                           maximumFractionDigits: 2,
                         })}

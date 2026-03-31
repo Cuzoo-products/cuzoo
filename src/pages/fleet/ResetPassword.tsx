@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
-// import { toast } from "sonner";
+import { toast } from "sonner";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,10 +17,37 @@ import { Input } from "@/components/ui/input";
 import { FleetManagerChangePWSchema } from "@/lib/zodVaildation";
 import { Eye, EyeOff } from "lucide-react";
 
+import {
+  EmailAuthProvider,
+  reauthenticateWithCredential,
+  updatePassword,
+} from "firebase/auth";
+import { auth } from "@/firebase";
+
+function firebaseChangePasswordMessage(code: string): string {
+  switch (code) {
+    case "auth/wrong-password":
+    case "auth/invalid-credential":
+      return "Current password is incorrect.";
+    case "auth/weak-password":
+      return "New password is too weak. Choose a stronger password.";
+    case "auth/requires-recent-login":
+      return "For security, sign out and sign in again, then change your password.";
+    case "auth/user-mismatch":
+    case "auth/user-not-found":
+      return "No signed-in user. Please log in again.";
+    case "auth/too-many-requests":
+      return "Too many attempts. Try again later.";
+    default:
+      return "Could not update password. Please try again.";
+  }
+}
+
 function ResetPassword() {
   const [showOldPassword, setShowOldPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<z.infer<typeof FleetManagerChangePWSchema>>({
     resolver: zodResolver(FleetManagerChangePWSchema),
@@ -31,8 +58,46 @@ function ResetPassword() {
     },
   });
 
-  function onSubmit(data: z.infer<typeof FleetManagerChangePWSchema>) {
-    console.log(data);
+  async function onSubmit(data: z.infer<typeof FleetManagerChangePWSchema>) {
+    const user = auth.currentUser;
+    if (!user) {
+      toast.error("You must be signed in to change your password.");
+      return;
+    }
+
+    const email = user.email;
+    if (!email) {
+      toast.error(
+        "Your account has no email on file. Password change is not available for this sign-in method.",
+      );
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const credential = EmailAuthProvider.credential(email, data.oldPassword);
+      await reauthenticateWithCredential(user, credential);
+      await updatePassword(user, data.password);
+      toast.success("Password updated successfully.");
+      form.reset({
+        oldPassword: "",
+        password: "",
+        confirmPassword: "",
+      });
+    } catch (err: unknown) {
+      const code =
+        typeof err === "object" &&
+        err !== null &&
+        "code" in err &&
+        typeof (err as { code: unknown }).code === "string"
+          ? (err as { code: string }).code
+          : "";
+      toast.error(
+        code ? firebaseChangePasswordMessage(code) : "Something went wrong.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -155,8 +220,9 @@ function ResetPassword() {
             <Button
               type="submit"
               className="w-full bg-[#4D37B3] text-white mt-3"
+              disabled={isSubmitting}
             >
-              Submit
+              {isSubmitting ? "Updating…" : "Update password"}
             </Button>
           </form>
         </Form>

@@ -40,7 +40,9 @@ function FleetRegistration() {
   function onSubmit(data: z.infer<typeof FleetManagerRegFormSchema>) {
     mutate(data, {
       onSuccess: () => {
-        navigate("/verify-email");
+        navigate("/verify-email", {
+          state: { email: data.email, accountType: "fleet" as const },
+        });
       },
     });
   }

@@ -3,6 +3,7 @@ import { useGetDashboard } from "@/api/vendor/dashboard/useDashBoard";
 import HighestSellingProducts from "@/components/utilities/Vendors/HighestSellingProducts";
 import VendorChart from "@/components/utilities/Vendors/VendorChart";
 import VendorSectionCard from "@/components/utilities/Vendors/VendorSectionCard";
+import Loader from "@/components/utilities/Loader";
 
 export type HighestSellingProductsT = {
   id: number;
@@ -61,14 +62,7 @@ function VendorDashboard() {
     })) ?? [];
 
   if (isLoading) {
-    return (
-      <div className="@container/main">
-        <div className="my-6">
-          <h3 className="!font-bold text-3xl">Dashboard</h3>
-          <p className="text-muted-foreground">Loading dashboard…</p>
-        </div>
-      </div>
-    );
+    return <Loader />;
   }
 
   if (error) {
