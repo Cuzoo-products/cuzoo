@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { getOrderForAdmin, getOrdersForAdmin } from "./orders";
 
-export const useGetOrdersForAdmin = (orderType) => {
+export const useGetOrdersForAdmin = (orderType: string) => {
   return useQuery({
     queryKey: ["orders"],
     queryFn: () => getOrdersForAdmin(orderType),
