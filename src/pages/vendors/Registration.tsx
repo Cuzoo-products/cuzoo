@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -150,11 +151,14 @@ function VendorRegistration() {
                     <FormControl>
                       <Input
                         className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
-                        placeholder="0801 234 5678"
+                        placeholder="+2348123000000"
                         type="tel"
                         {...field}
                       />
                     </FormControl>
+                    <FormDescription>
+                      Please enter your phone number with the country code
+                    </FormDescription>
                     <FormMessage className="text-red-600" />
                   </FormItem>
                 )}
@@ -168,28 +172,28 @@ function VendorRegistration() {
                     <FormItem>
                       <FormLabel>Password</FormLabel>
                       <FormControl>
-                      <div className="relative">
-                        <Input
-                          className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3] pr-12"
-                          type={showPassword ? "text" : "password"}
-                          placeholder="••••••••"
-                          {...field}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword((s) => !s)}
-                          className="absolute inset-y-0 right-3 flex items-center text-muted-foreground"
-                          aria-label={
-                            showPassword ? "Hide password" : "Show password"
-                          }
-                        >
-                          {showPassword ? (
-                            <EyeOff className="w-4 h-4" />
-                          ) : (
-                            <Eye className="w-4 h-4" />
-                          )}
-                        </button>
-                      </div>
+                        <div className="relative">
+                          <Input
+                            className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3] pr-12"
+                            type={showPassword ? "text" : "password"}
+                            placeholder="••••••••"
+                            {...field}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword((s) => !s)}
+                            className="absolute inset-y-0 right-3 flex items-center text-muted-foreground"
+                            aria-label={
+                              showPassword ? "Hide password" : "Show password"
+                            }
+                          >
+                            {showPassword ? (
+                              <EyeOff className="w-4 h-4" />
+                            ) : (
+                              <Eye className="w-4 h-4" />
+                            )}
+                          </button>
+                        </div>
                       </FormControl>
                       <FormMessage className="text-red-600" />
                     </FormItem>
@@ -203,32 +207,30 @@ function VendorRegistration() {
                     <FormItem>
                       <FormLabel>Confirm Password</FormLabel>
                       <FormControl>
-                      <div className="relative">
-                        <Input
-                          className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3] pr-12"
-                          type={showConfirmPassword ? "text" : "password"}
-                          placeholder="••••••••"
-                          {...field}
-                        />
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setShowConfirmPassword((s) => !s)
-                          }
-                          className="absolute inset-y-0 right-3 flex items-center text-muted-foreground"
-                          aria-label={
-                            showConfirmPassword
-                              ? "Hide confirm password"
-                              : "Show confirm password"
-                          }
-                        >
-                          {showConfirmPassword ? (
-                            <EyeOff className="w-4 h-4" />
-                          ) : (
-                            <Eye className="w-4 h-4" />
-                          )}
-                        </button>
-                      </div>
+                        <div className="relative">
+                          <Input
+                            className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3] pr-12"
+                            type={showConfirmPassword ? "text" : "password"}
+                            placeholder="••••••••"
+                            {...field}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowConfirmPassword((s) => !s)}
+                            className="absolute inset-y-0 right-3 flex items-center text-muted-foreground"
+                            aria-label={
+                              showConfirmPassword
+                                ? "Hide confirm password"
+                                : "Show confirm password"
+                            }
+                          >
+                            {showConfirmPassword ? (
+                              <EyeOff className="w-4 h-4" />
+                            ) : (
+                              <Eye className="w-4 h-4" />
+                            )}
+                          </button>
+                        </div>
                       </FormControl>
                       <FormMessage className="text-red-600" />
                     </FormItem>

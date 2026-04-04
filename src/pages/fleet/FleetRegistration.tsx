@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -151,10 +152,13 @@ function FleetRegistration() {
                         <Input
                           className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
                           type="tel"
-                          placeholder="0801 234 5678"
+                          placeholder="+2348123000000"
                           {...field}
                         />
                       </FormControl>
+                      <FormDescription>
+                        Please enter your phone number with the country code
+                      </FormDescription>
                       <FormMessage className="text-red-600" />
                     </FormItem>
                   )}
@@ -212,9 +216,7 @@ function FleetRegistration() {
                         />
                         <button
                           type="button"
-                          onClick={() =>
-                            setShowConfirmPassword((s) => !s)
-                          }
+                          onClick={() => setShowConfirmPassword((s) => !s)}
                           className="absolute inset-y-0 right-3 flex items-center text-muted-foreground"
                           aria-label={
                             showConfirmPassword

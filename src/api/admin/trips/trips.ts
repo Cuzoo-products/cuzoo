@@ -51,9 +51,20 @@ function normalizeTripRow(raw: unknown): AdminTripListItem {
     items: Array.isArray(itemsRaw)
       ? itemsRaw.map((it) => {
           const x = it as Record<string, unknown>;
+          const rawQ = x.quantity;
+          let quantity: string | number | undefined;
+          if (rawQ === null || rawQ === undefined) {
+            quantity = undefined;
+          } else if (typeof rawQ === "number") {
+            quantity = rawQ;
+          } else if (typeof rawQ === "string") {
+            quantity = rawQ;
+          } else {
+            quantity = String(rawQ);
+          }
           return {
             name: x.name != null ? String(x.name) : "",
-            quantity: x.quantity ?? "",
+            quantity,
           };
         })
       : undefined,
