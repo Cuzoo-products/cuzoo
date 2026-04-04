@@ -17,6 +17,7 @@ export type AdminOrderData = {
   orderID: string;
   customer: string;
   vendor: string;
+  orderType: string;
   items: string;
   total: string;
   status: string;
@@ -44,6 +45,12 @@ export const columns: ColumnDef<AdminOrderData>[] = [
     },
   },
   {
+    accessorKey: "orderType",
+    header: ({ column }) => {
+      return <DataTableColumnHeader column={column} title="Order type" />;
+    },
+  },
+  {
     accessorKey: "items",
     header: ({ column }) => {
       return <DataTableColumnHeader column={column} title="Items" />;
@@ -52,20 +59,21 @@ export const columns: ColumnDef<AdminOrderData>[] = [
       const raw = (getValue() as string) ?? "";
       if (!raw || raw === "—") return <span className="text-muted-foreground">—</span>;
 
-      const items = raw.split("\n").filter(Boolean);
-      const shown = items.slice(0, 3);
-      const remaining = items.length - shown.length;
+      const lines = raw.split("\n").filter(Boolean);
 
       return (
-        <div className="space-y-0.5 max-w-[260px]">
-          {shown.map((item, index) => (
-            <div key={index} className="text-sm leading-tight">
-              {item}
-            </div>
-          ))}
-          {remaining > 0 && (
-            <div className="text-xs text-muted-foreground">+{remaining} more</div>
-          )}
+        <div className="max-w-[min(280px,100%)] min-w-0 max-h-36 overflow-y-auto pr-1">
+          <div className="flex min-w-0 w-full flex-col gap-1">
+            {lines.map((line, index) => (
+              <div
+                key={index}
+                className="min-w-0 truncate text-left text-sm leading-snug"
+                title={line}
+              >
+                {line}
+              </div>
+            ))}
+          </div>
         </div>
       );
     },

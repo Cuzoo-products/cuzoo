@@ -9,6 +9,7 @@ import {
   WalletMinimal,
   Plus,
   ShoppingBag,
+  Car,
 } from "lucide-react";
 
 import {
@@ -60,6 +61,11 @@ const items = [
     title: "Orders",
     url: "orders",
     icon: ShoppingBag,
+  },
+  {
+    title: "Vehicles",
+    url: "vehicles",
+    icon: Car,
   },
   {
     title: "Finance",

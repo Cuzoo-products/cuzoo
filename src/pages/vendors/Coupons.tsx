@@ -151,7 +151,6 @@ export default function Coupons() {
       description: data.description ?? "",
     };
 
-  console.log(newCoupon);
     createCoupon(newCoupon, {
       onSuccess: () => {
         form.reset({

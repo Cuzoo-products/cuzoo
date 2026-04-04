@@ -64,6 +64,8 @@ import AdminFleetsPayouts from "@/pages/admins/AdminFleetsPayouts";
 import AdminPayoutDetails from "@/pages/admins/AdminPayoutDetails";
 import AdminOrders from "@/pages/admins/AdminOrders";
 import AdminOrderDetails from "@/pages/admins/AdminOrderDetails";
+import AdminVehicles from "@/pages/admins/AdminVehicles";
+import AdminVehicleDetails from "@/pages/admins/AdminVehicleDetails";
 import AdminVendorOrdersByVendor from "@/pages/admins/AdminVendorOrdersByVendor";
 import AdminFleetRidersByFleet from "@/pages/admins/AdminFleetRidersByFleet";
 import AdminFleetVehiclesByFleet from "@/pages/admins/AdminFleetVehiclesByFleet";
@@ -398,6 +400,14 @@ export const routes = createBrowserRouter([
       {
         path: "orders/:id",
         element: <AdminOrderDetails />,
+      },
+      {
+        path: "vehicles",
+        element: <AdminVehicles />,
+      },
+      {
+        path: "vehicles/:id",
+        element: <AdminVehicleDetails />,
       },
       {
         path: "financials",

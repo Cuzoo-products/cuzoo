@@ -58,10 +58,13 @@ export const columns: ColumnDef<VendorData>[] = [
     },
     cell: ({ row }) => {
       const phoneNumber = row.original.phoneNumber;
+      if (!phoneNumber) {
+        return <div className="text-muted-foreground">—</div>;
+      }
       const display =
-        phoneNumber?.internationalFormat ??
-        phoneNumber?.nationalFormat ??
-        phoneNumber?.number ??
+        phoneNumber.internationalFormat ||
+        phoneNumber.nationalFormat ||
+        phoneNumber.number ||
         "—";
       return <div>{display}</div>;
     },

@@ -94,9 +94,24 @@ export default function AdminPayoutDetails() {
   const navigate = useNavigate();
   const [reason, setReason] = useState("");
 
-  const riderQuery = useRiderPayout(payoutId, payoutType === "riders");
-  const vendorQuery = useVendorPayout(payoutId, payoutType === "vendors");
-  const fleetQuery = useFleetPayout(payoutId, payoutType === "fleets");
+  const canFetch =
+    Boolean(payoutId) &&
+    (payoutType === "riders" ||
+      payoutType === "vendors" ||
+      payoutType === "fleets");
+
+  const riderQuery = useRiderPayout(
+    payoutId,
+    canFetch && payoutType === "riders",
+  );
+  const vendorQuery = useVendorPayout(
+    payoutId,
+    canFetch && payoutType === "vendors",
+  );
+  const fleetQuery = useFleetPayout(
+    payoutId,
+    canFetch && payoutType === "fleets",
+  );
 
   const payoutRaw =
     payoutType === "riders"

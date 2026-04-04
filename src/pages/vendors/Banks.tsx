@@ -211,9 +211,9 @@ export default function VendorBanks() {
                     </tr>
                   </thead>
                   <tbody>
-                    {banks.map((bank) => (
+                    {banks.map((bank, index) => (
                       <tr
-                        key={bank.accountNumber}
+                        key={`${bank.bankName}-${bank.accountNumber}-${index}`}
                         className="border-b border-line-1 last:border-0"
                       >
                         <td className="py-2 pr-4">{bank.bankName}</td>

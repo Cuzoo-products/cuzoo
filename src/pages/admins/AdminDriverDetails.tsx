@@ -37,52 +37,6 @@ import Loader from "@/components/utilities/Loader";
 import { ContactNotificationCard } from "@/components/utilities/Admins/ContactNotificationCard";
 
 
-type TripsRow = {
-  date: string;
-  pickup: string;
-  dropoff: string;
-  fare: string;
-  status: string;
-};
-
-// Dummy trip history 
-const tripsData: TripsRow[] = [
-  {
-    date: "July 26, 2025",
-    pickup: "Murtala Muhammed Airport, Ikeja",
-    dropoff: "Eko Hotel & Suites, Victoria Island",
-    fare: "₦8,500.00",
-    status: "Completed",
-  },
-  {
-    date: "July 25, 2025",
-    pickup: "Ikeja City Mall, Alausa",
-    dropoff: "Circle Mall, Lekki",
-    fare: "₦6,000.00",
-    status: "Completed",
-  },
-  {
-    date: "July 25, 2025",
-    pickup: "University of Lagos, Akoka",
-    dropoff: "Palms Shopping Mall, Oniru",
-    fare: "₦4,500.00",
-    status: "Canceled",
-  },
-  {
-    date: "July 24, 2025",
-    pickup: "Landmark Beach, Oniru",
-    dropoff: "Maryland Mall, Maryland",
-    fare: "₦7,200.00",
-    status: "Completed",
-  },
-  {
-    date: "July 23, 2025",
-    pickup: "Computer Village, Ikeja",
-    dropoff: "Surulere",
-    fare: "₦3,800.00",
-    status: "Completed",
-  },
-];
 
 function toPhoneString(phoneNumber: any): string {
   if (!phoneNumber) return "—";
@@ -416,50 +370,16 @@ export default function AdminDriverDetails() {
           ) : null}
           <Card className="py-6 bg-secondary">
             <CardHeader>
-              <CardTitle>Trip History</CardTitle>
+              <CardTitle>Rider's History</CardTitle>
             </CardHeader>
 
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Pickup</TableHead>
-                    <TableHead>Dropoff</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Fare</TableHead>
-                  </TableRow>
-                </TableHeader>
-
-                <TableBody>
-                  {tripsData.map((trip, index) => (
-                    <TableRow key={index}>
-                      <TableCell className="font-medium">{trip.date}</TableCell>
-                      <TableCell>{trip.pickup}</TableCell>
-                      <TableCell>{trip.dropoff}</TableCell>
-                      <TableCell>
-                        <Badge
-                          variant={
-                            trip.status === "Completed"
-                              ? "default"
-                              : trip.status === "Canceled"
-                                ? "outline"
-                                : "secondary"
-                          }
-                        >
-                          {trip.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right">{trip.fare}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+             Explore the rider's history of trips and activities. View all trips requested by this rider.
             </CardContent>
 
             <CardFooter>
-              <Button>
-                <Link to="trips">see more</Link>
+              <Button asChild>
+                <Link to={`trips`}>View Trips</Link>
               </Button>
             </CardFooter>
           </Card>

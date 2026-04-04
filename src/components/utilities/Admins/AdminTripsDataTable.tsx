@@ -12,55 +12,78 @@ import {
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
 import { Link } from "react-router";
 
-// This type is used to define the shape of our data.
-// You can use a Zod schema here if you want.
 export type AdminTripData = {
   id: string;
-  refNo: string;
-  to: string;
-  fro: string;
-  date: string;
-  startTime: string;
-  endTime: string;
+  orderType: string;
+  status: string;
+  createdAt: string;
+  /** Multiline: route or shopping summary */
+  details: string;
   driver: string;
   amount: string;
+  /** Start – end times when present */
+  schedule: string;
 };
 
 export const columns: ColumnDef<AdminTripData>[] = [
   {
-    accessorKey: "refNo",
+    accessorKey: "id",
     header: ({ column }) => {
-      return <DataTableColumnHeader column={column} title="Reference No." />;
+      return <DataTableColumnHeader column={column} title="ID" />;
+    },
+    cell: ({ getValue }) => {
+      const id = (getValue() as string) ?? "";
+      return (
+        <span className="font-mono text-xs max-w-[120px] truncate block" title={id}>
+          {id}
+        </span>
+      );
     },
   },
   {
-    accessorKey: "date",
+    accessorKey: "orderType",
     header: ({ column }) => {
-      return <DataTableColumnHeader column={column} title="Date" />;
+      return <DataTableColumnHeader column={column} title="Type" />;
     },
   },
   {
-    accessorKey: "fro",
+    accessorKey: "status",
     header: ({ column }) => {
-      return <DataTableColumnHeader column={column} title="From" />;
+      return <DataTableColumnHeader column={column} title="Status" />;
     },
   },
   {
-    accessorKey: "to",
+    accessorKey: "createdAt",
     header: ({ column }) => {
-      return <DataTableColumnHeader column={column} title="Destination" />;
+      return <DataTableColumnHeader column={column} title="Created" />;
     },
   },
   {
-    accessorKey: "startTime",
+    accessorKey: "details",
     header: ({ column }) => {
-      return <DataTableColumnHeader column={column} title="Start Time" />;
+      return <DataTableColumnHeader column={column} title="Details" />;
     },
-  },
-  {
-    accessorKey: "endTime",
-    header: ({ column }) => {
-      return <DataTableColumnHeader column={column} title="End Time" />;
+    cell: ({ getValue }) => {
+      const raw = (getValue() as string) ?? "";
+      if (!raw || raw === "—") {
+        return <span className="text-muted-foreground">—</span>;
+      }
+      const lines = raw.split("\n").filter(Boolean);
+      return (
+        <div className="max-h-36 max-w-[min(320px,100%)] min-w-0 overflow-y-auto pr-1">
+          <div className="flex min-w-0 flex-col gap-1">
+            {lines.map((line, index) => (
+              <div
+                key={index}
+                className="min-w-0 truncate text-left text-sm leading-snug"
+                title={line}
+              >
+                {line}
+              </div>
+            ))}
+          </div>
+        </div>
+      );
     },
   },
   {
@@ -76,9 +99,24 @@ export const columns: ColumnDef<AdminTripData>[] = [
     },
   },
   {
+    accessorKey: "schedule",
+    header: ({ column }) => {
+      return <DataTableColumnHeader column={column} title="Schedule" />;
+    },
+    cell: ({ getValue }) => {
+      const v = (getValue() as string) ?? "—";
+      if (v === "—") return <span className="text-muted-foreground">—</span>;
+      return (
+        <span className="text-xs max-w-[200px] whitespace-pre-wrap leading-snug">
+          {v}
+        </span>
+      );
+    },
+  },
+  {
     id: "actions",
     cell: ({ row }) => {
-      const TripData = row.original;
+      const trip = row.original;
 
       return (
         <DropdownMenu>
@@ -89,17 +127,17 @@ export const columns: ColumnDef<AdminTripData>[] = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent
-            className="bg-background shadow-accent shadow-sm border-0"
+            className="border-0 bg-background shadow-accent shadow-sm"
             align="end"
           >
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(TripData.id)}
+              onClick={() => navigator.clipboard.writeText(trip.id)}
             >
-              Copy Trip No.
+              Copy trip ID
             </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Link to={`${TripData.id}`}>View Trip</Link>
+            <DropdownMenuItem asChild>
+              <Link to={`/admins/trips/${trip.id}`}>View trip</Link>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

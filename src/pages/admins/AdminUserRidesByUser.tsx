@@ -1,35 +1,123 @@
+import { useMemo } from "react";
 import { useParams, Link } from "react-router";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { useGetOrdersForAdminByUserId } from "@/api/admin/orders/useOrders";
+import {
+  parseAdminTripsPayload,
+  type AdminTripListItem,
+} from "@/api/admin/trips/trips";
+import Loader from "@/components/utilities/Loader";
 
-type UserRide = {
-  id: string;
-  userId: string;
-  from: string;
-  to: string;
-  rider: string;
-  amount: number;
-  date: string;
-};
+function formatWhen(iso?: string): string {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  return d.toLocaleString("en-NG", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
 
-const DUMMY_USER_RIDES: UserRide[] = [
-  { id: "RIDE-1001", userId: "user-1", from: "Lekki", to: "Ajah", rider: "John Doe", amount: 4500, date: "2026-03-10" },
-  { id: "RIDE-1002", userId: "user-1", from: "Yaba", to: "Ikeja", rider: "Mary James", amount: 3800, date: "2026-03-12" },
-  { id: "RIDE-1003", userId: "user-2", from: "Wuse", to: "Maitama", rider: "Bola Ade", amount: 6200, date: "2026-03-11" },
-];
+function naira(n: number): string {
+  return `₦${n.toLocaleString("en-NG", { maximumFractionDigits: 2 })}`;
+}
+
+function scheduleText(row: AdminTripListItem): string {
+  const s = row.startTime ? formatWhen(row.startTime) : "—";
+  const e = row.endTime ? formatWhen(row.endTime) : "—";
+  if (s === "—" && e === "—") return "—";
+  return `${s}\n–\n${e}`;
+}
+
+function DestinationsCell({ row }: { row: AdminTripListItem }) {
+  const list = row.destinations?.filter((d) => String(d).trim() !== "") ?? [];
+  if (!list.length) {
+    return <span className="text-muted-foreground">—</span>;
+  }
+  return (
+    <div className="max-h-36 max-w-[min(280px,100%)] min-w-0 overflow-y-auto pr-1">
+      <div className="flex min-w-0 w-full flex-col gap-1">
+        {list.map((line, index) => (
+          <div
+            key={index}
+            className="min-w-0 truncate text-left text-sm leading-snug"
+            title={String(line)}
+          >
+            {String(line)}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default function AdminUserRidesByUser() {
   const { id } = useParams<{ id: string }>();
   const userId = id ?? "";
-  const rows = DUMMY_USER_RIDES.filter((r) => r.userId === userId);
+
+  const { data: payload, isLoading, isError } = useGetOrdersForAdminByUserId(
+    userId,
+    "Package",
+  );
+
+  const rows = useMemo(() => parseAdminTripsPayload(payload), [payload]);
+
+  const meta = useMemo(() => {
+    const root = payload as
+      | { data?: { count?: number; limit?: number } }
+      | undefined;
+    return {
+      count: root?.data?.count,
+      limit: root?.data?.limit,
+    };
+  }, [payload]);
+
+  if (isLoading) return <Loader />;
+
+  if (isError) {
+    return (
+      <div className="@container/main p-6">
+        <h3 className="!font-bold text-3xl">User rides</h3>
+        <p className="mt-2 text-sm text-destructive">
+          Failed to load rides for this user.
+        </p>
+        <Button asChild variant="outline" className="mt-4">
+          <Link to={`/admins/users/${userId}`}>Back to user</Link>
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="@container/main">
-      <div className="my-6 flex items-center justify-between">
+      <div className="my-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h3 className="!font-bold text-3xl">User Rides</h3>
-          <p className="text-muted-foreground">Rides requested by this user only.</p>
+          <h3 className="!font-bold text-3xl">User rides</h3>
+          <p className="text-muted-foreground">
+            Package / trip activity for this user
+            {meta.count != null ? (
+              <span className="text-foreground"> · {meta.count} total</span>
+            ) : null}
+         
+          </p>
         </div>
         <Button asChild variant="outline">
           <Link to={`/admins/users/${userId}`}>Back to user</Link>
@@ -39,36 +127,79 @@ export default function AdminUserRidesByUser() {
       <Card className="bg-secondary">
         <CardHeader>
           <CardTitle>Rides</CardTitle>
-          <CardDescription>Dummy data for now.</CardDescription>
+          <CardDescription>
+            Rides requested by this user.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Ride ID</TableHead>
+                <TableHead>Type</TableHead>
                 <TableHead>From</TableHead>
-                <TableHead>To</TableHead>
-                <TableHead>Rider</TableHead>
+                <TableHead>Destinations</TableHead>
+                <TableHead>Driver</TableHead>
                 <TableHead>Amount</TableHead>
-                <TableHead>Date</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Created</TableHead>
+                <TableHead>Schedule</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {rows.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center text-muted-foreground">
-                    No user rides for this ID in dummy data.
+                  <TableCell
+                    colSpan={10}
+                    className="text-center text-muted-foreground"
+                  >
+                    No rides requested by this user.
                   </TableCell>
                 </TableRow>
               ) : (
-                rows.map((r) => (
-                  <TableRow key={r.id}>
-                    <TableCell className="font-mono">{r.id}</TableCell>
-                    <TableCell>{r.from}</TableCell>
-                    <TableCell>{r.to}</TableCell>
-                    <TableCell>{r.rider}</TableCell>
-                    <TableCell>₦{r.amount.toLocaleString("en-NG")}</TableCell>
-                    <TableCell>{new Date(r.date).toLocaleDateString("en-NG")}</TableCell>
+                rows.map((row) => (
+                  <TableRow key={row.id}>
+                    <TableCell className="max-w-[140px] font-mono text-xs">
+                      <span className="line-clamp-2" title={row.id}>
+                        {row.id}
+                      </span>
+                    </TableCell>
+                    <TableCell>{row.orderType ?? "—"}</TableCell>
+                    <TableCell className="max-w-[160px]">
+                      <span
+                        className="line-clamp-2 text-sm"
+                        title={row.from ?? ""}
+                      >
+                        {row.from?.trim() || "—"}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <DestinationsCell row={row} />
+                    </TableCell>
+                    <TableCell className="max-w-[140px]">
+                      <span
+                        className="line-clamp-2 text-sm"
+                        title={row.driver ?? ""}
+                      >
+                        {row.driver?.trim() || "—"}
+                      </span>
+                    </TableCell>
+                    <TableCell className="tabular-nums">
+                      {naira(row.amount)}
+                    </TableCell>
+                    <TableCell className="capitalize">{row.status ?? "—"}</TableCell>
+                    <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
+                      {formatWhen(row.createdAt ?? row.date)}
+                    </TableCell>
+                    <TableCell className="max-w-[180px] whitespace-pre-wrap text-xs leading-snug text-muted-foreground">
+                      {scheduleText(row)}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button variant="outline" size="sm" asChild>
+                        <Link to={`/admins/trips/${row.id}`}>View</Link>
+                      </Button>
+                    </TableCell>
                   </TableRow>
                 ))
               )}

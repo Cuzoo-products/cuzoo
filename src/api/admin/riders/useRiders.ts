@@ -1,5 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getRiders, getOneRider, riderAction, riderWalletAction, riderAccountAction } from "./riders";
+import {
+  getRiders,
+  getOneRider,
+  riderAction,
+  riderWalletAction,
+  riderAccountAction,
+  getRidersByFleetId,
+} from "./riders";
 import { toast } from "sonner";
 
 export const useGetRiders = () => {
@@ -59,5 +66,17 @@ export const useRiderAccountAction = (id: string) => {
     onError: (error: any) => {
       toast.error(error?.message ?? "Failed to update rider account.");
     },
+  });
+};
+
+export const useGetRidersByFleetId = (fleetId: string | undefined) => {
+  const safe =
+    fleetId && fleetId !== "" && fleetId !== "undefined" && fleetId !== "null"
+      ? fleetId
+      : undefined;
+  return useQuery({
+    queryKey: ["riders-by-fleet", safe],
+    queryFn: () => getRidersByFleetId(safe as string),
+    enabled: Boolean(safe),
   });
 };
