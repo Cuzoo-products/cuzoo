@@ -175,10 +175,6 @@ export default function AdminFleetVehiclesByFleet() {
                 ) : (
                   vehicles.map((v, index) => {
                     const vid = rowId(v, index);
-                    const riderIdDisplay =
-                      v.riderId != null && String(v.riderId).trim() !== ""
-                        ? String(v.riderId).trim()
-                        : "—";
                     return (
                       <TableRow key={vid}>
                         <TableCell className="font-mono text-sm">
