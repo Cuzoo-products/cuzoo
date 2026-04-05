@@ -84,14 +84,6 @@ export const columns: ColumnDef<ProductData>[] = [
             <DropdownMenuItem>
               <Link to={`${productData.id}`}>View Product</Link>
             </DropdownMenuItem>
-
-            <DropdownMenuItem onClick={() => {}}>
-              Set stock to zero
-            </DropdownMenuItem>
-
-            <DropdownMenuItem onClick={() => {}}>
-              Disable Product
-            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );

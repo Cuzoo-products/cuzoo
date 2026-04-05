@@ -235,7 +235,7 @@ function EditDriver() {
                   <FormControl>
                     <Input
                       type="tel"
-                      placeholder="+2348140231245"
+                      placeholder="+2348031234567"
                       className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
                       {...field}
                       onChange={(e) => {
@@ -257,7 +257,7 @@ function EditDriver() {
                   </FormControl>
                   <FormMessage className="text-red-600" />
                   <p className="text-sm text-muted-foreground">
-                    Enter phone number with country code (e.g., +2348140231245)
+                    Enter phone number with country code (e.g., +2348031234567)
                   </p>
                 </FormItem>
               )}
@@ -298,7 +298,7 @@ function EditDriver() {
                   <FormControl>
                     <Input
                       type="tel"
-                      placeholder="+2348140231245"
+                      placeholder="+2348031234567"
                       className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
                       {...field}
                       onChange={(e) => {
@@ -321,7 +321,7 @@ function EditDriver() {
                   <FormMessage className="text-red-600" />
                   <p className="text-sm text-muted-foreground">
                     Enter emergency contact phone number with country code
-                    (e.g., +2348140231245)
+                    (e.g., +2348031234567)
                   </p>
                 </FormItem>
               )}

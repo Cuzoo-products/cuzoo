@@ -18,7 +18,7 @@ export const useSendManyNotifications = () => {
       toast.success("Notifications sent successfully");
     },
     onError: (error) => {
-      toast.error(error?.message ?? "Failed to send notifications.");
+      toast.error(error?.message || "Failed to send notifications.");
     },
   });
 };
@@ -42,7 +42,7 @@ export const useSendOneNotification = () => {
       toast.success("Notification sent successfully");
     },
     onError: (error) => {
-      toast.error(error?.message ?? "Failed to send notification.");
+      toast.error(error?.message || "Failed to send notification.");
     },
   });
 };

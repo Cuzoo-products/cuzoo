@@ -13,8 +13,8 @@ export const useCreateProduct = () => {
     onSuccess: () => {
       toast.success("Product created successfully");
     },
-    onError: () => {
-      toast.error("Failed to create product");
+    onError: (e) => {
+      toast.error(e.message || "Failed to create product");
     },
   });
 };
@@ -32,8 +32,8 @@ export const useUpdateProduct = () => {
     onSuccess: () => {
       toast.success("Product updated successfully");
     },
-    onError: () => {
-      toast.error("Failed to update product");
+    onError: (e) => {
+      toast.error(e.message || "Failed to update product");
     },
   });
 };

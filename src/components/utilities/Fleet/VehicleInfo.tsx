@@ -41,7 +41,6 @@ interface VehicleDetailsProps {
   };
 }
 
-
 const statusConfig: Record<
   VehicleStatus,
   {
@@ -103,8 +102,13 @@ function DetailRow({
 
 export default function VehicleInfo({
   vehicle,
+  riderPreviewName,
+  riderPreviewLoading,
 }: {
   vehicle: VehicleDetailsProps["vehicle"];
+  /** From GET /fleets/riders/:id when vehicle has riderId */
+  riderPreviewName?: string;
+  riderPreviewLoading?: boolean;
 }) {
   const [currentStatus, setCurrentStatus] = useState<VehicleStatus>(
     (vehicle.status as VehicleStatus) || "available",
@@ -130,7 +134,7 @@ export default function VehicleInfo({
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       {/* Hero card with image or placeholder */}
-      <Card className="overflow-hidden">
+      <Card className="overflow-hidden py-4">
         <div className="bg-muted/50">
           {vehicle.image?.url ? (
             <div className="aspect-video max-h-64 w-full flex items-center justify-center bg-muted/30">
@@ -161,7 +165,7 @@ export default function VehicleInfo({
 
       {/* Details */}
       <Card>
-        <CardHeader>
+        <CardHeader className="py-4">
           <CardTitle className="text-lg">Details</CardTitle>
         </CardHeader>
         <CardContent>
@@ -186,7 +190,15 @@ export default function VehicleInfo({
             <DetailRow
               icon={User}
               label="Driver"
-              value={vehicle.assigned ? "Assigned" : "Not assigned"}
+              value={
+                vehicle.riderId
+                  ? riderPreviewLoading
+                    ? "Loading…"
+                    : riderPreviewName || "Assigned"
+                  : vehicle.assigned
+                    ? "Assigned"
+                    : "Not assigned"
+              }
             />
             <DetailRow
               icon={Clock}
@@ -204,7 +216,7 @@ export default function VehicleInfo({
 
       {/* Status */}
       <Card>
-        <CardHeader>
+        <CardHeader className="py-4">
           <CardTitle className="text-lg">Change status</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -235,24 +247,6 @@ export default function VehicleInfo({
           </div>
         </CardContent>
       </Card>
-
-      {/* Driver assignment */}
-      {/* <Card>
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            <UserPlus className="size-5" />
-            Driver assignment
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            <p className="text-sm font-medium text-muted-foreground">
-              Assign driver
-            </p>
-            <ComboboxForm info={availableDrivers} />
-          </div>
-        </CardContent>
-      </Card> */}
 
       {/* Actions */}
       <div className="flex justify-end">

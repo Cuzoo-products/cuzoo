@@ -16,24 +16,24 @@ export const useGetRiders = () => {
   });
 };
 
-export const useGetRider = (id: string) => {
+export const useGetRider = (id: string | undefined) => {
+  const safe = id?.trim() ?? "";
   return useQuery({
-    queryKey: ["getRider", id],
-    queryFn: () => getRider(id),
+    queryKey: ["getRider", safe],
+    queryFn: () => getRider(safe),
+    enabled: safe.length > 0,
   });
 };
 
 export const useCreateRiders = () => {
   return useMutation({
     mutationFn: createRiders,
-    onSuccess: (data) => {
-      console.log(data);
+    onSuccess: () => {
       toast.success("Riders created successfully");
     },
     onError: (error) => {
       const message =
         error.message || "unable to create riders, please try again.";
-      console.log(message);
       toast.error(message);
     },
   });
@@ -43,8 +43,7 @@ export const useUpdateRider = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: updateRider,
-    onSuccess: (data) => {
-      console.log(data);
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["getRiders"] });
       // queryClient.invalidateQueries({ queryKey: ["getRider", data.id] });
       toast.success("Rider updated successfully");
@@ -52,7 +51,6 @@ export const useUpdateRider = () => {
     onError: (error) => {
       const message =
         error.message || "unable to update rider, please try again.";
-      console.log(message);
       toast.error(message);
     },
   });
@@ -61,14 +59,12 @@ export const useUpdateRider = () => {
 export const useReleaseRider = () => {
   return useMutation({
     mutationFn: releaseRider,
-    onSuccess: (data) => {
-      console.log(data);
+    onSuccess: () => {
       toast.success("Rider released successfully");
     },
     onError: (error) => {
       const message =
         error.message || "unable to release rider, please try again.";
-      console.log(message);
       toast.error(message);
     },
   });
@@ -77,14 +73,12 @@ export const useReleaseRider = () => {
 export const useSuspendRider = () => {
   return useMutation({
     mutationFn: suspendRider,
-    onSuccess: (data) => {
-      console.log(data);
+    onSuccess: () => {
       toast.success("Rider suspended successfully");
     },
     onError: (error) => {
       const message =
         error.message || "unable to suspend rider, please try again.";
-      console.log(message);
       toast.error(message);
     },
   });

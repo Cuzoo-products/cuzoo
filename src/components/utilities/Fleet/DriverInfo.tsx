@@ -1,5 +1,5 @@
 import { Link } from "react-router";
-import { Mail, Phone, MapPin, Calendar, User, FileCheck } from "lucide-react";
+import { Car, Mail, Phone, MapPin, Calendar, User, FileCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -65,6 +65,10 @@ export interface Driver {
     model?: string;
     type?: string;
     plateNumber?: string;
+    color?: string;
+    year?: number;
+    status?: string;
+    image?: ImageFile;
   }>;
 }
 
@@ -113,12 +117,11 @@ export const DriverInfo = ({
   const hasAssignedVehicle =
     Array.isArray(driver.vehicles) && driver.vehicles.length > 0;
   const status: DriverStatus = hasAssignedVehicle ? "assigned" : "unassigned";
-  const assignedPlateNumbers = hasAssignedVehicle
-    ? driver.vehicles
+  const assignedPlateNumbers: string[] = hasAssignedVehicle
+    ? (driver.vehicles
         ?.map((v) => v.plateNumber?.trim())
-        .filter((plate): plate is string => Boolean(plate))
+        .filter((plate): plate is string => Boolean(plate)) ?? [])
     : [];
-  const primaryPlateNumber = assignedPlateNumbers?.[0] ?? null;
 
   const name =
     `${driver.firstName ?? ""} ${driver.lastName ?? ""}`.trim() || "Unknown driver";
@@ -223,22 +226,87 @@ export const DriverInfo = ({
                 <p>{driver.address?.formatted_address || "—"}</p>
               </div>
             </div>
-            <div className="flex items-start gap-3">
+            <div className="flex items-start gap-3 sm:col-span-2">
               <User className="size-4 text-muted-foreground mt-0.5 shrink-0" />
-              <div>
-                <p className="font-medium text-muted-foreground">Vehicle</p>
-                <p>
-                  {primaryPlateNumber
-                    ? primaryPlateNumber
-                    : hasAssignedVehicle
-                      ? "Assigned"
-                      : "Unassigned"}
+              <div className="min-w-0 flex-1">
+                <p className="font-medium text-muted-foreground">
+                  Vehicles ({driver.vehicles?.length ?? 0})
                 </p>
+                {!hasAssignedVehicle ? (
+                  <p>Unassigned</p>
+                ) : (
+                  <ul className="mt-1 space-y-1 list-disc list-inside text-foreground">
+                    {assignedPlateNumbers.length > 0
+                      ? assignedPlateNumbers.map((plate, i) => (
+                          <li key={`${plate}-${i}`}>{plate}</li>
+                        ))
+                      : (driver.vehicles ?? []).map((v, idx) => (
+                          <li key={v.id ?? `v-${idx}`}>
+                            {[v.model, v.type].filter(Boolean).join(" • ") ||
+                              "Vehicle"}
+                          </li>
+                        ))}
+                  </ul>
+                )}
               </div>
             </div>
           </div>
         </CardContent>
       </Card>
+
+      {/* All assigned vehicles (detail) */}
+      {hasAssignedVehicle && driver.vehicles && driver.vehicles.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Car className="size-5" />
+              Assigned vehicles
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {driver.vehicles.map((v, idx) => {
+              const headline = [v.model, v.type].filter(Boolean).join(" · ");
+              const label = [headline || "Vehicle", v.plateNumber]
+                .filter(Boolean)
+                .join(" — ");
+              const meta = [v.color, v.year != null ? String(v.year) : null, v.status]
+                .filter(Boolean)
+                .join(" · ");
+              return (
+                <div
+                  key={v.id ?? `vehicle-${idx}`}
+                  className="flex flex-col sm:flex-row sm:items-center gap-3 pb-4 border-b border-line-1 last:border-0 last:pb-0"
+                >
+                  <div className="flex gap-3 min-w-0 flex-1">
+                    {v.image?.url ? (
+                      <img
+                        src={v.image.url}
+                        alt=""
+                        className="size-16 rounded-md object-cover border border-line-1 bg-muted/30 shrink-0"
+                      />
+                    ) : (
+                      <div className="size-16 rounded-md bg-muted/50 flex items-center justify-center shrink-0">
+                        <Car className="size-8 text-muted-foreground/50" />
+                      </div>
+                    )}
+                    <div className="min-w-0">
+                      <p className="font-medium truncate">{label}</p>
+                      {meta ? (
+                        <p className="text-sm text-muted-foreground">{meta}</p>
+                      ) : null}
+                    </div>
+                  </div>
+                  {v.id ? (
+                    <Button asChild variant="outline" size="sm" className="shrink-0 w-fit">
+                      <Link to={`/fleet/fleets/${v.id}`}>View vehicle</Link>
+                    </Button>
+                  ) : null}
+                </div>
+              );
+            })}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Driver's license */}
       {(driver.driversLicense?.url || driver.driversLicense) && (
@@ -278,7 +346,9 @@ export const DriverInfo = ({
             <p className="text-sm text-muted-foreground">
               Driver is assigned to{" "}
               <span className="font-medium text-foreground">
-                {primaryPlateNumber ?? "a vehicle"}
+                {assignedPlateNumbers.length > 0
+                  ? assignedPlateNumbers.join(", ")
+                  : `${driver.vehicles?.length ?? 0} vehicle(s)`}
               </span>
               .
             </p>

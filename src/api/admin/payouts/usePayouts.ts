@@ -37,11 +37,15 @@ export const useApproveVendorPayout = (id: string) => {
       queryClient.invalidateQueries({ queryKey: ["vendors-payouts"] });
       queryClient.invalidateQueries({ queryKey: ["vendor-payout", id] });
     },
-    onError: (error: any) => toast.error(error?.message ?? "Failed to approve payout"),
+    onError: (error) =>
+      toast.error(error?.message || "Failed to approve payout"),
   });
 };
 
-export const useRejectVendorPayout = (id: string, reason: { reason: string }) => {
+export const useRejectVendorPayout = (
+  id: string,
+  reason: { reason: string },
+) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: () => rejectVendorPayout(id, reason),
@@ -50,7 +54,8 @@ export const useRejectVendorPayout = (id: string, reason: { reason: string }) =>
       queryClient.invalidateQueries({ queryKey: ["vendors-payouts"] });
       queryClient.invalidateQueries({ queryKey: ["vendor-payout", id] });
     },
-    onError: (error: any) => toast.error(error?.message ?? "Failed to reject payout"),
+    onError: (error) =>
+      toast.error(error?.message || "Failed to reject payout"),
   });
 };
 
@@ -76,11 +81,15 @@ export const useApproveFleetPayout = (id: string) => {
       queryClient.invalidateQueries({ queryKey: ["fleets-payouts"] });
       queryClient.invalidateQueries({ queryKey: ["fleet-payout", id] });
     },
-    onError: (error: any) => toast.error(error?.message ?? "Failed to approve payout"),
+    onError: (error) =>
+      toast.error(error?.message || "Failed to approve payout"),
   });
 };
 
-export const useRejectFleetPayout = (id: string, reason: { reason: string }) => {
+export const useRejectFleetPayout = (
+  id: string,
+  reason: { reason: string },
+) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: () => rejectFleetPayout(id, reason),
@@ -89,7 +98,8 @@ export const useRejectFleetPayout = (id: string, reason: { reason: string }) => 
       queryClient.invalidateQueries({ queryKey: ["fleets-payouts"] });
       queryClient.invalidateQueries({ queryKey: ["fleet-payout", id] });
     },
-    onError: (error: any) => toast.error(error?.message ?? "Failed to reject payout"),
+    onError: (error) =>
+      toast.error(error?.message || "Failed to reject payout"),
   });
 };
 
@@ -115,11 +125,15 @@ export const useApproveRiderPayout = (id: string) => {
       queryClient.invalidateQueries({ queryKey: ["riders-payouts"] });
       queryClient.invalidateQueries({ queryKey: ["rider-payout", id] });
     },
-    onError: (error: any) => toast.error(error?.message ?? "Failed to approve payout"),
+    onError: (error) =>
+      toast.error(error?.message || "Failed to approve payout"),
   });
 };
 
-export const useRejectRiderPayout = (id: string, reason: { reason: string }) => {
+export const useRejectRiderPayout = (
+  id: string,
+  reason: { reason: string },
+) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: () => rejectRiderPayout(id, reason),
@@ -128,6 +142,7 @@ export const useRejectRiderPayout = (id: string, reason: { reason: string }) => 
       queryClient.invalidateQueries({ queryKey: ["riders-payouts"] });
       queryClient.invalidateQueries({ queryKey: ["rider-payout", id] });
     },
-    onError: (error: any) => toast.error(error?.message ?? "Failed to reject payout"),
+    onError: (error) =>
+      toast.error(error?.message || "Failed to reject payout"),
   });
 };

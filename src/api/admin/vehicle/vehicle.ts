@@ -9,3 +9,8 @@ export const getVehicle = async (id: string) => {
   const response = await axiosInstance.get(`/admins/vehicles/${id}`);
   return response.data;
 };
+
+export const getVehicleByFleetId = async (id: string) => {
+  const response = await axiosInstance.get(`/admins/vehicles?companyId=${id}`);
+  return response.data;
+};

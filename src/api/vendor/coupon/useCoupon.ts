@@ -10,8 +10,8 @@ export const useCreateCoupon = () => {
       toast.success("Coupon created successfully");
       queryClient.invalidateQueries({ queryKey: ["coupons"] });
     },
-    onError: () => {
-      toast.error("Failed to create coupon");
+    onError: (e) => {
+      toast.error(e.message || "Failed to create coupon");
     },
   });
 };

@@ -30,8 +30,8 @@ export const useApproveVendor = (vendorId: string) => {
       queryClient.invalidateQueries({ queryKey: ["vendor", vendorId] });
       toast.success("Vendor approved successfully");
     },
-    onError: () => {
-      toast.error("Failed to approve vendor");
+    onError: (e) => {
+      toast.error(e.message || "Failed to approve vendor");
     },
   });
 };
@@ -44,8 +44,8 @@ export const useVendorWalletAction = (vendorId: string) => {
       queryClient.invalidateQueries({ queryKey: ["vendor", vendorId] });
       toast.success("Vendor wallet updated successfully");
     },
-    onError: () => {
-      toast.error("Failed to update vendor wallet");
+    onError: (e) => {
+      toast.error(e.message || "Failed to update vendor wallet");
     },
   });
 };
@@ -58,8 +58,8 @@ export const useVendorAccountAction = (vendorId: string) => {
       queryClient.invalidateQueries({ queryKey: ["vendor", vendorId] });
       toast.success("Vendor account updated successfully");
     },
-    onError: () => {
-      toast.error("Failed to update vendor account");
+    onError: (e) => {
+      toast.error(e.message || "Failed to update vendor account");
     },
   });
 };

@@ -1,8 +1,14 @@
 import { Button } from "@/components/ui/button";
 import { CheckCircle, ArrowLeft } from "lucide-react";
-import { Link } from "react-router";
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router";
+import { logout } from "@/redux/slices/authSlice";
+import { signOut } from "firebase/auth";
+import { auth } from "@/firebase";
 
 export default function KycSubmitted() {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
       <div className="max-w-md w-full">
@@ -22,14 +28,17 @@ export default function KycSubmitted() {
             You will be notified once your account has been reviewed.
           </p>
 
-          <Link to="/">
-            <Button
-              className="w-full bg-[#4D37B3] text-white hover:bg-[#3d2a8a]"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to login
-            </Button>
-          </Link>
+          <Button
+            className="w-full bg-[#4D37B3] text-white hover:bg-[#3d2a8a]"
+            onClick={async () => {
+              await signOut(auth);
+              dispatch(logout());
+              navigate("/");
+            }}
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to login
+          </Button>
         </div>
       </div>
     </div>

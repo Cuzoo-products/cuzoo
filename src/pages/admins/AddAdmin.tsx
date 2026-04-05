@@ -156,7 +156,7 @@ export default function AddAdmin() {
                   id="phoneNumber"
                   type="tel"
                   autoComplete="tel"
-                  placeholder="+2348140231279"
+                  placeholder="+2348031234567"
                   value={formData.phoneNumber}
                   onChange={handleInputChange}
                   required

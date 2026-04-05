@@ -4,11 +4,7 @@ import { useForm, useFieldArray } from "react-hook-form";
 import * as z from "zod";
 import { format } from "date-fns";
 import { CalendarIcon, Trash2 } from "lucide-react";
-import { signOut } from "firebase/auth";
-import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router";
-import { auth } from "@/firebase";
-import { logout } from "@/redux/slices/authSlice";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -42,7 +38,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { cn, fileToBase64 } from "@/lib/utils";
+import { cn, fileToBase64, omitEmptyPayloadValues } from "@/lib/utils";
 import { fleetKycformSchema } from "@/lib/zodVaildation";
 import Header2 from "@/components/utilities/header2";
 import { useFleetKyc } from "@/api/fleet/profile/useProfile";
@@ -70,7 +66,6 @@ const insuranceOptions = [
 ];
 
 export function FleetKyc() {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const form = useForm<z.infer<typeof fleetKycformSchema>>({
@@ -97,7 +92,6 @@ export function FleetKyc() {
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
-    // @ts-expect-error - schema has directors as optional array; useFieldArray expects array path
     name: "directors",
   });
 
@@ -130,10 +124,13 @@ export function FleetKyc() {
         v as FileList | File | string | undefined,
       );
     }
-    mutate(payload as z.infer<typeof fleetKycformSchema>, {
+    if (payload.dateOfIncorporation instanceof Date) {
+      payload.dateOfIncorporation =
+        payload.dateOfIncorporation.toISOString();
+    }
+    const cleaned = omitEmptyPayloadValues(payload);
+    mutate(cleaned as z.infer<typeof fleetKycformSchema>, {
       onSuccess: async () => {
-        await signOut(auth);
-        dispatch(logout());
         navigate("/kyc-submitted");
       },
     });
@@ -141,6 +138,36 @@ export function FleetKyc() {
 
   const nextStep = () => setStep((prev) => Math.min(prev + 1, 4));
   const prevStep = () => setStep((prev) => Math.max(prev - 1, 1));
+
+  const step1FieldNames = [
+    "registrationNumber",
+    "tinNumber",
+    "dateOfIncorporation",
+    "placeOfIncorporation",
+    "companyType",
+  ] as const;
+
+  const step2FieldNames = ["servicesRendered", "insuranceCoverage"] as const;
+
+  async function goNext() {
+    if (step === 1) {
+      const ok = await form.trigger([...step1FieldNames]);
+      if (ok) nextStep();
+      return;
+    }
+    if (step === 2) {
+      const ok = await form.trigger([...step2FieldNames]);
+      if (ok) nextStep();
+      return;
+    }
+    if (step === 3) {
+      const directorPaths = fields.map(
+        (_, i) => `directors.${i}` as const,
+      ) as `directors.${number}`[];
+      const ok = await form.trigger(directorPaths);
+      if (ok) nextStep();
+    }
+  }
 
   // File input helper
   const fileRef = form.register;
@@ -273,7 +300,7 @@ export function FleetKyc() {
                           <FormLabel>Type of Company</FormLabel>
                           <Select
                             onValueChange={field.onChange}
-                            defaultValue={field.value}
+                            value={field.value || undefined}
                           >
                             <FormControl>
                               <SelectTrigger>
@@ -286,9 +313,6 @@ export function FleetKyc() {
                               </SelectItem>
                               <SelectItem value="Public Limited Company">
                                 Public Limited Company
-                              </SelectItem>
-                              <SelectItem value="Business Name">
-                                Business Name
                               </SelectItem>
                               <SelectItem value="LLC">LLC</SelectItem>
                               <SelectItem value="Incorporated Trustee">
@@ -568,7 +592,7 @@ export function FleetKyc() {
                             <Input type="file" {...fileRef("courierLicense")} />
                           </FormControl>
                           <FormDescription>
-                            If applicable. PDF, JPG, PNG. Max 5MB.
+                            PDF, JPG, PNG. Max 5MB.
                           </FormDescription>
                           <FormMessage />
                         </FormItem>
@@ -591,7 +615,7 @@ export function FleetKyc() {
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      nextStep();
+                      void goNext();
                     }}
                   >
                     Next

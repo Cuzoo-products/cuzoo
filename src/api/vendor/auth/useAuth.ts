@@ -12,8 +12,8 @@ export const useCreateVendor = () => {
     onSuccess: () => {
       toast.success("Vendor registered successfully");
     },
-    onError: () => {
-      toast.error("Failed to register vendor");
+    onError: (e) => {
+      toast.error(e.message);
     },
   });
 };
@@ -24,8 +24,8 @@ export const useUpdateVendorProfile = () => {
     onSuccess: () => {
       toast.success("Profile updated successfully");
     },
-    onError: () => {
-      toast.error("Failed to update profile");
+    onError: (e) => {
+      toast.error(e.message || "Failed to update profile");
     },
   });
 };

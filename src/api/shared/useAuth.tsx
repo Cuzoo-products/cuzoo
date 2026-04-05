@@ -26,9 +26,7 @@ export const useSendVerificationMail = () => {
       );
     },
     onError: (error) => {
-      toast.error("Failed to send verification mail", {
-        description: error.message,
-      });
+      toast.error(error.message || "Failed to send verification mail");
     },
   });
 };
@@ -40,9 +38,7 @@ export const useVerifyEmail = () => {
       toast.success("Email verified successfully, you can now login");
     },
     onError: (error) => {
-      toast.error("Failed to verify email, please try again", {
-        description: error.message,
-      });
+      toast.error(error.message || "Failed to verify email, please try again");
     },
   });
 };
@@ -56,9 +52,7 @@ export const useForgotPassword = () => {
       );
     },
     onError: (error) => {
-      toast.error("Failed to send password reset email", {
-        description: error.message,
-      });
+      toast.error(error.message || "Failed to send password reset email");
     },
   });
 };

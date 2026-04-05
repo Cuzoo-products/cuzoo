@@ -29,8 +29,8 @@ export const useAddVehicles = () => {
       queryClient.invalidateQueries({ queryKey: ["getVehicles"] });
       toast.success("Vehicle added successfully!");
     },
-    onError: () => {
-      toast.error("Failed to add vehicle!");
+    onError: (e) => {
+      toast.error(e.message || "Failed to add vehicle!");
     },
   });
 };
@@ -44,8 +44,8 @@ export const useUpdateVehicle = () => {
       queryClient.invalidateQueries({ queryKey: ["getVehicles"] });
       toast.success("Vehicle updated successfully!");
     },
-    onError: () => {
-      toast.error("Failed to update vehicle!");
+    onError: (e) => {
+      toast.error(e.message || "Failed to update vehicle!");
     },
   });
 };

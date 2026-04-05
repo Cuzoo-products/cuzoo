@@ -64,9 +64,6 @@ export const columns: ColumnDef<DriverData>[] = [
             <DropdownMenuItem>
               <Link to={`${driverData.id}`}>View Driver</Link>
             </DropdownMenuItem>
-            <DropdownMenuItem>
-              <button onClick={() => {}}>Disable Driver</button>
-            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );

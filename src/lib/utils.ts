@@ -59,3 +59,40 @@ export function formatApiDate(value: unknown): string {
 
   return "—";
 }
+
+/**
+ * Builds a JSON-friendly payload: drops `null`, `undefined`, `""`, empty arrays,
+ * and empty nested plain objects. String arrays are filtered to remove empty strings.
+ */
+export function omitEmptyPayloadValues(
+  input: Record<string, unknown>,
+): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(input)) {
+    if (value === undefined || value === null) continue;
+    if (value === "") continue;
+
+    if (Array.isArray(value)) {
+      const filtered = value.filter(
+        (item) => item !== undefined && item !== null && item !== "",
+      );
+      if (filtered.length === 0) continue;
+      out[key] = filtered;
+      continue;
+    }
+
+    if (
+      typeof value === "object" &&
+      !(value instanceof Date) &&
+      value !== null
+    ) {
+      const nested = omitEmptyPayloadValues(value as Record<string, unknown>);
+      if (Object.keys(nested).length === 0) continue;
+      out[key] = nested;
+      continue;
+    }
+
+    out[key] = value;
+  }
+  return out;
+}

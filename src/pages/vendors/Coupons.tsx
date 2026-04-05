@@ -33,12 +33,26 @@ import { payoutRecordId } from "@/lib/payoutId";
 import Loader from "@/components/utilities/Loader";
 
 const couponFormSchema = z.object({
-  code: z.string().min(1, "Code is required").max(24),
-  value: z.coerce.number().min(0.01, "Value must be greater than 0"),
-  minimumSpend: z.coerce.number().min(0, "Minimum spend must be 0 or greater"),
+  code: z
+    .string()
+    .min(1, "Code is required")
+    .max(24, "Code must be at most 24 characters"),
+  value: z.coerce
+    .number({ invalid_type_error: "Percentage is required" })
+    .min(0.01, "Value must be greater than 0")
+    .max(100, "Percentage cannot exceed 100"),
+  minimumSpend: z.coerce
+    .number({ invalid_type_error: "Minimum amount is required" })
+    .min(0, "Minimum spend must be 0 or greater"),
   expiryDate: z.string().min(1, "Expiry date is required"),
-  maxUsage: z.coerce.number().min(0).optional(),
-  description: z.string().max(200).optional(),
+  maxUsage: z.coerce
+    .number({ invalid_type_error: "Max uses is required" })
+    .int("Max uses must be a whole number")
+    .min(0, "Max uses must be 0 or greater"),
+  description: z
+    .string()
+    .min(1, "Description is required")
+    .max(200, "Description must be at most 200 characters"),
 });
 
 type CouponFormValues = z.infer<typeof couponFormSchema>;
@@ -128,7 +142,7 @@ export default function Coupons() {
       value: 10,
       minimumSpend: 0,
       expiryDate: "",
-      maxUsage: undefined,
+      maxUsage: 50,
       description: "",
     },
   });
@@ -147,8 +161,8 @@ export default function Coupons() {
       value: data.value,
       minimumSpend: data.minimumSpend,
       expiryDate: expiryIso,
-      maxUsage: data.maxUsage ?? null,
-      description: data.description ?? "",
+      maxUsage: data.maxUsage,
+      description: data.description,
     };
 
     createCoupon(newCoupon, {
@@ -158,7 +172,7 @@ export default function Coupons() {
           value: 10,
           minimumSpend: 0,
           expiryDate: "",
-          maxUsage: undefined,
+          maxUsage: 50,
           description: "",
         });
       },
@@ -225,7 +239,13 @@ export default function Coupons() {
                   <FormItem>
                     <FormLabel>Percentage (%)</FormLabel>
                     <FormControl>
-                      <Input type="number" min={0} step={0.01} {...field} />
+                      <Input
+                        type="number"
+                        min={0.01}
+                        max={100}
+                        step={0.01}
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage className="text-red-600" />
                   </FormItem>
@@ -277,14 +297,9 @@ export default function Coupons() {
                       <Input
                         type="number"
                         min={0}
-                        placeholder="Unlimited"
+                        step={1}
+                        placeholder="50"
                         {...field}
-                        value={field.value ?? ""}
-                        onChange={(e) =>
-                          field.onChange(
-                            e.target.value === "" ? undefined : e.target.value,
-                          )
-                        }
                       />
                     </FormControl>
                     <FormMessage className="text-red-600" />

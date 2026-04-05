@@ -19,7 +19,7 @@ export const updateCategory = async ({
 }) => {
   const response = await axiosInstance.patch(
     `/vendors/categories/${id}`,
-    catData
+    catData,
   );
   return response.data;
 };

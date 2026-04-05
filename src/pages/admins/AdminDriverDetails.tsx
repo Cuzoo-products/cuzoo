@@ -1,12 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import {
-  Calendar,
-  Mail,
-  Phone,
-  ShieldAlert,
-  Wallet,
-  User,
-} from "lucide-react";
+import { Calendar, Mail, Phone, ShieldAlert, Wallet, User } from "lucide-react";
 import { Link, useParams } from "react-router";
 import { toast } from "sonner";
 
@@ -24,11 +17,14 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 
-import { useGetOneRider, useRiderAction, useRiderWalletAction, useRiderAccountAction } from "@/api/admin/riders/useRiders";
+import {
+  useGetOneRider,
+  useRiderAction,
+  useRiderWalletAction,
+  useRiderAccountAction,
+} from "@/api/admin/riders/useRiders";
 import Loader from "@/components/utilities/Loader";
 import { ContactNotificationCard } from "@/components/utilities/Admins/ContactNotificationCard";
-
-
 
 function toPhoneString(phoneNumber: any): string {
   if (!phoneNumber) return "—";
@@ -51,6 +47,35 @@ function getDocumentUrl(doc: any): string {
   return doc?.url ?? "";
 }
 
+type RiderVehicleRow = {
+  id?: string;
+  model?: string;
+  type?: string;
+  plateNumber?: string;
+  year?: number;
+  color?: string;
+  status?: string;
+};
+
+/** `GET /riders/:id` envelope: assigned vehicles live on `data.data.vehicles`. */
+function vehiclesFromRiderApiResponse(apiBody: unknown): RiderVehicleRow[] {
+  if (apiBody == null || typeof apiBody !== "object") return [];
+  const root = apiBody as { data?: Record<string, unknown> };
+  const inner = root.data;
+  const raw =
+    inner?.vehicles ??
+    inner?.Vehicles ??
+    (inner as { vehichles?: unknown } | undefined)?.vehichles;
+  if (raw == null) return [];
+  if (Array.isArray(raw)) {
+    return raw.length === 0 ? [] : (raw as RiderVehicleRow[]);
+  }
+  if (typeof raw === "object") {
+    return [raw as RiderVehicleRow];
+  }
+  return [];
+}
+
 export default function AdminDriverDetails() {
   const { id } = useParams<{ id: string }>();
   const { data, isLoading, error } = useGetOneRider(id ?? "") as {
@@ -59,14 +84,25 @@ export default function AdminDriverDetails() {
     error: unknown;
   };
 
-  
   const rider = data?.data ?? data ?? null;
+
+  const assignedVehicles = useMemo(() => {
+    let list = vehiclesFromRiderApiResponse(data);
+    if (list.length === 0 && rider && typeof rider === "object") {
+      list = vehiclesFromRiderApiResponse({
+        data: rider as Record<string, unknown>,
+      });
+    }
+    return list;
+  }, [data, rider]);
   const approveMutation = useRiderAction(id ?? "", "approve");
   const declineMutation = useRiderAction(id ?? "", "decline");
   const walletMutation = useRiderWalletAction(id ?? "");
   const accountMutation = useRiderAccountAction(id ?? "");
-  const isPendingAction = approveMutation.isPending || declineMutation.isPending;
-  const isSavingDangerZone = walletMutation.isPending || accountMutation.isPending;
+  const isPendingAction =
+    approveMutation.isPending || declineMutation.isPending;
+  const isSavingDangerZone =
+    walletMutation.isPending || accountMutation.isPending;
   const hasFleetOwner = Boolean(
     rider?.companyId || rider?.companyName || rider?.companyEmail,
   );
@@ -83,7 +119,11 @@ export default function AdminDriverDetails() {
 
     const walletRaw = rider?.wallet;
     const walletActive =
-      walletRaw === "Active" ? true : walletRaw === "Frozen" ? false : accountActive;
+      walletRaw === "Active"
+        ? true
+        : walletRaw === "Frozen"
+          ? false
+          : accountActive;
 
     return {
       id: rider?.Id ?? "",
@@ -134,11 +174,15 @@ export default function AdminDriverDetails() {
 
     try {
       if (accountChanged) {
-        await accountMutation.mutateAsync(isAccountActive ? "release" : "suspend");
+        await accountMutation.mutateAsync(
+          isAccountActive ? "release" : "suspend",
+        );
       }
 
       if (walletChanged) {
-        await walletMutation.mutateAsync(isWalletActive ? "release" : "suspend");
+        await walletMutation.mutateAsync(
+          isWalletActive ? "release" : "suspend",
+        );
       }
 
       setHasChanges(false);
@@ -190,14 +234,18 @@ export default function AdminDriverDetails() {
 
                 <div className="mt-4 flex items-center gap-2">
                   <Badge
-                    variant={driver.status === "Active" ? "default" : "destructive"}
+                    variant={
+                      driver.status === "Active" ? "default" : "destructive"
+                    }
                   >
                     Account: {driver.status}
                   </Badge>
 
                   <Badge
                     variant={
-                      driver.walletStatus === "Active" ? "default" : "destructive"
+                      driver.walletStatus === "Active"
+                        ? "default"
+                        : "destructive"
                     }
                   >
                     Wallet: {driver.walletStatus}
@@ -228,7 +276,9 @@ export default function AdminDriverDetails() {
                   <Phone className="w-5 h-5" />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-xs text-muted-foreground">Phone Number</span>
+                  <span className="text-xs text-muted-foreground">
+                    Phone Number
+                  </span>
                   <span className="text-sm font-medium">{driver.phone}</span>
                 </div>
               </div>
@@ -238,7 +288,9 @@ export default function AdminDriverDetails() {
                   <Calendar className="w-5 h-5" />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-xs text-muted-foreground">Date Joined</span>
+                  <span className="text-xs text-muted-foreground">
+                    Date Joined
+                  </span>
                   <span className="text-sm font-medium">
                     {driver.dateJoined
                       ? new Date(driver.dateJoined).toLocaleDateString()
@@ -252,8 +304,12 @@ export default function AdminDriverDetails() {
                   <User className="w-5 h-5" />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-xs text-muted-foreground">Referral Code</span>
-                  <span className="text-sm font-medium">{rider?.referralCode ?? "—"}</span>
+                  <span className="text-xs text-muted-foreground">
+                    Referral Code
+                  </span>
+                  <span className="text-sm font-medium">
+                    {rider?.referralCode ?? "—"}
+                  </span>
                 </div>
               </div>
 
@@ -264,15 +320,23 @@ export default function AdminDriverDetails() {
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">Date of Birth</p>
-                  <p className="text-sm font-medium">{formatDate(rider?.dateOfBirth)}</p>
+                  <p className="text-sm font-medium">
+                    {formatDate(rider?.dateOfBirth)}
+                  </p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Marital Status</p>
-                  <p className="text-sm font-medium">{rider?.maritalStatus ?? "—"}</p>
+                  <p className="text-xs text-muted-foreground">
+                    Marital Status
+                  </p>
+                  <p className="text-sm font-medium">
+                    {rider?.maritalStatus ?? "—"}
+                  </p>
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">Religion</p>
-                  <p className="text-sm font-medium">{rider?.religion ?? "—"}</p>
+                  <p className="text-sm font-medium">
+                    {rider?.religion ?? "—"}
+                  </p>
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">State</p>
@@ -291,7 +355,8 @@ export default function AdminDriverDetails() {
               <CardHeader>
                 <CardTitle>Approval Actions</CardTitle>
                 <CardDescription>
-                  Review this driver profile and approve or decline registration.
+                  Review this driver profile and approve or decline
+                  registration.
                 </CardDescription>
               </CardHeader>
               <CardContent className="flex gap-3">
@@ -322,11 +387,20 @@ export default function AdminDriverDetails() {
             <CardContent className="space-y-3">
               {[
                 { label: "Passport", url: getDocumentUrl(rider?.passport) },
-                { label: "Driver's License", url: getDocumentUrl(rider?.driversLicense) },
+                {
+                  label: "Driver's License",
+                  url: getDocumentUrl(rider?.driversLicense),
+                },
                 { label: "Rider Card", url: getDocumentUrl(rider?.riderCard) },
-                { label: "National ID", url: getDocumentUrl(rider?.nationalId) },
+                {
+                  label: "National ID",
+                  url: getDocumentUrl(rider?.nationalId),
+                },
                 { label: "Nepa Bill", url: getDocumentUrl(rider?.nepaBill) },
-                { label: "Guarantor Form", url: getDocumentUrl(rider?.gaurantorForm) },
+                {
+                  label: "Guarantor Form",
+                  url: getDocumentUrl(rider?.gaurantorForm),
+                },
               ].map((doc) => (
                 <div
                   key={doc.label}
@@ -343,7 +417,9 @@ export default function AdminDriverDetails() {
                       View
                     </a>
                   ) : (
-                    <span className="text-xs text-muted-foreground">Not uploaded</span>
+                    <span className="text-xs text-muted-foreground">
+                      Not uploaded
+                    </span>
                   )}
                 </div>
               ))}
@@ -366,7 +442,8 @@ export default function AdminDriverDetails() {
             </CardHeader>
 
             <CardContent>
-             Explore the rider's history of trips and activities. View all trips requested by this rider.
+              Explore the rider's history of trips and activities. View all
+              trips requested by this rider.
             </CardContent>
 
             <CardFooter>
@@ -387,10 +464,14 @@ export default function AdminDriverDetails() {
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Referrer Code</p>
-                <p className="text-sm font-medium">{rider?.referrerCode ?? "—"}</p>
+                <p className="text-sm font-medium">
+                  {rider?.referrerCode ?? "—"}
+                </p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Registration Complete</p>
+                <p className="text-xs text-muted-foreground">
+                  Registration Complete
+                </p>
                 <p className="text-sm font-medium">
                   {rider?.regComplete ? "Yes" : "No"}
                 </p>
@@ -404,22 +485,61 @@ export default function AdminDriverDetails() {
               <div className="md:col-span-2">
                 <p className="text-xs text-muted-foreground">Home Address</p>
                 <p className="text-sm font-medium">
-                  {rider?.address?.formatted_address ?? rider?.address?.description ?? "—"}
+                  {rider?.address?.formatted_address ??
+                    rider?.address?.description ??
+                    "—"}
                 </p>
               </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Vehicle</p>
-                <p className="text-sm font-medium">
-                  {rider?.vehicles?.[0]
-                    ? `${rider.vehicles[0].year ?? ""} ${rider.vehicles[0].model ?? ""} (${rider.vehicles[0].plateNumber ?? "—"})`.trim()
-                    : "—"}
-                </p>
-              </div>
+              {assignedVehicles.length > 0 ? (
+                <div className="md:col-span-2">
+                  <p className="text-xs text-muted-foreground mb-2">
+                    Assigned vehicles
+                  </p>
+                  <ul className="space-y-3">
+                    {assignedVehicles.map((v, idx) => {
+                      const line = [
+                        v.year != null ? String(v.year) : null,
+                        v.model,
+                        v.type,
+                        v.plateNumber ? `(${v.plateNumber})` : null,
+                      ]
+                        .filter(Boolean)
+                        .join(" ");
+                      const extra = [v.color, v.status]
+                        .filter(Boolean)
+                        .join(" · ");
+                      return (
+                        <li
+                          key={v.id ?? `veh-${idx}`}
+                          className="text-sm border-b border-border/60 pb-3 last:border-0 last:pb-0"
+                        >
+                          <div className="font-medium">
+                            {line.trim() || "Vehicle"}
+                          </div>
+                          {extra ? (
+                            <p className="text-xs text-muted-foreground mt-0.5">
+                              {extra}
+                            </p>
+                          ) : null}
+                          {v.id ? (
+                            <Button asChild variant="link" className="h-auto p-0 mt-1">
+                              <Link to={`/admins/vehicles/${v.id}`}>
+                                View vehicle
+                              </Link>
+                            </Button>
+                          ) : null}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              ) : null}
               <div>
                 <p className="text-xs text-muted-foreground">Guarantor</p>
                 <p className="text-sm font-medium">
                   {rider?.gaurantor
-                    ? `${rider.gaurantor.firstName ?? ""} ${rider.gaurantor.lastName ?? ""}`.trim() || "—"
+                    ? `${rider.gaurantor.firstName ?? ""} ${rider.gaurantor.lastName ?? ""}`.trim() ||
+                      "—"
                     : "—"}
                 </p>
               </div>
@@ -427,15 +547,13 @@ export default function AdminDriverDetails() {
                 <p className="text-xs text-muted-foreground">Company Details</p>
                 {hasFleetOwner ? (
                   <div className="text-sm font-medium space-y-1">
-                    <p>
-                      Company Name: {rider?.companyName ?? "—"}
-                    </p>
-                    <p>
-                      Company Email: {rider?.companyEmail ?? "—"}
-                    </p>
+                    <p>Company Name: {rider?.companyName ?? "—"}</p>
+                    <p>Company Email: {rider?.companyEmail ?? "—"}</p>
                   </div>
                 ) : (
-                  <p className="text-sm font-medium">Not assigned to any company.</p>
+                  <p className="text-sm font-medium">
+                    Not assigned to any company.
+                  </p>
                 )}
               </div>
             </CardContent>

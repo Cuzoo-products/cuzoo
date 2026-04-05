@@ -79,9 +79,6 @@ export const columns: ColumnDef<VehicleData>[] = [
             <DropdownMenuItem>
               <Link to={`${VehicleData.id}`}>View Vehicle</Link>
             </DropdownMenuItem>
-            <DropdownMenuItem>
-              <button onClick={() => {}}>Disable Vehicle</button>
-            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );

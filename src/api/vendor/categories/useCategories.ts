@@ -13,8 +13,8 @@ export const useCreateCategory = () => {
     onSuccess: () => {
       toast.success("Category created successfully");
     },
-    onError: () => {
-      toast.error("Failed to create category");
+    onError: (e) => {
+      toast.error(e.message || "Failed to create category");
     },
   });
 };
@@ -32,8 +32,9 @@ export const useUpdateCategory = () => {
     onSuccess: () => {
       toast.success("Category updated successfully");
     },
-    onError: () => {
-      toast.error("Failed to update category");
+    onError: (e) => {
+      console.log(e);
+      toast.error(e.message || "Failed to update category");
     },
   });
 };

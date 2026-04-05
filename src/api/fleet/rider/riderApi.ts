@@ -29,6 +29,6 @@ export const releaseRider = async (id: string) => {
 };
 
 export const suspendRider = async (id: string) => {
-  const response = await axiosInstance.patch(`/riders/${id}/suspend`);
+  const response = await axiosInstance.patch(`/fleets/riders/${id}/suspend`);
   return response.data;
 };

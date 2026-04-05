@@ -16,10 +16,12 @@ export const useGetRiders = () => {
   });
 };
 
-export const useGetOneRider = (id: string) => {
+export const useGetOneRider = (id: string | undefined) => {
+  const safe = id?.trim() ?? "";
   return useQuery({
-    queryKey: ["rider", id],
-    queryFn: () => getOneRider(id),
+    queryKey: ["rider", safe],
+    queryFn: () => getOneRider(safe),
+    enabled: safe.length > 0,
   });
 };
 
@@ -32,12 +34,11 @@ export const useRiderAction = (id: string, action: string) => {
       queryClient.invalidateQueries({ queryKey: ["rider", id] });
       toast.success(`Rider ${action}d successfully`);
     },
-    onError: (error: any) => {
-      toast.error(error?.message ?? "Failed to update rider.");
+    onError: (error) => {
+      toast.error(error?.message || "Failed to update rider.");
     },
   });
 };
-
 
 export const useRiderWalletAction = (id: string) => {
   const queryClient = useQueryClient();
@@ -48,8 +49,8 @@ export const useRiderWalletAction = (id: string) => {
       queryClient.invalidateQueries({ queryKey: ["rider", id] });
       toast.success(`Rider wallet updated successfully`);
     },
-    onError: (error: any) => {
-      toast.error(error?.message ?? "Failed to update rider wallet.");
+    onError: (error) => {
+      toast.error(error?.message || "Failed to update rider wallet.");
     },
   });
 };
@@ -63,8 +64,8 @@ export const useRiderAccountAction = (id: string) => {
       queryClient.invalidateQueries({ queryKey: ["rider", id] });
       toast.success(`Rider account updated successfully`);
     },
-    onError: (error: any) => {
-      toast.error(error?.message ?? "Failed to update rider account.");
+    onError: (error) => {
+      toast.error(error?.message || "Failed to update rider account.");
     },
   });
 };

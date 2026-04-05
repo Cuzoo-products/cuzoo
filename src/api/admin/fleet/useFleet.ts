@@ -1,11 +1,19 @@
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
-import { approveFleet, getFleets, getOneFleet, fleetWalletAction, fleetAccountAction } from "./fleetApi";
+import {
+  approveFleet,
+  getFleets,
+  getOneFleet,
+  fleetWalletAction,
+  fleetAccountAction,
+} from "./fleetApi";
 import { toast } from "sonner";
 
-export const useGetOneFleet = (id: string) => {
+export const useGetOneFleet = (id: string | undefined) => {
+  const safe = id?.trim() ?? "";
   return useQuery({
-    queryKey: ["fleet", id],
-    queryFn: () => getOneFleet(id),
+    queryKey: ["fleet", safe],
+    queryFn: () => getOneFleet(safe),
+    enabled: safe.length > 0,
   });
 };
 
@@ -25,8 +33,8 @@ export const useApproveFleet = (id: string | undefined) => {
       if (id) queryClient.invalidateQueries({ queryKey: ["fleet", id] });
       queryClient.invalidateQueries({ queryKey: ["fleets"] });
     },
-    onError: () => {
-      toast.error("Failed to approve fleet");
+    onError: (e) => {
+      toast.error(e.message || "Failed to approve fleet");
     },
   });
 };
@@ -39,8 +47,8 @@ export const useFleetWalletAction = (id: string) => {
       queryClient.invalidateQueries({ queryKey: ["fleet", id] });
       toast.success("Fleet wallet updated successfully");
     },
-    onError: () => {
-      toast.error("Failed to update fleet wallet");
+    onError: (e) => {
+      toast.error(e.message || "Failed to update fleet wallet");
     },
   });
 };
@@ -53,8 +61,8 @@ export const useFleetAccountAction = (id: string) => {
       queryClient.invalidateQueries({ queryKey: ["fleet", id] });
       toast.success("Fleet account updated successfully");
     },
-    onError: () => {
-      toast.error("Failed to update fleet account");
+    onError: (e) => {
+      toast.error(e.message || "Failed to update fleet account");
     },
   });
 };

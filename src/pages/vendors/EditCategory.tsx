@@ -18,7 +18,7 @@ import {
   useUpdateCategory,
 } from "@/api/vendor/categories/useCategories";
 import { useParams } from "react-router";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 import Loader from "@/components/utilities/Loader";
 import { useNavigate } from "react-router";
@@ -39,6 +39,9 @@ function EditCategory() {
 
   const { data: category, isLoading } = useGetOneCategory(id as string);
 
+  /** Original image URL from API — submit omits `icon` when still equal (no new upload). */
+  const initialCategoryIconRef = useRef<string>("");
+
   const form = useForm<z.infer<typeof CategoryFormSchema>>({
     resolver: zodResolver(CategoryFormSchema),
     defaultValues: {
@@ -50,9 +53,11 @@ function EditCategory() {
   // Update form with category data when loaded
   useEffect(() => {
     if (category?.data) {
+      const iconUrl = category.data.image?.url || "";
+      initialCategoryIconRef.current = iconUrl;
       form.reset({
         CategoryName: category.data.name,
-        CategoryIcon: category.data.image?.url || "",
+        CategoryIcon: iconUrl,
       });
     }
   }, [category, form]);
@@ -68,8 +73,14 @@ function EditCategory() {
   const { mutate: updateCategory, isPending } = useUpdateCategory();
 
   function onSubmit(data: z.infer<typeof CategoryFormSchema>) {
+    const payload: { name: string; icon?: string } = {
+      name: data.CategoryName,
+    };
+    if (data.CategoryIcon !== initialCategoryIconRef.current) {
+      payload.icon = data.CategoryIcon;
+    }
     updateCategory(
-      { id: id as string, catData: data },
+      { id: id as string, catData: payload },
       {
         onSuccess: () => {
           navigate(-1);

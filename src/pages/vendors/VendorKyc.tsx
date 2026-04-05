@@ -36,15 +36,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
-import { cn, fileToBase64 } from "@/lib/utils";
+import { kycRequiredDocument } from "@/lib/zodVaildation";
+import { cn, fileToBase64, omitEmptyPayloadValues } from "@/lib/utils";
 import Header2 from "@/components/utilities/header2";
 import { GogglePlace } from "@/components/utilities/GogglePlace";
 import { useUpdateVendorProfile } from "@/api/vendor/auth/useAuth";
 import { useNavigate } from "react-router";
-import { signOut } from "firebase/auth";
-import { auth } from "@/firebase";
-import { logout } from "@/redux/slices/authSlice";
-import { useDispatch } from "react-redux";
 
 const BUSINESS_TYPES = [
   "Logistics",
@@ -75,10 +72,14 @@ const vendorKycSchema = z.object({
     residentialAddress: z.string().min(1, "Residential address is required"),
     declaration: z.string().min(1, "Declaration is required"),
   }),
-  passport: z.any().optional(),
-  certificateOfIncorporation: z.any().optional(),
-  governmentApprovedId: z.any().optional(),
-  proofOfAddress: z.any().optional(),
+  passport: kycRequiredDocument("Passport is required"),
+  certificateOfIncorporation: kycRequiredDocument(
+    "Certificate of incorporation is required",
+  ),
+  governmentApprovedId: kycRequiredDocument(
+    "Government approved ID is required",
+  ),
+  proofOfAddress: kycRequiredDocument("Proof of address is required"),
   lgaPermit: z.any().optional(),
   gphLicense: z.any().optional(),
   nafdacRegistration: z.any().optional(),
@@ -100,7 +101,6 @@ export function VendorKycForm() {
   const { mutate: updateVendorProfile, isPending: isUpdatingProfile } =
     useUpdateVendorProfile();
   const navigate = useNavigate();
-  const dispatch = useDispatch();
   const form = useForm<VendorKycFormValues>({
     resolver: zodResolver(vendorKycSchema),
     defaultValues: {
@@ -116,7 +116,8 @@ export function VendorKycForm() {
         nationality: "",
         state: "",
         residentialAddress: "",
-        declaration: "",
+        declaration:
+          "i hereby declare that the information provided above is true and accurate to the best of my knowledge and belief.",
       },
       passport: undefined,
       certificateOfIncorporation: undefined,
@@ -131,57 +132,53 @@ export function VendorKycForm() {
   const [step, setStep] = useState(1);
 
   async function onSubmit(values: VendorKycFormValues) {
-    const payload = {
+    const logo =
+      typeof values.logo === "string"
+        ? values.logo.trim() || undefined
+        : await toBase64(values.logo as FileList | File | undefined);
+
+    const payloadRaw: Record<string, unknown> = {
       registrationNumber: values.registrationNumber,
       dateOfIncorporation: values.dateOfIncorporation
         ? new Date(values.dateOfIncorporation).toISOString()
-        : "",
+        : undefined,
       placeOfIncorporation: values.placeOfIncorporation,
-      businessType: values.businessType ?? "",
-      logo:
-        (typeof values.logo === "string"
-          ? values.logo
-          : await toBase64(values.logo as FileList | File)) ?? "",
+      businessType: values.businessType ?? undefined,
+      logo,
       addressPlaceId: values.addressPlaceId,
       typeOfGoodsSold: values.typeOfGoodsSold,
-      proprietor: values.proprietor,
-      passport:
-        (await toBase64(
-          values.passport as FileList | File | string | undefined,
-        )) ?? "",
-      certificateOfIncorporation:
-        (await toBase64(
-          values.certificateOfIncorporation as
-            | FileList
-            | File
-            | string
-            | undefined,
-        )) ?? "",
-      governmentApprovedId:
-        (await toBase64(
-          values.governmentApprovedId as FileList | File | string | undefined,
-        )) ?? "",
-      proofOfAddress:
-        (await toBase64(
-          values.proofOfAddress as FileList | File | string | undefined,
-        )) ?? "",
-      lgaPermit:
-        (await toBase64(
-          values.lgaPermit as FileList | File | string | undefined,
-        )) ?? "",
-      gphLicense:
-        (await toBase64(
-          values.gphLicense as FileList | File | string | undefined,
-        )) ?? "",
-      nafdacRegistration:
-        (await toBase64(
-          values.nafdacRegistration as FileList | File | string | undefined,
-        )) ?? "",
+      proprietor: { ...values.proprietor },
+      passport: await toBase64(
+        values.passport as FileList | File | string | undefined,
+      ),
+      certificateOfIncorporation: await toBase64(
+        values.certificateOfIncorporation as
+          | FileList
+          | File
+          | string
+          | undefined,
+      ),
+      governmentApprovedId: await toBase64(
+        values.governmentApprovedId as FileList | File | string | undefined,
+      ),
+      proofOfAddress: await toBase64(
+        values.proofOfAddress as FileList | File | string | undefined,
+      ),
+      lgaPermit: await toBase64(
+        values.lgaPermit as FileList | File | string | undefined,
+      ),
+      gphLicense: await toBase64(
+        values.gphLicense as FileList | File | string | undefined,
+      ),
+      nafdacRegistration: await toBase64(
+        values.nafdacRegistration as FileList | File | string | undefined,
+      ),
     };
+
+    const payload = omitEmptyPayloadValues(payloadRaw);
+
     updateVendorProfile(payload, {
       onSuccess: async () => {
-        await signOut(auth);
-        dispatch(logout());
         navigate("/kyc-submitted");
       },
     });
@@ -224,7 +221,7 @@ export function VendorKycForm() {
                         <FormControl>
                           <Input placeholder="RC123456" {...field} />
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-red-500" />
                       </FormItem>
                     )}
                   />
@@ -262,7 +259,7 @@ export function VendorKycForm() {
                             />
                           </PopoverContent>
                         </Popover>
-                        <FormMessage />
+                        <FormMessage className="text-red-500" />
                       </FormItem>
                     )}
                   />
@@ -275,7 +272,7 @@ export function VendorKycForm() {
                         <FormControl>
                           <Input placeholder="Lagos, Nigeria" {...field} />
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-red-500" />
                       </FormItem>
                     )}
                   />
@@ -302,7 +299,7 @@ export function VendorKycForm() {
                             ))}
                           </SelectContent>
                         </Select>
-                        <FormMessage />
+                        <FormMessage className="text-red-500" />
                       </FormItem>
                     )}
                   />
@@ -325,7 +322,7 @@ export function VendorKycForm() {
                             }}
                           />
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-red-500" />
                       </FormItem>
                     )}
                   />
@@ -342,7 +339,7 @@ export function VendorKycForm() {
                             placeholder="Enter business address"
                           />
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-red-500" />
                       </FormItem>
                     )}
                   />
@@ -358,7 +355,7 @@ export function VendorKycForm() {
                             {...field}
                           />
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-red-500" />
                       </FormItem>
                     )}
                   />
@@ -377,7 +374,7 @@ export function VendorKycForm() {
                         <FormControl>
                           <Input placeholder="John Doe" {...field} />
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-red-500" />
                       </FormItem>
                     )}
                   />
@@ -390,7 +387,7 @@ export function VendorKycForm() {
                         <FormControl>
                           <Input placeholder="Nigerian" {...field} />
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-red-500" />
                       </FormItem>
                     )}
                   />
@@ -403,7 +400,7 @@ export function VendorKycForm() {
                         <FormControl>
                           <Input placeholder="Lagos" {...field} />
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-red-500" />
                       </FormItem>
                     )}
                   />
@@ -419,7 +416,7 @@ export function VendorKycForm() {
                             {...field}
                           />
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-red-500" />
                       </FormItem>
                     )}
                   />
@@ -435,7 +432,7 @@ export function VendorKycForm() {
                             {...field}
                           />
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-red-500" />
                       </FormItem>
                     )}
                   />
@@ -450,7 +447,7 @@ export function VendorKycForm() {
                     name="passport"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Passport</FormLabel>
+                        <FormLabel>Passport (required)</FormLabel>
                         <FormControl>
                           <Input
                             type="file"
@@ -458,7 +455,7 @@ export function VendorKycForm() {
                             onChange={(e) => field.onChange(e.target.files)}
                           />
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-red-500" />
                       </FormItem>
                     )}
                   />
@@ -467,7 +464,9 @@ export function VendorKycForm() {
                     name="certificateOfIncorporation"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Certificate of Incorporation</FormLabel>
+                        <FormLabel>
+                          Certificate of incorporation (required)
+                        </FormLabel>
                         <FormControl>
                           <Input
                             type="file"
@@ -475,7 +474,7 @@ export function VendorKycForm() {
                             onChange={(e) => field.onChange(e.target.files)}
                           />
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-red-500" />
                       </FormItem>
                     )}
                   />
@@ -484,7 +483,7 @@ export function VendorKycForm() {
                     name="governmentApprovedId"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Government Approved ID</FormLabel>
+                        <FormLabel>Government approved ID (required)</FormLabel>
                         <FormControl>
                           <Input
                             type="file"
@@ -492,7 +491,7 @@ export function VendorKycForm() {
                             onChange={(e) => field.onChange(e.target.files)}
                           />
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-red-500" />
                       </FormItem>
                     )}
                   />
@@ -501,7 +500,7 @@ export function VendorKycForm() {
                     name="proofOfAddress"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Proof of Address</FormLabel>
+                        <FormLabel>Proof of address (required)</FormLabel>
                         <FormControl>
                           <Input
                             type="file"
@@ -509,7 +508,7 @@ export function VendorKycForm() {
                             onChange={(e) => field.onChange(e.target.files)}
                           />
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-red-500" />
                       </FormItem>
                     )}
                   />
@@ -526,7 +525,7 @@ export function VendorKycForm() {
                             onChange={(e) => field.onChange(e.target.files)}
                           />
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-red-500" />
                       </FormItem>
                     )}
                   />
@@ -543,7 +542,7 @@ export function VendorKycForm() {
                             onChange={(e) => field.onChange(e.target.files)}
                           />
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-red-500" />
                       </FormItem>
                     )}
                   />
@@ -562,7 +561,7 @@ export function VendorKycForm() {
                             onChange={(e) => field.onChange(e.target.files)}
                           />
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-red-500" />
                       </FormItem>
                     )}
                   />

@@ -110,7 +110,7 @@ function Field({
 
 export default function FleetOwnersProfile() {
   const { id: routeId } = useParams();
-  const { data, isLoading } = useGetOneFleet(routeId ?? "");
+  const { data, isLoading } = useGetOneFleet(routeId);
   const approveMutation = useApproveFleet(routeId ?? undefined);
   const accountMutation = useFleetAccountAction(routeId ?? "");
   const walletMutation = useFleetWalletAction(routeId ?? "");

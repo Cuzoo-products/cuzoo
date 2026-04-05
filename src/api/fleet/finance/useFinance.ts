@@ -39,8 +39,8 @@ export const useAddBankAccount = () => {
       queryClient.invalidateQueries({ queryKey: ["walletDetails"] });
       toast.success("Bank account added successfully");
     },
-    onError: () => {
-      toast.error("Failed to add bank account");
+    onError: (e) => {
+      toast.error(e.message || "Failed to add bank account");
     },
   });
 };
@@ -53,8 +53,8 @@ export const useDeleteBankAccount = () => {
       queryClient.invalidateQueries({ queryKey: ["walletDetails"] });
       toast.success("Bank account deleted successfully");
     },
-    onError: () => {
-      toast.error("Failed to delete bank account");
+    onError: (e) => {
+      toast.error(e.message || "Failed to delete bank account");
     },
   });
 };
@@ -86,8 +86,8 @@ export const useRequestWithdrawal = () => {
     onSuccess: () => {
       toast.success("Withdrawal request submitted successfully");
     },
-    onError: () => {
-      toast.error("Failed to submit withdrawal request");
+    onError: (e) => {
+      toast.error(e.message || "Failed to submit withdrawal request");
     },
   });
 };

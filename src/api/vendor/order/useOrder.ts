@@ -24,8 +24,8 @@ export const useProcessOrder = (id: string) => {
       queryClient.invalidateQueries({ queryKey: ["getOrder", id] });
       toast.success("Order processed successfully");
     },
-    onError: () => {
-      toast.error("Failed to process order");
+    onError: (e) => {
+      toast.error(e.message || "Failed to process order");
     },
   });
 };
@@ -38,8 +38,8 @@ export const useConfirmPickup = (id: string) => {
       queryClient.invalidateQueries({ queryKey: ["getOrder", id] });
       toast.success("Pickup confirmed successfully");
     },
-    onError: () => {
-      toast.error("Failed to confirm pickup");
+    onError: (e) => {
+      toast.error(e.message || "Failed to confirm pickup");
     },
   });
 };

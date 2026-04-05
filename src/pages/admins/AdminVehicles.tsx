@@ -47,6 +47,14 @@ function rowId(v: VehicleApi, index: number): string {
   return raw;
 }
 
+/** Non-empty riderId means the vehicle is assigned to a driver. */
+function hasAssignedRiderId(v: VehicleApi): boolean {
+  const r = v.riderId;
+  if (r == null) return false;
+  if (typeof r === "string") return r.trim() !== "";
+  return String(r).trim() !== "";
+}
+
 export default function AdminVehicles() {
   const { data: payload, isLoading, isError } = useGetVehicles();
 
@@ -62,18 +70,24 @@ export default function AdminVehicles() {
 
   const tableData: AdminVehicleData[] = useMemo(
     () =>
-      rawList.map((v, index) => ({
-        id: rowId(v, index),
-        plateNumber: v.plateNumber ?? "—",
-        model: v.model ?? "—",
-        type: v.type ?? "—",
-        year: v.year != null ? String(v.year) : "—",
-        color: v.color ?? "—",
-        companyId: v.companyId ?? "—",
-        riderId: v.riderId ?? "—",
-        assigned: v.assigned === true ? "Yes" : v.assigned === false ? "No" : "—",
-        status: v.status ?? "—",
-      })),
+      rawList.map((v, index) => {
+        const riderIdStr =
+          v.riderId != null && String(v.riderId).trim() !== ""
+            ? String(v.riderId).trim()
+            : "—";
+        return {
+          id: rowId(v, index),
+          plateNumber: v.plateNumber ?? "—",
+          model: v.model ?? "—",
+          type: v.type ?? "—",
+          year: v.year != null ? String(v.year) : "—",
+          color: v.color ?? "—",
+          companyId: v.companyId ?? "—",
+          riderId: riderIdStr,
+          assigned: hasAssignedRiderId(v) ? "Yes" : "No",
+          status: v.status ?? "—",
+        };
+      }),
     [rawList],
   );
 

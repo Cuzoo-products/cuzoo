@@ -272,29 +272,48 @@ export const ProductFormSchema = z.object({
   image4: z.string().optional(),
 });
 
-// File input values are FileList (or File); schema must accept those, not only string
-const optionalFileSchema = z
-  .union([
-    z.string(),
-    z.instanceof(FileList),
-    z.instanceof(File),
-  ])
-  .optional();
+/** File upload or existing string — must be present when required (matches Vendor KYC). */
+export function kycRequiredDocument(message: string) {
+  return z.any().refine(
+    (val: unknown) => {
+      if (val == null) return false;
+      if (typeof val === "string" && val.trim().length > 0) return true;
+      if (val instanceof FileList && val.length > 0) return true;
+      if (val instanceof File) return true;
+      return false;
+    },
+    { message },
+  );
+}
 
-// KYC document uploads: fully optional, no validation (no "required" or format errors)
 export const fleetKycformSchema = z.object({
-  registrationNumber: z.string().optional(),
-  tinNumber: z.string().optional(),
-  dateOfIncorporation: z.date().optional(),
-  placeOfIncorporation: z.string().optional(),
-  companyType: z.string().optional(),
-  directors: z.array(z.string()).optional(),
-  servicesRendered: z.array(z.string()).optional(),
-  insuranceCoverage: z.array(z.string()).optional(),
-  passport: optionalFileSchema,
-  certificateOfIncorporation: optionalFileSchema,
-  governmentApprovedId: optionalFileSchema,
-  proofOfAddress: optionalFileSchema,
-  insuranceCertificate: optionalFileSchema,
-  courierLicense: optionalFileSchema,
+  registrationNumber: z.string().min(1, "RC / Registration number is required"),
+  tinNumber: z.string().min(1, "Tax Identification Number is required"),
+  dateOfIncorporation: z.date({
+    required_error: "Date of incorporation is required",
+    invalid_type_error: "Date of incorporation is required",
+  }),
+  placeOfIncorporation: z.string().min(1, "Place of incorporation is required"),
+  companyType: z.string().min(1, "Type of company is required"),
+  directors: z
+    .array(z.string().min(1, "Each director name is required"))
+    .min(1, "At least one director is required"),
+  servicesRendered: z
+    .array(z.string())
+    .min(1, "Select at least one courier service"),
+  insuranceCoverage: z
+    .array(z.string())
+    .min(1, "Select at least one insurance type"),
+  passport: kycRequiredDocument("Passport photograph is required"),
+  certificateOfIncorporation: kycRequiredDocument(
+    "Certificate of incorporation is required",
+  ),
+  governmentApprovedId: kycRequiredDocument(
+    "Government approved ID is required",
+  ),
+  proofOfAddress: kycRequiredDocument("Proof of address is required"),
+  insuranceCertificate: kycRequiredDocument(
+    "Insurance certificate is required",
+  ),
+  courierLicense: kycRequiredDocument("Courier license is required"),
 });

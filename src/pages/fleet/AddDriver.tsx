@@ -157,13 +157,13 @@ function AddDriver() {
                       <Input
                         type="tel"
                         autoComplete="tel"
-                        placeholder="+2348140231279"
+                        placeholder="+2348031234567"
                         className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
                         {...field}
                       />
                     </FormControl>
                     <FormDescription>
-                      International format, no spaces (e.g. +2348140231279)
+                      International format, no spaces (e.g. +2348031234567)
                     </FormDescription>
                     <FormMessage className="text-red-600" />
                   </FormItem>
@@ -224,7 +224,7 @@ function AddDriver() {
                     <Input
                       type="tel"
                       autoComplete="tel"
-                      placeholder="+2348140231280"
+                      placeholder="+2349021234567"
                       className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
                       {...field}
                     />

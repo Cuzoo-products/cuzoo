@@ -6,21 +6,23 @@ import {
   useReleaseRider,
   useSuspendRider,
 } from "@/api/fleet/rider/useRiderQuery";
-import { useGetVehicles } from "@/api/fleet/vehicles/useVehicles";
-import { DriverInfo } from "@/components/utilities/Fleet/DriverInfo";
-import type { ComboData } from "@/components/utilities/ComboboxForm";
+import { DriverInfo, type Driver } from "@/components/utilities/Fleet/DriverInfo";
 import { Button } from "@/components/ui/button";
 
-type VehiclesResponse = {
-  data?: {
-    data?: {
-      id: string;
-      model?: string;
-      type?: string;
-      plateNumber?: string;
-    }[];
-  };
-};
+function vehiclesFromRiderPayload(
+  data: Record<string, unknown>,
+): Driver["vehicles"] {
+  const raw = data.Vehicles ?? data.vehicles;
+  if (raw == null) return [];
+  if (Array.isArray(raw)) {
+    return raw as NonNullable<Driver["vehicles"]>;
+  }
+  // Some responses wrap a single vehicle as an object instead of a one-element array
+  if (typeof raw === "object") {
+    return [raw as NonNullable<Driver["vehicles"]>[number]];
+  }
+  return [];
+}
 
 function DriverDetails() {
   const { id } = useParams<{ id: string }>();
@@ -47,18 +49,6 @@ function DriverDetails() {
       },
     });
   };
-
-  const { data: vehiclesResponse, isLoading: vehiclesLoading } =
-    useGetVehicles() as {
-      data?: VehiclesResponse;
-      isLoading: boolean;
-    };
-
-  const vehicleList = vehiclesResponse?.data?.data ?? [];
-  const availableVehicles: ComboData[] = vehicleList.map((v) => ({
-    value: v.id,
-    label: `${v.type || v.model || "Vehicle"} (${v.plateNumber || "N/A"})`,
-  }));
 
   if (isLoading) {
     return <Loader />;
@@ -137,6 +127,11 @@ function DriverDetails() {
     `${driverData.firstName || ""} ${driverData.lastName || ""}`.trim() ||
     "Unknown driver";
 
+  const driverForUi: Driver = {
+    ...(driverData as unknown as Driver),
+    vehicles: vehiclesFromRiderPayload(driverData),
+  };
+
   return (
     <div className="@container/main">
       <header className="my-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -157,8 +152,8 @@ function DriverDetails() {
       </header>
 
       <DriverInfo
-        driver={driverData as Parameters<typeof DriverInfo>[0]["driver"]}
-        availableVehicle={vehiclesLoading ? [] : availableVehicles}
+        driver={driverForUi}
+        availableVehicle={[]}
         onSuspend={handleSuspend}
         onRelease={handleRelease}
         isSuspendPending={isSuspendPending}

@@ -13,8 +13,8 @@ export const useCreateAdmin = () => {
     onSuccess: () => {
       toast.success("Admin created successfully");
     },
-    onError: () => {
-      toast.error("Failed to create admin");
+    onError: (e) => {
+      toast.error(e.message || "Failed to create admin");
     },
   });
 };
@@ -34,8 +34,8 @@ export const useToggleReleaseAdmin = (id: string) => {
       toast.success("Admin status changed successfully");
       queryClient.invalidateQueries({ queryKey: ["admin", id] });
     },
-    onError: () => {
-      toast.error("Failed to change admin status");
+    onError: (e) => {
+      toast.error(e.message || "Failed to change admin status");
     },
   });
 };

@@ -1,7 +1,11 @@
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import { getUser, getUsers, userWalletAction, userAccountAction } from "./usersApi";
+import {
+  getUser,
+  getUsers,
+  userWalletAction,
+  userAccountAction,
+} from "./usersApi";
 import { toast } from "sonner";
-
 
 export const useUser = (id: string) => {
   return useQuery({
@@ -26,8 +30,8 @@ export const useUserWalletAction = (id: string) => {
       queryClient.invalidateQueries({ queryKey: ["user", id] });
       toast.success(`Rider wallet updated successfully`);
     },
-    onError: (error: any) => {
-      toast.error(error?.message ?? "Failed to update rider wallet.");
+    onError: (error) => {
+      toast.error(error?.message || "Failed to update rider wallet.");
     },
   });
 };
@@ -41,8 +45,8 @@ export const useUserAccountAction = (id: string) => {
       queryClient.invalidateQueries({ queryKey: ["user", id] });
       toast.success(`Rider account updated successfully`);
     },
-    onError: (error: any) => {
-      toast.error(error?.message ?? "Failed to update rider account.");
+    onError: (error) => {
+      toast.error(error?.message || "Failed to update rider account.");
     },
   });
 };

@@ -21,7 +21,7 @@ export const useUpdateGeneralSetting = () => {
       toast.success("Settings saved successfully!");
     },
     onError: (error) => {
-      toast.error(error?.message ?? "Failed to update settings.");
+      toast.error(error?.message || "Failed to update settings.");
     },
   });
 };
