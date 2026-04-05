@@ -133,15 +133,17 @@ export const EditVehicleFormSchema = z.object({
     .number()
     .min(1900, "Year must be after 1900")
     .max(new Date().getFullYear() + 1, "Year cannot be in the future"),
-  status: z.preprocess(
-    (val) =>
-      val === "" || val === null || typeof val === "undefined"
-        ? "available"
-        : val,
-    z.enum(["in use", "disabled", "under maintenance", "available"], {
-      required_error: "Please select a vehicle status",
-    }),
-  ),
+  // Avoid z.preprocess here — it widens `status` to `unknown` in inferred types and breaks RHF.
+  status: z
+    .union([z.string(), z.null(), z.undefined()])
+    .transform((val): string =>
+      val === "" || val === null || val === undefined ? "available" : val,
+    )
+    .pipe(
+      z.enum(["in use", "disabled", "under maintenance", "available"], {
+        required_error: "Please select a vehicle status",
+      }),
+    ),
 });
 
 export const EditDriverFormSchema = z.object({
