@@ -132,6 +132,19 @@ function EditVehicle() {
     }
   }, [vehicle, form]);
 
+  /** Keep RHF `status` in sync with the Select: UI used normalize() but `field.value` could stay "". */
+  const statusWatch = form.watch("status");
+  useEffect(() => {
+    const fixed = normalizeVehicleStatus(statusWatch);
+    if (statusWatch !== fixed) {
+      form.setValue("status", fixed, {
+        shouldValidate: false,
+        shouldDirty: false,
+        shouldTouch: false,
+      });
+    }
+  }, [statusWatch, form]);
+
   const watchedImage = form.watch("image");
 
   function onSubmit(data: z.infer<typeof EditVehicleFormSchema>) {
