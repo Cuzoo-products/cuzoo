@@ -45,6 +45,27 @@ import {
 import { useGetRiders } from "@/api/fleet/rider/useRiderQuery";
 import { useEffect } from "react";
 
+const VEHICLE_STATUS_VALUES = [
+  "available",
+  "in use",
+  "under maintenance",
+  "disabled",
+] as const;
+
+type VehicleStatusValue = (typeof VEHICLE_STATUS_VALUES)[number];
+
+/** API may omit status or send ""; Zod requires a valid enum. */
+function normalizeVehicleStatus(raw: unknown): VehicleStatusValue {
+  if (typeof raw !== "string") return "available";
+  const t = raw.trim();
+  if (
+    (VEHICLE_STATUS_VALUES as readonly string[]).includes(t)
+  ) {
+    return t as VehicleStatusValue;
+  }
+  return "available";
+}
+
 // Interface for rider data structure
 interface Rider {
   id: string;
@@ -106,7 +127,7 @@ function EditVehicle() {
         riderId: vehicleData.riderId || "",
         image: vehicleData.image?.url || "",
         year: vehicleData.year || new Date().getFullYear(),
-        status: vehicleData.status || "available",
+        status: normalizeVehicleStatus(vehicleData.status),
       });
     }
   }, [vehicle, form]);
@@ -124,7 +145,7 @@ function EditVehicle() {
       riderId: vehicleData?.riderId || "",
       image: initialImage,
       year: vehicleData?.year ?? new Date().getFullYear(),
-      status: vehicleData?.status || "available",
+      status: normalizeVehicleStatus(vehicleData?.status),
     };
 
     const resolvedImage = data.image || initialImage;
@@ -355,9 +376,7 @@ function EditVehicle() {
                   <FormControl>
                     <Select
                       onValueChange={field.onChange}
-                      value={
-                        field.value || vehicle?.data?.status || "available"
-                      }
+                      value={normalizeVehicleStatus(field.value)}
                     >
                       <SelectTrigger className="h-11 w-full border-[#d6d6d6]">
                         <SelectValue placeholder="Select Vehicle Status" />

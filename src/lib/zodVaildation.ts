@@ -133,9 +133,15 @@ export const EditVehicleFormSchema = z.object({
     .number()
     .min(1900, "Year must be after 1900")
     .max(new Date().getFullYear() + 1, "Year cannot be in the future"),
-  status: z.enum(["in use", "disabled", "under maintenance", "available"], {
-    required_error: "Please select a vehicle status",
-  }),
+  status: z.preprocess(
+    (val) =>
+      val === "" || val === null || typeof val === "undefined"
+        ? "available"
+        : val,
+    z.enum(["in use", "disabled", "under maintenance", "available"], {
+      required_error: "Please select a vehicle status",
+    }),
+  ),
 });
 
 export const EditDriverFormSchema = z.object({
