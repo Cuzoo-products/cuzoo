@@ -29,14 +29,10 @@ import { useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import { fileToBase64 } from "@/lib/utils";
 import Loader from "@/components/utilities/Loader";
+import { normalizeInternationalPhoneCompact } from "@/lib/phone";
 
-const normalizeToE164 = (value?: string) => {
-  if (!value) return "";
-  let cleaned = value.replace(/[^\d+]/g, "");
-  if (cleaned && !cleaned.startsWith("+")) cleaned = `+${cleaned}`;
-  if (cleaned.length > 16) cleaned = cleaned.slice(0, 16);
-  return cleaned;
-};
+const normalizeToE164 = (value?: string) =>
+  normalizeInternationalPhoneCompact(value ?? "");
 
 function EditDriver() {
   const { id } = useParams();

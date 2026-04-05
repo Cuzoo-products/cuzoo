@@ -11,6 +11,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useCreateAdmin } from "@/api/admin/admin/useAdmin";
+import { toast } from "sonner";
+import {
+  INTERNATIONAL_PHONE_ERROR,
+  isValidInternationalPhoneCompact,
+  normalizeInternationalPhoneCompact,
+} from "@/lib/phone";
 
 interface AdminFormData {
   firstName: string;
@@ -45,8 +51,12 @@ export default function AddAdmin() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Creating Admin:", formData);
-    createAdmin(formData);
+    const phone = normalizeInternationalPhoneCompact(formData.phoneNumber);
+    if (!isValidInternationalPhoneCompact(phone)) {
+      toast.error(INTERNATIONAL_PHONE_ERROR);
+      return;
+    }
+    createAdmin({ ...formData, phoneNumber: phone });
   };
 
   return (
@@ -144,7 +154,9 @@ export default function AddAdmin() {
                 <Label htmlFor="phoneNumber">Phone Number</Label>
                 <Input
                   id="phoneNumber"
-                  placeholder="e.g., +2348000000000"
+                  type="tel"
+                  autoComplete="tel"
+                  placeholder="+2348140231279"
                   value={formData.phoneNumber}
                   onChange={handleInputChange}
                   required

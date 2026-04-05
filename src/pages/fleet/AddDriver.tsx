@@ -156,11 +156,15 @@ function AddDriver() {
                     <FormControl>
                       <Input
                         type="tel"
-                        placeholder="08012345678"
+                        autoComplete="tel"
+                        placeholder="+2348140231279"
                         className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
                         {...field}
                       />
                     </FormControl>
+                    <FormDescription>
+                      International format, no spaces (e.g. +2348140231279)
+                    </FormDescription>
                     <FormMessage className="text-red-600" />
                   </FormItem>
                 )}
@@ -216,13 +220,18 @@ function AddDriver() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Emergency Contact</FormLabel>
-                  <FormControl>
+                    <FormControl>
                     <Input
-                      placeholder="Jane Doe - 08012345679"
+                      type="tel"
+                      autoComplete="tel"
+                      placeholder="+2348140231280"
                       className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
                       {...field}
                     />
                   </FormControl>
+                  <FormDescription>
+                    Same format as phone (compact international, no spaces)
+                  </FormDescription>
                   <FormMessage className="text-red-600" />
                 </FormItem>
               )}

@@ -152,12 +152,12 @@ function FleetRegistration() {
                         <Input
                           className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
                           type="tel"
-                          placeholder="+2348123000000"
+                          placeholder="+2348140231279"
                           {...field}
                         />
                       </FormControl>
                       <FormDescription>
-                        Please enter your phone number with the country code
+                        International format only, no spaces (e.g. +2348140231279)
                       </FormDescription>
                       <FormMessage className="text-red-600" />
                     </FormItem>

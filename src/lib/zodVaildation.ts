@@ -1,4 +1,8 @@
 import { z } from "zod";
+import {
+  zInternationalPhoneCompact,
+  zInternationalPhoneCompactOrEmpty,
+} from "@/lib/phone";
 
 export const FleetManagerRegFormSchema = z
   .object({
@@ -9,7 +13,7 @@ export const FleetManagerRegFormSchema = z
       .min(1, "Email is required")
       .email("Please enter a valid email address"),
     businessName: z.string().min(1, "Business name is required"),
-    phoneNumber: z.string().min(1, "Phone number is required"),
+    phoneNumber: zInternationalPhoneCompact,
     password: z.string().min(6, "Password must be at least 6 characters long"),
     confirmPassword: z
       .string()
@@ -29,7 +33,7 @@ export const VendorRegistrationFormSchema = z
       .min(1, "Email is required")
       .email("Please enter a valid email address"),
     businessName: z.string().min(1, "Business name is required"),
-    phoneNumber: z.string().min(1, "Phone number is required"),
+    phoneNumber: zInternationalPhoneCompact,
     password: z.string().min(6, "Password must be at least 6 characters long"),
     confirmPassword: z
       .string()
@@ -58,12 +62,12 @@ export const ForgotPasswordSchema = z.object({
 export const AddDriverFormSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
-  phoneNumber: z.string().min(1, "Phone number is required"),
+  phoneNumber: zInternationalPhoneCompact,
   gender: z.enum(["Male", "Female"], {
     required_error: "Please select a gender",
   }),
   dateOfBirth: z.string().min(1, "Date of birth is required"),
-  emergencyContact: z.string().min(1, "Emergency contact is required"),
+  emergencyContact: zInternationalPhoneCompact,
   vehicleId: z.string().optional(),
   passport: z
     .string()
@@ -162,21 +166,9 @@ export const EditDriverFormSchema = z.object({
         val.startsWith("ChIJ") || val.startsWith("Ei") || val.length > 10,
       "Please select a valid address from the dropdown or enter a complete address."
     ),
-  phoneNumber: z
-    .string()
-    .min(1, "Phone number is required")
-    .regex(
-      /^\+[1-9]\d{1,14}$/,
-      "Please enter a valid international phone number (e.g., +2348140231245)"
-    ),
+  phoneNumber: zInternationalPhoneCompact,
   dateOfBirth: z.string().min(1, "Date of birth is required"),
-  emergencyContact: z
-    .string()
-    .min(1, "Emergency contact is required")
-    .regex(
-      /^\+[1-9]\d{1,14}$/,
-      "Please enter a valid international phone number (e.g., +2348140231245)"
-    ),
+  emergencyContact: zInternationalPhoneCompact,
 });
 
 export const FleetManagerProfileFormSchema = z.object({
@@ -186,9 +178,7 @@ export const FleetManagerProfileFormSchema = z.object({
     .min(1, "Email is required")
     .email("Please enter a valid email address"),
   businessName: z.string().min(1, "Business name is required"),
-  phoneNumber: z
-    .string()
-    .min(6, "Phone number must be at least 6 characters"),
+  phoneNumber: zInternationalPhoneCompactOrEmpty,
   registrationNumber: z.string().optional(),
   tinNumber: z.string().optional(),
   dateOfIncorporation: z.string().optional(),
@@ -204,7 +194,7 @@ export const VendorProfileFormSchema = z.object({
     .min(1, "Email is required")
     .email("Please enter a valid email address"),
   businessName: z.string().min(1, "Business name is required"),
-  phoneNumber: z.string().min(1, "Phone number is required"),
+  phoneNumber: zInternationalPhoneCompact,
   storeCode: z.string().optional(),
   registrationNumber: z.string().optional(),
   dateOfIncorporation: z.string().optional(),
