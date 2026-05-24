@@ -1,12 +1,8 @@
 import { useMemo } from "react";
-import { useParams, Link } from "react-router";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Link, useParams } from "react-router";
+import NestedAdminPage from "@/components/admin/NestedAdminPage";
+import StatusBadge from "@/components/admin/StatusBadge";
+import { Section } from "@/components/admin/DetailShell";
 import {
   Table,
   TableBody,
@@ -90,48 +86,44 @@ export default function AdminUserRidesByUser() {
     };
   }, [payload]);
 
+  const userBack = `/admins/users/${encodeURIComponent(userId)}`;
+  const crumbs = [
+    { label: "Dashboard", href: "/admins/dashboard" },
+    { label: "Users", href: "/admins/users" },
+    { label: "User", href: userBack },
+    { label: "Rides" },
+  ];
+
   if (isLoading) return <Loader />;
 
   if (isError) {
     return (
-      <div className="@container/main p-6">
-        <h3 className="!font-bold text-3xl">User rides</h3>
-        <p className="mt-2 text-sm text-destructive">
-          Failed to load rides for this user.
-        </p>
-        <Button asChild variant="outline" className="mt-4">
-          <Link to={`/admins/users/${userId}`}>Back to user</Link>
-        </Button>
-      </div>
+      <NestedAdminPage
+        backHref={userBack}
+        backLabel="User"
+        crumbs={crumbs}
+        title="User rides"
+        subtitle="Failed to load rides for this user."
+      >
+        <></>
+      </NestedAdminPage>
     );
   }
 
-  return (
-    <div className="@container/main">
-      <div className="my-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h3 className="!font-bold text-3xl">User rides</h3>
-          <p className="text-muted-foreground">
-            Package / trip activity for this user
-            {meta.count != null ? (
-              <span className="text-foreground"> · {meta.count} total</span>
-            ) : null}
-         
-          </p>
-        </div>
-        <Button asChild variant="outline">
-          <Link to={`/admins/users/${userId}`}>Back to user</Link>
-        </Button>
-      </div>
+  const subtitle = `Package / trip activity for this user${
+    meta.count != null ? ` · ${meta.count} total` : ""
+  }`;
 
-      <Card className="bg-secondary">
-        <CardHeader>
-          <CardTitle>Rides</CardTitle>
-          <CardDescription>
-            Rides requested by this user.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+  return (
+    <NestedAdminPage
+      backHref={userBack}
+      backLabel="User"
+      crumbs={crumbs}
+      title="User rides"
+      subtitle={subtitle}
+    >
+      <Section title="Rides" subtitle="Rides requested by this user.">
+        <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -188,7 +180,13 @@ export default function AdminUserRidesByUser() {
                     <TableCell className="tabular-nums">
                       {naira(row.amount)}
                     </TableCell>
-                    <TableCell className="capitalize">{row.status ?? "—"}</TableCell>
+                    <TableCell>
+                      {row.status ? (
+                        <StatusBadge status={row.status} />
+                      ) : (
+                        "—"
+                      )}
+                    </TableCell>
                     <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
                       {formatWhen(row.createdAt ?? row.date)}
                     </TableCell>
@@ -205,8 +203,8 @@ export default function AdminUserRidesByUser() {
               )}
             </TableBody>
           </Table>
-        </CardContent>
-      </Card>
-    </div>
+        </div>
+      </Section>
+    </NestedAdminPage>
   );
 }

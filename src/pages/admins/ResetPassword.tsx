@@ -15,6 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { FleetManagerChangePWSchema } from "@/lib/zodVaildation";
 import { Eye, EyeOff } from "lucide-react";
+import PageHeader from "@/components/admin/PageHeader";
 
 import {
   EmailAuthProvider,
@@ -100,11 +101,8 @@ function AdminResetPassword() {
   }
 
   return (
-    <div className="@container/main">
-      <div className="my-6">
-        <h3 className="!font-bold text-3xl">Password</h3>
-        <p>Reset your password here</p>
-      </div>
+    <div className="space-y-5">
+      <PageHeader title="Password" subtitle="Reset your password here" />
       <div className="bg-secondary max-w-3xl mx-auto p-6 rounded-lg space-y-4">
         <Form {...form}>
           <form

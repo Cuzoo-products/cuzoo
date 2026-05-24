@@ -9,6 +9,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import StatusBadge from "@/components/admin/StatusBadge";
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
 import { Link } from "react-router";
 
@@ -39,6 +40,9 @@ export const columns: ColumnDef<DriverData>[] = [
     header: ({ column }) => {
       return <DataTableColumnHeader column={column} title="Status" />;
     },
+    cell: ({ getValue }) => (
+      <StatusBadge status={String(getValue() ?? "—")} />
+    ),
   },
   {
     id: "actions",
@@ -54,7 +58,7 @@ export const columns: ColumnDef<DriverData>[] = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent
-            className="bg-background shadow-accent shadow-sm border-0"
+            className="admin-dropdown-menu p-1"
             align="end"
           >
             <DropdownMenuLabel>Actions</DropdownMenuLabel>

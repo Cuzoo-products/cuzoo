@@ -10,6 +10,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import Loader from "@/components/utilities/Loader";
+import PageHeader from "@/components/admin/PageHeader";
+import StatusBadge from "@/components/admin/StatusBadge";
+import { DetailShell, GridItem, Section } from "@/components/admin/DetailShell";
 import { useGetVehicle } from "@/api/admin/vehicle/useVehicle";
 import { useGetOneRider } from "@/api/admin/riders/useRiders";
 import { useGetOneFleet } from "@/api/admin/fleet/useFleet";
@@ -142,12 +145,20 @@ export default function AdminVehicleDetails() {
 
   if (!id) {
     return (
-      <div className="@container/main">
-        <div className="my-6">
-          <h3 className="!font-bold text-3xl">Vehicle details</h3>
-          <p className="text-sm text-destructive">No vehicle ID in the URL.</p>
-        </div>
-      </div>
+      <DetailShell
+        backHref="/admins/vehicles"
+        backLabel="Vehicles"
+        crumbs={[
+          { label: "Dashboard", href: "/admins/dashboard" },
+          { label: "Vehicles", href: "/admins/vehicles" },
+          { label: "Error" },
+        ]}
+      >
+        <PageHeader
+          title="Vehicle details"
+          subtitle="No vehicle ID in the URL."
+        />
+      </DetailShell>
     );
   }
 
@@ -155,70 +166,59 @@ export default function AdminVehicleDetails() {
 
   if (isError || !vehicle) {
     return (
-      <div className="@container/main">
-        <div className="my-6">
-          <h3 className="!font-bold text-3xl">Vehicle details</h3>
-          <p className="text-sm text-destructive">
-            Unable to load this vehicle.
-          </p>
-          <Button asChild variant="outline" className="mt-4">
-            <Link to="/admins/vehicles">Back to vehicles</Link>
-          </Button>
-        </div>
-      </div>
+      <DetailShell
+        backHref="/admins/vehicles"
+        backLabel="Vehicles"
+        crumbs={[
+          { label: "Dashboard", href: "/admins/dashboard" },
+          { label: "Vehicles", href: "/admins/vehicles" },
+          { label: "Error" },
+        ]}
+      >
+        <PageHeader
+          title="Vehicle details"
+          subtitle="Unable to load this vehicle."
+        />
+      </DetailShell>
     );
   }
 
   const imgUrl = vehicle.image?.url?.trim();
 
   return (
-    <div className="@container/main">
-      <div className="my-6 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h3 className="!font-bold text-3xl">Vehicle details</h3>
-          <p className="text-sm text-muted-foreground">
-            {vehicle.plateNumber ?? id} · {vehicle.model ?? "—"}
-          </p>
-        </div>
-      </div>
+    <DetailShell
+      backHref="/admins/vehicles"
+      backLabel="Vehicles"
+      crumbs={[
+        { label: "Dashboard", href: "/admins/dashboard" },
+        { label: "Vehicles", href: "/admins/vehicles" },
+        { label: vehicle.plateNumber ?? id },
+      ]}
+    >
+      <PageHeader
+        title="Vehicle details"
+        subtitle={`${vehicle.plateNumber ?? id} · ${vehicle.model ?? "—"}`}
+        actions={
+          vehicle.status ? <StatusBadge status={vehicle.status} /> : undefined
+        }
+      />
 
-      <div className="bg-secondary mx-auto mb-10 max-w-3xl space-y-6 rounded-lg p-6">
-        <div className="grid grid-cols-1 gap-4 text-sm md:grid-cols-2">
-          <div>
-            <h4 className="mb-1 font-semibold">Plate number</h4>
-            <p className="font-mono">{vehicle.plateNumber ?? "—"}</p>
+      <div className="mx-auto max-w-3xl space-y-4">
+        <Section title="Vehicle information">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <GridItem label="Plate number" value={vehicle.plateNumber ?? "—"} />
+            <GridItem label="Status" value={vehicle.status ?? "—"} />
+            <GridItem label="Model" value={vehicle.model ?? "—"} />
+            <GridItem label="Type" value={vehicle.type ?? "—"} />
+            <GridItem
+              label="Year"
+              value={vehicle.year != null ? String(vehicle.year) : "—"}
+            />
+            <GridItem label="Color" value={vehicle.color ?? "—"} />
+            <GridItem label="Company ID" value={vehicle.companyId ?? "—"} />
+            <GridItem label="Assigned" value={assignedRiderId ? "Yes" : "No"} />
           </div>
-          <div>
-            <h4 className="mb-1 font-semibold">Status</h4>
-            <p>{vehicle.status ?? "—"}</p>
-          </div>
-          <div>
-            <h4 className="mb-1 font-semibold">Model</h4>
-            <p>{vehicle.model ?? "—"}</p>
-          </div>
-          <div>
-            <h4 className="mb-1 font-semibold">Type</h4>
-            <p>{vehicle.type ?? "—"}</p>
-          </div>
-          <div>
-            <h4 className="mb-1 font-semibold">Year</h4>
-            <p>{vehicle.year != null ? String(vehicle.year) : "—"}</p>
-          </div>
-          <div>
-            <h4 className="mb-1 font-semibold">Color</h4>
-            <p>{vehicle.color ?? "—"}</p>
-          </div>
-          <div>
-            <h4 className="mb-1 font-semibold">Company ID</h4>
-            <p className="font-mono text-xs break-all">
-              {vehicle.companyId ?? "—"}
-            </p>
-          </div>
-          <div>
-            <h4 className="mb-1 font-semibold">Assigned</h4>
-            <p>{assignedRiderId ? "Yes" : "No"}</p>
-          </div>
-        </div>
+        </Section>
 
         {companyId ? (
           <Card className="border-border bg-background/50">
@@ -373,12 +373,7 @@ export default function AdminVehicleDetails() {
           )}
         </div>
 
-        <div className="flex justify-end pt-2">
-          <Button variant="outline" asChild>
-            <Link to="/admins/vehicles">Back to vehicles</Link>
-          </Button>
-        </div>
       </div>
-    </div>
+    </DetailShell>
   );
 }

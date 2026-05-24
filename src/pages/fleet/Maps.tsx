@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
-import { Input } from "@/components/ui/input"; // from shadcn
+import PageHeader from "@/components/admin/PageHeader";
+import { Input } from "@/components/ui/input";
 import "leaflet/dist/leaflet.css";
 import type { LatLngExpression } from "leaflet";
 
@@ -94,7 +95,8 @@ export default function Maps() {
     : [6.5244, 3.3792]; // default center (e.g., Lagos)
 
   return (
-    <div className="h-screen w-full flex flex-col mb-15">
+    <div className="mb-15 flex h-[calc(100vh-8rem)] w-full flex-col gap-4">
+      <PageHeader title="Map" subtitle="Track fleet vehicles on the map" />
       <Input
         placeholder="Search vehicle number (e.g., ABC123)"
         value={search}

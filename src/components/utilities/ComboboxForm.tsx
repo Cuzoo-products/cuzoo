@@ -35,7 +35,13 @@ const FormSchema = z.object({
   }),
 });
 
-export function ComboboxForm({ info }: { info: ComboData[] }) {
+export function ComboboxForm({
+  info,
+  menuClassName = "",
+}: {
+  info: ComboData[];
+  menuClassName?: string;
+}) {
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
   });
@@ -66,7 +72,7 @@ export function ComboboxForm({ info }: { info: ComboData[] }) {
                       role="combobox"
                       className={cn(
                         "w-[200px] justify-between bg-transparent",
-                        !field.value && "text-muted-foreground"
+                        !field.value && "text-muted-foreground",
                       )}
                     >
                       {field.value
@@ -76,7 +82,9 @@ export function ComboboxForm({ info }: { info: ComboData[] }) {
                     </Button>
                   </FormControl>
                 </PopoverTrigger>
-                <PopoverContent className="w-[200px] p-0 bg-background border-0">
+                <PopoverContent
+                  className={cn("w-[200px] p-0", menuClassName || "bg-background border-0")}
+                >
                   <Command>
                     <CommandInput placeholder="Search..." className="h-9" />
                     <CommandList>

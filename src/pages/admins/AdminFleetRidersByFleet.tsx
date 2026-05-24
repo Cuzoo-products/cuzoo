@@ -1,12 +1,8 @@
 import { useMemo } from "react";
-import { useParams, Link } from "react-router";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Link, useParams } from "react-router";
+import NestedAdminPage from "@/components/admin/NestedAdminPage";
+import StatusBadge from "@/components/admin/StatusBadge";
+import { Section } from "@/components/admin/DetailShell";
 import {
   Table,
   TableBody,
@@ -85,12 +81,25 @@ export default function AdminFleetRidersByFleet() {
     });
   }, [rawRows]);
 
+  const fleetBack = `/admins/fleet_managers/${fleetId ?? ""}`;
+  const crumbs = [
+    { label: "Dashboard", href: "/admins/dashboard" },
+    { label: "Fleet Managers", href: "/admins/fleet_managers" },
+    { label: "Fleet", href: fleetBack },
+    { label: "Riders" },
+  ];
+
   if (!fleetId) {
     return (
-      <div className="@container/main p-6">
-        <h3 className="!font-bold text-3xl">Fleet riders</h3>
-        <p className="mt-2 text-sm text-destructive">No fleet ID in the URL.</p>
-      </div>
+      <NestedAdminPage
+        backHref="/admins/fleet_managers"
+        backLabel="Fleet Managers"
+        crumbs={crumbs}
+        title="Fleet riders"
+        subtitle="No fleet ID in the URL."
+      >
+        <></>
+      </NestedAdminPage>
     );
   }
 
@@ -98,46 +107,32 @@ export default function AdminFleetRidersByFleet() {
 
   if (isError) {
     return (
-      <div className="@container/main p-6">
-        <h3 className="!font-bold text-3xl">Fleet riders</h3>
-        <p className="mt-2 text-sm text-destructive">
-          Failed to load riders for this fleet.
-        </p>
-        <Button asChild variant="outline" className="mt-4">
-          <Link to={`/admins/fleet_managers/${fleetId}`}>Back to fleet</Link>
-        </Button>
-      </div>
+      <NestedAdminPage
+        backHref={fleetBack}
+        backLabel="Fleet"
+        crumbs={crumbs}
+        title="Fleet riders"
+        subtitle="Failed to load riders for this fleet."
+      >
+        <></>
+      </NestedAdminPage>
     );
   }
 
-  return (
-    <div className="@container/main">
-      <div className="my-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h3 className="!font-bold text-3xl">Fleet riders</h3>
-          <p className="text-muted-foreground">
-            Riders linked to this fleet manager
-            {payload?.data?.count != null ? (
-              <span className="text-foreground">
-                {" "}
-                · {payload.data.count} total
-              </span>
-            ) : null}
-          </p>
-        </div>
-        <Button asChild variant="outline">
-          <Link to={`/admins/fleet_managers/${fleetId}`}>Back to fleet</Link>
-        </Button>
-      </div>
+  const subtitle = `Riders linked to this fleet manager${
+    payload?.data?.count != null ? ` · ${payload.data.count} total` : ""
+  }`;
 
-      <Card className="bg-secondary py-4">
-        <CardHeader>
-          <CardTitle>Riders</CardTitle>
-          <CardDescription>
-            Riders linked to this fleet manager.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+  return (
+    <NestedAdminPage
+      backHref={fleetBack}
+      backLabel="Fleet"
+      crumbs={crumbs}
+      title="Fleet riders"
+      subtitle={subtitle}
+    >
+      <Section title="Riders" subtitle="All riders assigned to this fleet.">
+        <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -179,7 +174,9 @@ export default function AdminFleetRidersByFleet() {
                     <TableCell className="max-w-[140px] truncate text-sm">
                       {r.companyName}
                     </TableCell>
-                    <TableCell>{r.status}</TableCell>
+                    <TableCell>
+                      <StatusBadge status={r.status} />
+                    </TableCell>
                     <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
                       {r.createdAt}
                     </TableCell>
@@ -197,8 +194,8 @@ export default function AdminFleetRidersByFleet() {
               )}
             </TableBody>
           </Table>
-        </CardContent>
-      </Card>
-    </div>
+        </div>
+      </Section>
+    </NestedAdminPage>
   );
 }

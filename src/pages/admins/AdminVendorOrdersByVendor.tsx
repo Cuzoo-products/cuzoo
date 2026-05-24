@@ -1,11 +1,7 @@
-import { useParams, Link } from "react-router";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Link, useParams } from "react-router";
+import NestedAdminPage from "@/components/admin/NestedAdminPage";
+import StatusBadge from "@/components/admin/StatusBadge";
+import { Section } from "@/components/admin/DetailShell";
 import {
   Table,
   TableBody,
@@ -76,14 +72,25 @@ export default function AdminVendorOrdersByVendor() {
     createdAt: o.createdAt,
   }));
 
+  const vendorBack = `/admins/vendors/${vendorId ?? ""}`;
+  const crumbs = [
+    { label: "Dashboard", href: "/admins/dashboard" },
+    { label: "Vendors", href: "/admins/vendors" },
+    { label: "Vendor", href: vendorBack },
+    { label: "Orders" },
+  ];
+
   if (!vendorId) {
     return (
-      <div className="@container/main">
-        <div className="my-6">
-          <h3 className="!font-bold text-3xl">Vendor Orders</h3>
-          <p className="text-sm text-red-500">No vendor ID in the URL.</p>
-        </div>
-      </div>
+      <NestedAdminPage
+        backHref="/admins/vendors"
+        backLabel="Vendors"
+        crumbs={crumbs}
+        title="Vendor orders"
+        subtitle="No vendor ID in the URL."
+      >
+        <></>
+      </NestedAdminPage>
     );
   }
 
@@ -91,41 +98,33 @@ export default function AdminVendorOrdersByVendor() {
 
   if (error) {
     return (
-      <div className="@container/main">
-        <div className="my-6">
-          <h3 className="!font-bold text-3xl">Vendor Orders</h3>
-          <p className="text-sm text-red-500">Failed to load orders.</p>
-          <Button asChild variant="outline" className="mt-4">
-            <Link to={`/admins/vendors/${vendorId}`}>Back to vendor</Link>
-          </Button>
-        </div>
-      </div>
+      <NestedAdminPage
+        backHref={vendorBack}
+        backLabel="Vendor"
+        crumbs={crumbs}
+        title="Vendor orders"
+        subtitle="Failed to load orders."
+      >
+        <></>
+      </NestedAdminPage>
     );
   }
 
-  return (
-    <div className="@container/main">
-      <div className="my-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h3 className="!font-bold text-3xl">Vendor Orders</h3>
-          <p className="text-muted-foreground">
-            Orders for this vendor ({envelope?.count ?? rows.length} total).
-          </p>
-        </div>
-        <Button asChild variant="outline">
-          <Link to={`/admins/vendors/${vendorId}`}>Back to vendor</Link>
-        </Button>
-      </div>
+  const subtitle = `Orders for this vendor (${envelope?.count ?? rows.length} total).`;
 
-      <Card className="bg-secondary">
-        <CardHeader>
-          <CardTitle>Orders</CardTitle>
-          <CardDescription>
-            Shopping orders returned for vendor ID{" "}
-            <span className="font-mono">{vendorId}</span>.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+  return (
+    <NestedAdminPage
+      backHref={vendorBack}
+      backLabel="Vendor"
+      crumbs={crumbs}
+      title="Vendor orders"
+      subtitle={subtitle}
+    >
+      <Section
+        title="Orders"
+        subtitle={`Shopping orders for vendor ID ${vendorId}.`}
+      >
+        <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -169,7 +168,9 @@ export default function AdminVendorOrdersByVendor() {
                       })}
                     </TableCell>
                     <TableCell>{r.orderType}</TableCell>
-                    <TableCell>{r.status}</TableCell>
+                    <TableCell>
+                      <StatusBadge status={r.status} />
+                    </TableCell>
                     <TableCell>
                       {r.createdAt
                         ? new Date(r.createdAt).toLocaleString("en-NG")
@@ -185,8 +186,8 @@ export default function AdminVendorOrdersByVendor() {
               )}
             </TableBody>
           </Table>
-        </CardContent>
-      </Card>
-    </div>
+        </div>
+      </Section>
+    </NestedAdminPage>
   );
 }

@@ -24,6 +24,9 @@ import {
   useRiderAccountAction,
 } from "@/api/admin/riders/useRiders";
 import Loader from "@/components/utilities/Loader";
+import PageHeader from "@/components/admin/PageHeader";
+import StatusBadge from "@/components/admin/StatusBadge";
+import { DetailShell } from "@/components/admin/DetailShell";
 import { ContactNotificationCard } from "@/components/utilities/Admins/ContactNotificationCard";
 
 function toPhoneString(phoneNumber: any): string {
@@ -195,23 +198,45 @@ export default function AdminDriverDetails() {
   if (isLoading) return <Loader />;
   if (error || !rider) {
     return (
-      <div className="@container/main">
-        <div className="my-6">
-          <h3 className="!font-bold text-3xl">Driver details</h3>
-          <p className="text-red-500">Failed to load driver details.</p>
-        </div>
-      </div>
+      <DetailShell
+        backHref="/admins/drivers"
+        backLabel="Riders"
+        crumbs={[
+          { label: "Dashboard", href: "/admins/dashboard" },
+          { label: "Riders", href: "/admins/drivers" },
+          { label: "Error" },
+        ]}
+      >
+        <PageHeader
+          title="Driver Details"
+          subtitle="Failed to load driver details."
+        />
+      </DetailShell>
     );
   }
 
   return (
-    <div className="min-h-screen p-4 sm:p-6 lg:p-8">
-      <div className="mb-6">
-        <h1 className="text-3xl !font-bold">Driver Details</h1>
-        <p>Manage driver account details and documents.</p>
-      </div>
+    <DetailShell
+      backHref="/admins/drivers"
+      backLabel="Riders"
+      crumbs={[
+        { label: "Dashboard", href: "/admins/dashboard" },
+        { label: "Riders", href: "/admins/drivers" },
+        { label: driver.name || id || "Driver" },
+      ]}
+    >
+      <PageHeader
+        title="Driver Details"
+        subtitle="Manage driver account details and documents."
+        actions={
+          <div className="flex flex-wrap gap-2">
+            <StatusBadge status={driver.status} />
+            <StatusBadge status={driver.walletStatus} />
+          </div>
+        }
+      />
 
-      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="mx-auto grid max-w-7xl grid-cols-1 gap-8 lg:grid-cols-3">
         <div className="lg:col-span-1 space-y-8">
           <Card className="py-6 bg-secondary">
             <CardContent>
@@ -644,6 +669,6 @@ export default function AdminDriverDetails() {
           </Card>
         </div>
       </div>
-    </div>
+    </DetailShell>
   );
 }

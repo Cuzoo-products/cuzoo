@@ -1,3 +1,5 @@
+import PageHeader from "@/components/admin/PageHeader";
+import { FleetFileInput } from "@/components/fleet/FleetFileInput";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -120,11 +122,8 @@ function EditDriver() {
 
   if (error || !rider?.data) {
     return (
-      <div className="@container/main">
-        <div className="my-6">
-          <h3 className="!font-bold text-3xl text-red-600">Driver Not Found</h3>
-          <p>Unable to load driver details</p>
-        </div>
+      <div className="space-y-5">
+        <PageHeader title="Edit driver" subtitle="Unable to load driver details" />
       </div>
     );
   }
@@ -136,12 +135,12 @@ function EditDriver() {
     : "Unknown Driver";
 
   return (
-    <div className="@container/main">
-      <div className="my-6">
-        <h3 className="!font-bold text-3xl">Edit {driverName}</h3>
-        <p>Make changes to {driverName}'s details</p>
-      </div>
-      <div className="bg-secondary md:w-3/4 mx-auto py-10 rounded-2xl mb-10">
+    <div className="space-y-5">
+      <PageHeader
+        title={`Edit ${driverName}`}
+        subtitle={`Make changes to ${driverName}'s details`}
+      />
+      <div className="portal-form-panel mb-10">
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
@@ -156,7 +155,7 @@ function EditDriver() {
                     <FormLabel>First Name</FormLabel>
                     <FormControl>
                       <Input
-                        className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
+                        className="h-11"
                         placeholder="John"
                         {...field}
                       />
@@ -174,7 +173,7 @@ function EditDriver() {
                     <FormLabel>Last Name</FormLabel>
                     <FormControl>
                       <Input
-                        className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
+                        className="h-11"
                         placeholder="Doe"
                         {...field}
                       />
@@ -194,7 +193,7 @@ function EditDriver() {
                   <FormControl>
                     <Input
                       type="date"
-                      className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
+                      className="h-11"
                       {...field}
                     />
                   </FormControl>
@@ -211,10 +210,10 @@ function EditDriver() {
                   <FormLabel>Gender</FormLabel>
                   <FormControl>
                     <Select onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger className="h-11 w-full border-[#d6d6d6]">
+                      <SelectTrigger className="fleet-form-control w-full">
                         <SelectValue placeholder="Select gender" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="fleet-select-menu">
                         <SelectItem value="Male">Male</SelectItem>
                         <SelectItem value="Female">Female</SelectItem>
                       </SelectContent>
@@ -235,7 +234,7 @@ function EditDriver() {
                     <Input
                       type="tel"
                       placeholder="+2348031234567"
-                      className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
+                      className="h-11"
                       {...field}
                       onChange={(e) => {
                         let value = e.target.value;
@@ -298,7 +297,7 @@ function EditDriver() {
                     <Input
                       type="tel"
                       placeholder="+2348031234567"
-                      className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
+                      className="h-11"
                       {...field}
                       onChange={(e) => {
                         let value = e.target.value;
@@ -344,12 +343,8 @@ function EditDriver() {
                 <FormItem>
                   <FormLabel>Change Passport Image (Optional)</FormLabel>
                   <FormControl>
-                    <Input
-                      type="file"
-                      accept="image/*"
-                      className="h-11 border-[#d6d6d6] focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
-                      onChange={async (e) => {
-                        const file = e.target.files?.[0];
+                    <FleetFileInput
+                      onFileSelect={async (file) => {
                         if (file) {
                           try {
                             const base64 = await fileToBase64(file);
@@ -390,12 +385,8 @@ function EditDriver() {
                     Change Driver's License Image (Optional)
                   </FormLabel>
                   <FormControl>
-                    <Input
-                      type="file"
-                      accept="image/*"
-                      className="h-11 border-[#d6d6d6] focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
-                      onChange={async (e) => {
-                        const file = e.target.files?.[0];
+                    <FleetFileInput
+                      onFileSelect={async (file) => {
                         if (file) {
                           try {
                             const base64 = await fileToBase64(file);
@@ -421,7 +412,7 @@ function EditDriver() {
             <Button
               type="submit"
               disabled={isPending}
-              className="w-full mt-3 h-11 bg-[#4D37B3] text-white"
+              className="w-full mt-3 h-11"
             >
               {isPending ? (
                 <Loader2 className="w-4 h-4 animate-spin" />

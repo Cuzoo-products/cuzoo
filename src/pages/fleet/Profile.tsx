@@ -1,3 +1,4 @@
+import PageHeader from "@/components/admin/PageHeader";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -147,11 +148,8 @@ export default function Profile() {
 
   if (error || !data?.data) {
     return (
-      <div className="@container/main">
-        <div className="my-6">
-          <h3 className="!font-bold text-3xl">Profile</h3>
-          <p className="text-red-500">Unable to load profile data.</p>
-        </div>
+      <div className="space-y-5">
+        <PageHeader title="Profile" subtitle="Unable to load profile data." />
       </div>
     );
   }
@@ -174,13 +172,9 @@ export default function Profile() {
   ];
 
   return (
-    <div className="@container/main">
-      <div className="my-6">
-        <h3 className="!font-bold text-3xl">Profile</h3>
-        <p className="text-muted-foreground">Fleet profile information</p>
-      </div>
-
-      <div className="space-y-6 max-w-5xl mx-auto">
+    <div className="space-y-5">
+      <PageHeader title="Profile" subtitle="Fleet profile information" />
+      <div className="mx-auto max-w-5xl space-y-6">
         <Card className="bg-secondary py-4">
           <CardHeader>
             <CardTitle>Account</CardTitle>

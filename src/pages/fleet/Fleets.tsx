@@ -1,4 +1,5 @@
 import { useGetVehicles } from "@/api/fleet/vehicles/useVehicles";
+import PageHeader from "@/components/admin/PageHeader";
 import { DataTable } from "@/components/ui/data-table";
 import { columns } from "@/components/utilities/Fleet/VehicleTableFormat";
 import Loader from "@/components/utilities/Loader";
@@ -11,13 +12,17 @@ function Fleets() {
   }
 
   return (
-    <div className="@container/main">
-      <div className="my-6">
-        <h3 className="!font-bold text-3xl">Vehicles</h3>
-        <p>Manage all vehicles data and information</p>
-      </div>
-
-      <DataTable columns={columns} data={vehicles?.data?.data || []} />
+    <div className="space-y-5">
+      <PageHeader
+        title="Vehicles"
+        subtitle="Manage all vehicles data and information"
+      />
+      <DataTable
+        adminVariant
+        searchPlaceholder="Search vehicles..."
+        columns={columns}
+        data={vehicles?.data?.data || []}
+      />
     </div>
   );
 }

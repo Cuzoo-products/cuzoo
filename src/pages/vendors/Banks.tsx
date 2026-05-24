@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import PageHeader from "@/components/admin/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -54,10 +55,11 @@ type VerifyAccountResponse = {
 };
 
 export default function VendorBanks() {
-  const { data: walletData, isLoading: isLoadingWallet } = useWalletDetails() as {
-    data?: WalletDetailsResponse;
-    isLoading: boolean;
-  };
+  const { data: walletData, isLoading: isLoadingWallet } =
+    useWalletDetails() as {
+      data?: WalletDetailsResponse;
+      isLoading: boolean;
+    };
   const { mutate: addBankAccount, isPending: isAddingBankAccount } =
     useAddBankAccount();
   const { data: bankList } = useGetBankList() as {
@@ -122,16 +124,14 @@ export default function VendorBanks() {
   };
 
   return (
-    <div className="@container/main">
-      <div className="my-6">
-        <h3 className="!font-bold text-3xl">Banks</h3>
-        <p className="text-muted-foreground">
-          Manage payout bank accounts for your vendor account.
-        </p>
-      </div>
+    <div className="space-y-6">
+      <PageHeader
+        title="Banks"
+        subtitle="Manage payout bank accounts for your vendor account."
+      />
 
       <div className="grid gap-4 lg:grid-cols-3">
-        <Card className="bg-secondary lg:col-span-1">
+        <Card className="lg:col-span-1">
           <CardHeader>
             <CardTitle className="text-base md:text-lg">Add New Bank</CardTitle>
           </CardHeader>
@@ -185,7 +185,7 @@ export default function VendorBanks() {
           </CardContent>
         </Card>
 
-        <Card className="bg-secondary lg:col-span-2">
+        <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle className="text-base md:text-lg">
               Saved Bank Accounts

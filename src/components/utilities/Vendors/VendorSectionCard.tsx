@@ -1,11 +1,5 @@
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Car, RouteIcon, Users, Wallet } from "lucide-react";
+import { Package, Repeat, TrendingUp, Wallet, type LucideIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export type VendorSectionCardProps = {
   finance?: number;
@@ -14,63 +8,75 @@ export type VendorSectionCardProps = {
   products?: number;
 };
 
+type KpiItem = {
+  icon: LucideIcon;
+  label: string;
+  value: string;
+  variant?: "primary" | "default";
+};
+
+function VendorKpiCard({
+  icon: Icon,
+  label,
+  value,
+  variant = "default",
+}: KpiItem) {
+  return (
+    <div
+      className={cn(
+        "vendor-kpi-card",
+        variant === "primary" && "vendor-kpi-card--primary",
+      )}
+    >
+      <div
+        className={cn(
+          "vendor-kpi-card__icon",
+          variant === "primary" && "vendor-kpi-card__icon--primary",
+        )}
+      >
+        <Icon className="h-5 w-5" />
+      </div>
+      <p className="vendor-kpi-card__value">{value}</p>
+      <p className="vendor-kpi-card__label">{label}</p>
+    </div>
+  );
+}
+
 function VendorSectionCard({
   finance = 0,
   overallSales = 0,
   salesThisMonth = 0,
   products = 0,
 }: VendorSectionCardProps) {
+  const items: KpiItem[] = [
+    {
+      icon: Wallet,
+      label: "Finance",
+      value: `₦${finance.toLocaleString("en-NG", { maximumFractionDigits: 0 })}`,
+      variant: "primary",
+    },
+    {
+      icon: Repeat,
+      label: "Overall Sales",
+      value: overallSales.toLocaleString("en-NG"),
+    },
+    {
+      icon: TrendingUp,
+      label: "Sales this month",
+      value: salesThisMonth.toLocaleString("en-NG"),
+    },
+    {
+      icon: Package,
+      label: "Products",
+      value: products.toLocaleString("en-NG"),
+    },
+  ];
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4  gap-2">
-      <Card className="bg-primary text-white gap-0 pt-4 pb-2">
-        <CardHeader>
-          <Wallet />
-        </CardHeader>
-        <CardContent className="mt-1">
-          <h3 className="text-3xl">
-            ₦{finance.toLocaleString("en-NG", { maximumFractionDigits: 0 })}
-          </h3>
-        </CardContent>
-        <CardFooter>
-          <CardTitle>Finance</CardTitle>
-        </CardFooter>
-      </Card>
-
-      <Card className="gap-0 pt-4 pb-2 bg-secondary">
-        <CardHeader>
-          <Car />
-        </CardHeader>
-        <CardContent className="mt-1">
-          <h3 className="text-3xl">{overallSales.toLocaleString("en-NG")}</h3>
-        </CardContent>
-        <CardFooter>
-          <CardTitle>Overall Sales</CardTitle>
-        </CardFooter>
-      </Card>
-
-      <Card className="gap-0 pt-4 pb-2 bg-secondary">
-        <CardHeader>
-          <Users />
-        </CardHeader>
-        <CardContent className="mt-1">
-          <h3 className="text-3xl">{salesThisMonth.toLocaleString("en-NG")}</h3>
-        </CardContent>
-        <CardFooter>
-          <CardTitle>Sales this month</CardTitle>
-        </CardFooter>
-      </Card>
-
-      <Card className="gap-0 pt-4 pb-2 bg-secondary text-secondary-foreground">
-        <CardHeader>
-          <RouteIcon />
-        </CardHeader>
-        <CardContent className="mt-1">
-          <h3 className="text-3xl">{products.toLocaleString("en-NG")}</h3>
-        </CardContent>
-        <CardFooter>
-          <CardTitle>Products</CardTitle>
-        </CardFooter>
-      </Card>
+    <div className="vendor-kpi-grid">
+      {items.map((item) => (
+        <VendorKpiCard key={item.label} {...item} />
+      ))}
     </div>
   );
 }

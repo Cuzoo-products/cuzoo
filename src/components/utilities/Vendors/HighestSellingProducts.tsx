@@ -1,24 +1,35 @@
-import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import type { HighestSellingProductsT } from "@/pages/vendors/VendorDashboard";
 
 function HighestSellingProducts({ data }: { data: HighestSellingProductsT[] }) {
+  if (!data.length) {
+    return (
+      <p className="vendor-product-row__sales">No products to display yet.</p>
+    );
+  }
+
   return (
-    <>
-      {data.map((items) => (
-        <div
-          key={items.id}
-          className="flex items-center space-x-3 border-b border-b-line-1 py-3"
-        >
-          <Avatar className="size-10">
-            <AvatarImage src={items.imageUrl} />
-          </Avatar>
-          <div className="text-sm">
-            <p className="font-bold">{items.productName}</p>
-            <p>{items.sales} sales</p>
+    <div className="vendor-product-list">
+      {data.map((item) => (
+        <div key={item.id} className="vendor-product-row">
+          {item.imageUrl ? (
+            <img
+              src={item.imageUrl}
+              alt={item.productName}
+              className="vendor-product-row__image"
+            />
+          ) : (
+            <div
+              className="vendor-product-row__image"
+              style={{ backgroundColor: "var(--admin-border)" }}
+            />
+          )}
+          <div className="min-w-0 flex-1">
+            <p className="vendor-product-row__name">{item.productName}</p>
+            <p className="vendor-product-row__sales">{item.sales} sales</p>
           </div>
         </div>
       ))}
-    </>
+    </div>
   );
 }
 

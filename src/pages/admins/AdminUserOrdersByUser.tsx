@@ -1,12 +1,8 @@
 import { useMemo } from "react";
-import { useParams, Link } from "react-router";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Link, useParams } from "react-router";
+import NestedAdminPage from "@/components/admin/NestedAdminPage";
+import StatusBadge from "@/components/admin/StatusBadge";
+import { Section } from "@/components/admin/DetailShell";
 import {
   Table,
   TableBody,
@@ -111,54 +107,47 @@ export default function AdminUserOrdersByUser() {
     };
   }, [payload]);
 
+  const userBack = `/admins/users/${encodeURIComponent(userId)}`;
+  const crumbs = [
+    { label: "Dashboard", href: "/admins/dashboard" },
+    { label: "Users", href: "/admins/users" },
+    { label: "User", href: userBack },
+    { label: "Orders" },
+  ];
+
   if (isLoading) return <Loader />;
 
   if (isError) {
     return (
-      <div className="@container/main p-6">
-        <h3 className="!font-bold text-3xl">User orders</h3>
-        <p className="mt-2 text-sm text-destructive">
-          Failed to load orders for this user.
-        </p>
-        <Button asChild variant="outline" className="mt-4">
-          <Link to={`/admins/users/${userId}`}>Back to user</Link>
-        </Button>
-      </div>
+      <NestedAdminPage
+        backHref={userBack}
+        backLabel="User"
+        crumbs={crumbs}
+        title="User orders"
+        subtitle="Failed to load orders for this user."
+      >
+        <></>
+      </NestedAdminPage>
     );
   }
 
-  return (
-    <div className="@container/main">
-      <div className="my-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h3 className="!font-bold text-3xl">User orders</h3>
-          <p className="text-muted-foreground">
-            Orders linked to this user
-            {meta.count != null ? (
-              <span className="text-foreground"> · {meta.count} total</span>
-            ) : null}
-            {meta.limit != null ? (
-              <span className="text-muted-foreground">
-                {" "}
-                (limit {meta.limit})
-              </span>
-            ) : null}
-          </p>
-        </div>
-        <Button asChild variant="outline">
-          <Link to={`/admins/users/${userId}`}>Back to user</Link>
-        </Button>
-      </div>
+  const subtitle = `Orders linked to this user${
+    meta.count != null ? ` · ${meta.count} total` : ""
+  }${meta.limit != null ? ` (limit ${meta.limit})` : ""}`;
 
-      <Card className="bg-secondary">
-        <CardHeader>
-          <CardTitle>Orders</CardTitle>
-          <CardDescription>
-            Shopping and package rows may appear together. Use View to open the
-            correct admin screen.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+  return (
+    <NestedAdminPage
+      backHref={userBack}
+      backLabel="User"
+      crumbs={crumbs}
+      title="User orders"
+      subtitle={subtitle}
+    >
+      <Section
+        title="Orders"
+        subtitle="Shopping and package rows may appear together. Use View to open the correct admin screen."
+      >
+        <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -205,7 +194,13 @@ export default function AdminUserOrdersByUser() {
                     <TableCell className="tabular-nums">
                       {naira(row.amount)}
                     </TableCell>
-                    <TableCell className="capitalize">{row.status ?? "—"}</TableCell>
+                    <TableCell>
+                      {row.status ? (
+                        <StatusBadge status={row.status} />
+                      ) : (
+                        "—"
+                      )}
+                    </TableCell>
                     <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
                       {formatWhen(row.createdAt ?? row.date)}
                     </TableCell>
@@ -219,8 +214,8 @@ export default function AdminUserOrdersByUser() {
               )}
             </TableBody>
           </Table>
-        </CardContent>
-      </Card>
-    </div>
+        </div>
+      </Section>
+    </NestedAdminPage>
   );
 }

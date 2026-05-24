@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import PageHeader from "@/components/admin/PageHeader";
 import { useGetVehicles } from "@/api/admin/vehicle/useVehicle";
 import { DataTable } from "@/components/ui/data-table";
 import Loader from "@/components/utilities/Loader";
@@ -95,31 +96,23 @@ export default function AdminVehicles() {
 
   if (isError) {
     return (
-      <div className="@container/main p-6">
-        <h3 className="!font-bold text-3xl">Vehicles</h3>
-        <p className="mt-2 text-sm text-destructive">
-          Failed to load vehicles. Check that GET /admins/vehicles is available.
-        </p>
+      <div className="space-y-5">
+        <PageHeader
+          title="Vehicles"
+          subtitle="Failed to load vehicles. Check that GET /admins/vehicles is available."
+        />
       </div>
     );
   }
 
   return (
-    <div className="@container/main">
-      <div className="my-6">
-        <h3 className="!font-bold text-3xl">Vehicles</h3>
-        <p className="text-muted-foreground">
-          All registered vehicles
-          {meta.count != null ? (
-            <span className="text-foreground"> · {meta.count} total</span>
-          ) : null}
-          {meta.limit != null ? (
-            <span className="text-muted-foreground"> (limit {meta.limit})</span>
-          ) : null}
-        </p>
-      </div>
+    <div className="space-y-5">
+      <PageHeader
+        title="Vehicles"
+        subtitle={`All registered vehicles${meta.count != null ? ` · ${meta.count} total` : ""}${meta.limit != null ? ` (limit ${meta.limit})` : ""}`}
+      />
 
-      <DataTable columns={columns} data={tableData} />
+      <DataTable adminVariant searchPlaceholder="Search..." columns={columns} data={tableData} />
     </div>
   );
 }

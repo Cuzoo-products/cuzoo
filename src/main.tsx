@@ -5,6 +5,9 @@ import { routes } from "./routes/routes";
 import { ThemeProvider } from "./components/utilities/themeProvider";
 import "leaflet/dist/leaflet.css";
 import "./index.css";
+import "./styles/admin-portal.css";
+import "./styles/fleet-portal.css";
+import "./styles/auth-portal.css";
 import { Provider } from "react-redux";
 import store from "./redux/store/store";
 import "./firebase";
@@ -22,5 +25,5 @@ createRoot(document.getElementById("root")!).render(
         </ThemeProvider>
       </QueryClientProvider>
     </Provider>
-  </StrictMode>
+  </StrictMode>,
 );

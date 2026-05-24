@@ -1,3 +1,4 @@
+import PageHeader from "@/components/admin/PageHeader";
 import { useGetAllFleets } from "@/api/admin/fleet/useFleet";
 import { DataTable } from "@/components/ui/data-table";
 import { columns } from "@/components/utilities/Admins/FleetManagersDataTable";
@@ -11,13 +12,13 @@ function FleetOwners() {
   }
 
   return (
-    <div className="@container/main">
-      <div className="my-6">
-        <h3 className="!font-bold text-3xl">Fleet Manager</h3>
-        <p>Manage all drivers data and information</p>
-      </div>
+    <div className="space-y-5">
+      <PageHeader
+        title="Fleet Managers"
+        subtitle="Manage all fleet managers data and information"
+      />
 
-      <DataTable columns={columns} data={fleetManagers?.data?.data} />
+      <DataTable adminVariant searchPlaceholder="Search..." columns={columns} data={fleetManagers?.data?.data} />
     </div>
   );
 }

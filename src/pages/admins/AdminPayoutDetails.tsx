@@ -1,11 +1,13 @@
 import { useMemo, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import Loader from "@/components/utilities/Loader";
+import PageHeader from "@/components/admin/PageHeader";
+import StatusBadge from "@/components/admin/StatusBadge";
+import { DetailShell, GridItem, Section } from "@/components/admin/DetailShell";
 import {
   useApproveFleetPayout,
   useApproveRiderPayout,
@@ -22,18 +24,6 @@ import { displayRecipientLine } from "@/lib/payoutDetailsHelpers";
 
 const normalizeType = (value?: string) =>
   value === "riders" || value === "vendors" || value === "fleets" ? value : null;
-
-const statusVariant: Record<
-  string,
-  "default" | "secondary" | "destructive" | "outline"
-> = {
-  completed: "default",
-  pending: "secondary",
-  processing: "outline",
-  failed: "destructive",
-  resolved: "default",
-  rejected: "destructive",
-};
 
 const formatDate = (value?: string) => {
   if (!value) return "—";
@@ -202,105 +192,66 @@ export default function AdminPayoutDetails() {
       details.accountName?.trim());
 
   return (
-    <div className="@container/main">
-      <div className="my-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h3 className="!font-bold text-3xl">Payout details</h3>
-          <p className="text-sm text-muted-foreground">
-            {payout.reference
-              ? `Reference · ${payout.reference}`
-              : "Admin review"}
-          </p>
-        </div>
-        <Button asChild variant="outline" size="sm">
-          <Link to={`/admins/payouts/${payoutType}`}>Back to payouts</Link>
-        </Button>
-      </div>
+    <DetailShell
+      backHref={`/admins/payouts/${payoutType}`}
+      backLabel="Payouts"
+      crumbs={[
+        { label: "Dashboard", href: "/admins/dashboard" },
+        { label: "Payouts", href: `/admins/payouts/${payoutType}` },
+        { label: payout.reference || id || "Details" },
+      ]}
+    >
+      <PageHeader
+        title="Payout details"
+        subtitle={
+          payout.reference
+            ? `Reference · ${payout.reference}`
+            : "Admin review"
+        }
+        actions={
+          <div className="flex flex-wrap gap-2">
+            <StatusBadge status={payout.status ?? "pending"} />
+            {payout.resolved ? <StatusBadge status="completed" /> : null}
+          </div>
+        }
+      />
 
-      <div className="bg-secondary max-w-3xl mx-auto mb-10 p-6 rounded-lg space-y-6">
-        <div className="flex flex-wrap items-center gap-2">
-          <Badge variant={statusVariant[payout.status ?? ""] ?? "outline"}>
-            {payout.status ?? "—"}
-          </Badge>
-          {payout.resolved ? <Badge variant="default">Resolved</Badge> : null}
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 text-sm">
-          <div>
-            <h4 className="font-semibold mb-1">Amount</h4>
-            <p>
-              ₦
-              {Number(payout.amount ?? 0).toLocaleString("en-NG", {
+      <div className="mx-auto max-w-3xl space-y-4">
+        <Section title="Payout information">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <GridItem
+              label="Amount"
+              value={`₦${Number(payout.amount ?? 0).toLocaleString("en-NG", {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
-              })}
-            </p>
+              })}`}
+            />
+            <GridItem label="Type" value={payout.type || "—"} />
+            <GridItem label="Payout ID" value={payoutIdDisplay || "—"} />
+            <GridItem label="Reference" value={payout.reference || "—"} />
+            <GridItem label="Owner ID" value={payout.ownerId || "—"} />
+            {payout.vendorId ? (
+              <GridItem label="Vendor ID" value={payout.vendorId} />
+            ) : null}
+            {payout.companyId ? (
+              <GridItem label="Company ID" value={payout.companyId} />
+            ) : null}
+            {payout.riderId ? (
+              <GridItem label="Rider ID" value={payout.riderId} />
+            ) : null}
+            <GridItem label="Recipient" value={recipientLine || "—"} />
+            <GridItem
+              label="Resolved"
+              value={payout.resolved ? "Yes" : "No"}
+            />
+            <GridItem
+              label="Transaction ID"
+              value={payout.transactionId || "—"}
+            />
+            <GridItem label="Created at" value={formatDate(payout.createdAt)} />
+            <GridItem label="Updated at" value={formatDate(payout.updatedAt)} />
           </div>
-          <div>
-            <h4 className="font-semibold mb-1">Type</h4>
-            <p className="capitalize">{payout.type || "—"}</p>
-          </div>
-          <div>
-            <h4 className="font-semibold mb-1">Payout ID</h4>
-            <p className="font-mono text-xs break-all">
-              {payoutIdDisplay || "—"}
-            </p>
-          </div>
-          <div>
-            <h4 className="font-semibold mb-1">Reference</h4>
-            <p className="font-mono text-xs break-all">
-              {payout.reference || "—"}
-            </p>
-          </div>
-          <div>
-            <h4 className="font-semibold mb-1">Owner ID</h4>
-            <p className="font-mono text-xs break-all">
-              {payout.ownerId || "—"}
-            </p>
-          </div>
-          {payout.vendorId ? (
-            <div>
-              <h4 className="font-semibold mb-1">Vendor ID</h4>
-              <p className="font-mono text-xs break-all">{payout.vendorId}</p>
-            </div>
-          ) : null}
-          {payout.companyId ? (
-            <div>
-              <h4 className="font-semibold mb-1">Company ID</h4>
-              <p className="font-mono text-xs break-all">{payout.companyId}</p>
-            </div>
-          ) : null}
-          {payout.riderId ? (
-            <div>
-              <h4 className="font-semibold mb-1">Rider ID</h4>
-              <p className="font-mono text-xs break-all">{payout.riderId}</p>
-            </div>
-          ) : null}
-          <div>
-            <h4 className="font-semibold mb-1">Recipient</h4>
-            <p className="font-mono text-xs break-all">
-              {recipientLine || "—"}
-            </p>
-          </div>
-          <div>
-            <h4 className="font-semibold mb-1">Resolved</h4>
-            <p>{payout.resolved ? "Yes" : "No"}</p>
-          </div>
-          <div className="md:col-span-2">
-            <h4 className="font-semibold mb-1">Transaction ID</h4>
-            <p className="font-mono text-xs break-all">
-              {payout.transactionId || "—"}
-            </p>
-          </div>
-          <div>
-            <h4 className="font-semibold mb-1">Created at</h4>
-            <p>{formatDate(payout.createdAt)}</p>
-          </div>
-          <div>
-            <h4 className="font-semibold mb-1">Updated at</h4>
-            <p>{formatDate(payout.updatedAt)}</p>
-          </div>
-        </div>
+        </Section>
 
         {payout.reason ? (
           <>
@@ -374,6 +325,6 @@ export default function AdminPayoutDetails() {
           </>
         ) : null}
       </div>
-    </div>
+    </DetailShell>
   );
 }

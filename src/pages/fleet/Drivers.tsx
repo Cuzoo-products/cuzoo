@@ -1,4 +1,5 @@
 import { useGetRiders } from "@/api/fleet/rider/useRiderQuery";
+import PageHeader from "@/components/admin/PageHeader";
 import { DataTable } from "@/components/ui/data-table";
 import { columns } from "@/components/utilities/Fleet/DriverTableFormate";
 import Loader from "@/components/utilities/Loader";
@@ -11,13 +12,17 @@ function Drivers() {
   }
 
   return (
-    <div className="@container/main">
-      <div className="my-6">
-        <h3 className="!font-bold text-3xl">Drivers</h3>
-        <p>Manage all drivers data and information</p>
-      </div>
-
-      <DataTable columns={columns} data={riders?.data?.data || []} />
+    <div className="space-y-5">
+      <PageHeader
+        title="Drivers"
+        subtitle="Manage all drivers data and information"
+      />
+      <DataTable
+        adminVariant
+        searchPlaceholder="Search drivers..."
+        columns={columns}
+        data={riders?.data?.data || []}
+      />
     </div>
   );
 }

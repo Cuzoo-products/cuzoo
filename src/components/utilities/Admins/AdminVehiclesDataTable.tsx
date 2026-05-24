@@ -10,6 +10,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import StatusBadge from "@/components/admin/StatusBadge";
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
 
 export type AdminVehicleData = {
@@ -95,6 +96,9 @@ export const columns: ColumnDef<AdminVehicleData>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Status" />
     ),
+    cell: ({ getValue }) => (
+      <StatusBadge status={String(getValue() ?? "—")} />
+    ),
   },
   {
     id: "actions",
@@ -109,7 +113,7 @@ export const columns: ColumnDef<AdminVehicleData>[] = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent
-            className="border-0 bg-background shadow-accent shadow-sm"
+            className="admin-dropdown-menu p-1"
             align="end"
           >
             <DropdownMenuLabel>Actions</DropdownMenuLabel>

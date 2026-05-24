@@ -1,3 +1,4 @@
+import PageHeader from "@/components/admin/PageHeader";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -187,15 +188,13 @@ export default function Coupons() {
   };
 
   return (
-    <div className="@container/main">
-      <div className="my-6">
-        <h3 className="!font-bold text-3xl">Coupons</h3>
-        <p className="text-muted-foreground">
-          Create and manage discount codes
-        </p>
-      </div>
+    <div className="space-y-6">
+      <PageHeader
+        title="Coupons"
+        subtitle="Create and manage discount codes"
+      />
 
-      <div className="bg-secondary max-w-2xl rounded-xl p-6 mb-8">
+      <div className="portal-form-panel mb-8">
         <h4 className="font-semibold text-lg mb-4 flex items-center gap-2">
           <Ticket className="size-5" />
           Generate coupon

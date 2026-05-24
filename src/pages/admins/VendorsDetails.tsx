@@ -36,6 +36,9 @@ import {
   useVendorAccountAction,
   useVendorWalletAction,
 } from "@/api/admin/vendors/useVendors";
+import PageHeader from "@/components/admin/PageHeader";
+import StatusBadge from "@/components/admin/StatusBadge";
+import { DetailShell } from "@/components/admin/DetailShell";
 
 type DocAsset = { path?: string; url?: string; type?: string };
 
@@ -220,8 +223,31 @@ export default function VendorsDetails() {
   const loc = addr?.geometry?.location;
 
   return (
-    <div className="min-h-screen p-4 sm:p-6 lg:p-8 font-sans">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <DetailShell
+      backHref="/admins/vendors"
+      backLabel="Vendors"
+      crumbs={[
+        { label: "Dashboard", href: "/admins/dashboard" },
+        { label: "Vendors", href: "/admins/vendors" },
+        { label: vendor.businessName || routeId || "Vendor" },
+      ]}
+    >
+      <PageHeader
+        title={vendor.businessName || "Vendor Details"}
+        subtitle={vendor.email}
+        actions={
+          <StatusBadge
+            status={
+              vendor.approved
+                ? "approved"
+                : vendor.suspended
+                  ? "suspended"
+                  : "pending"
+            }
+          />
+        }
+      />
+      <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6 lg:grid-cols-3">
         <Card className="bg-secondary lg:col-span-1 h-fit">
           <CardHeader className="py-4 flex flex-row items-start gap-4">
             <Avatar className="h-16 w-16 shrink-0 rounded-md">
@@ -580,6 +606,6 @@ export default function VendorsDetails() {
           </Card>
         </div>
       </div>
-    </div>
+    </DetailShell>
   );
 }

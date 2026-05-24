@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useGetVendorProfile } from "@/api/vendor/auth/useAuth";
 import { useGetDashboard } from "@/api/vendor/dashboard/useDashBoard";
 import HighestSellingProducts from "@/components/utilities/Vendors/HighestSellingProducts";
@@ -42,7 +43,12 @@ export type DashboardResponse = {
   };
 };
 
+const TIME_FILTERS = ["7D", "30D", "3M", "1Y"] as const;
+
 function VendorDashboard() {
+  const [timeFilter, setTimeFilter] =
+    useState<(typeof TIME_FILTERS)[number]>("30D");
+
   const { data, isLoading, error } = useGetDashboard() as {
     data?: DashboardResponse;
     isLoading: boolean;
@@ -67,27 +73,32 @@ function VendorDashboard() {
 
   if (error) {
     return (
-      <div className="@container/main">
-        <div className="my-6">
-          <h3 className="!font-bold text-3xl">Dashboard</h3>
-          <p className="text-red-500">Failed to load dashboard data.</p>
+      <div className="space-y-6">
+        <div className="vendor-dashboard-header">
+          <div>
+            <h1 className="vendor-dashboard-header__title">Dashboard</h1>
+            <p className="vendor-dashboard-header__subtitle">
+              Failed to load dashboard data.
+            </p>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="@container/main">
-      <div className="flex justify-between items-center">
-        <div className="my-6">
-          <h3 className="!font-bold text-3xl">Dashboard</h3>
-          <p>Hello, welcome back</p>
-        </div>
+    <div className="space-y-6">
+      <div className="vendor-dashboard-header">
         <div>
-          <h3 className="!font-bold text-xl text-muted-foreground">
-            Store Code: {vendorProfile?.data?.storeCode}
-          </h3>
+          <h1 className="vendor-dashboard-header__title">Dashboard</h1>
+          <p className="vendor-dashboard-header__subtitle">
+            Hello, welcome back
+          </p>
         </div>
+        <p className="vendor-dashboard-store-code">
+          Store Code:{" "}
+          <span>{vendorProfile?.data?.storeCode ?? "—"}</span>
+        </p>
       </div>
 
       <VendorSectionCard
@@ -97,12 +108,37 @@ function VendorDashboard() {
         products={dashboard?.products}
       />
 
-      <div className="lg:flex my-20 space-y-5 lg:space-y-0 lg:space-x-3">
-        <div className="lg:flex-9/12 border border-line-1 bg-secondary rounded-lg p-5">
+      <div className="vendor-dashboard-panels">
+        <div className="vendor-dashboard-chart-card">
+          <div className="vendor-dashboard-chart-card__header">
+            <div>
+              <h2 className="vendor-dashboard-chart-card__title">
+                Monthly Revenue
+              </h2>
+              <p className="vendor-dashboard-chart-card__subtitle">
+                Overview of revenue and sales performance
+              </p>
+            </div>
+            <div className="vendor-finance-filter">
+              {TIME_FILTERS.map((filter) => (
+                <button
+                  key={filter}
+                  type="button"
+                  data-active={timeFilter === filter}
+                  onClick={() => setTimeFilter(filter)}
+                >
+                  {filter}
+                </button>
+              ))}
+            </div>
+          </div>
           <VendorChart chartData={chartData} />
         </div>
-        <div className="lg:flex-3/12 border border-line-1 bg-secondary rounded-lg p-3">
-          <h3 className="font-bold text-center">Highest Selling Products</h3>
+
+        <div className="vendor-dashboard-products-card">
+          <h2 className="vendor-dashboard-products-card__title">
+            Highest Selling Products
+          </h2>
           <HighestSellingProducts data={highestSellingProducts} />
         </div>
       </div>

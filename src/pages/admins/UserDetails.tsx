@@ -37,6 +37,9 @@ import {
 import { Link, useParams } from "react-router";
 import Loader from "@/components/utilities/Loader";
 import { useSendOneNotification } from "@/api/admin/notification/useNotification";
+import PageHeader from "@/components/admin/PageHeader";
+import StatusBadge from "@/components/admin/StatusBadge";
+import { DetailShell } from "@/components/admin/DetailShell";
 
 
 type InfoRowProps = {
@@ -192,8 +195,30 @@ function UserDetails() {
   }
 
   return (
-    <div className="min-h-screen p-4 sm:p-6 lg:p-8">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <DetailShell
+      backHref="/admins/users"
+      backLabel="Users"
+      crumbs={[
+        { label: "Dashboard", href: "/admins/dashboard" },
+        { label: "Users", href: "/admins/users" },
+        {
+          label:
+            `${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim() ||
+            id ||
+            "User",
+        },
+      ]}
+    >
+      <PageHeader
+        title={`${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim()}
+        subtitle={user?.email}
+        actions={
+          <StatusBadge
+            status={user.emailVerified ? "verified" : "pending"}
+          />
+        }
+      />
+      <div className="mx-auto grid max-w-7xl grid-cols-1 gap-8 lg:grid-cols-3">
         <div className="lg:col-span-1 space-y-8">
           <Card className="bg-secondary py-4">
             <CardContent className="pt-6">
@@ -412,7 +437,7 @@ function UserDetails() {
           </Card>
         </div>
       </div>
-    </div>
+    </DetailShell>
   );
 }
 

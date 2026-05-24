@@ -1,6 +1,7 @@
 import DashboardCards from "@/components/utilities/Admins/DashboardCards";
-import FleetChart from "@/components/utilities/Fleet/FleetChart";
-import PerformingDrivers from "@/components/utilities/Fleet/PerformingDrivers";
+import PageHeader from "@/components/admin/PageHeader";
+import AdminRevenueChart from "@/components/admin/AdminRevenueChart";
+import AdminTopPerformersCard from "@/components/admin/AdminTopPerformersCard";
 import { useAdminDashboard } from "@/api/admin/dashboard/useDashboard";
 import Loader from "@/components/utilities/Loader";
 
@@ -32,7 +33,9 @@ function AdminDashboard() {
   const { data, isLoading, error } = useAdminDashboard();
 
   if (error) {
-    return <div>Error: {error.message}</div>;
+    return (
+      <p className="text-sm text-[var(--admin-danger)]">Error: {error.message}</p>
+    );
   }
 
   if (isLoading) {
@@ -49,7 +52,6 @@ function AdminDashboard() {
   const chartData = revenueSalesGraph.map((p: RevenueSalesPoint) => ({
     month: String(p.month),
     revenue: Number(p.revenue ?? 0),
-    // FleetChart expects `trips`; backend sends `sales`
     trips: Number(p.sales ?? 0),
   }));
 
@@ -63,7 +65,6 @@ function AdminDashboard() {
       const firstName = d.firstName ?? "";
       const lastName = d.lastName ?? "";
       const name = `${firstName} ${lastName}`.trim() || "Unknown driver";
-
       const passportUrl = d.passport?.url ?? undefined;
       const initials = `${firstName?.[0] ?? ""}${lastName?.[0] ?? ""}`.toUpperCase();
 
@@ -78,11 +79,8 @@ function AdminDashboard() {
   );
 
   return (
-    <div className="@container/main">
-      <div className="my-6">
-        <h3 className="!font-bold text-3xl">Dashboard</h3>
-        <p>Admin overview</p>
-      </div>
+    <div className="space-y-6">
+      <PageHeader title="Dashboard" subtitle="Admin overview" />
       <DashboardCards
         finance={financeTotal}
         vendors={vendors}
@@ -90,13 +88,12 @@ function AdminDashboard() {
         fleets={fleets}
       />
 
-      <div className="lg:flex my-20 space-y-5 lg:space-y-0 lg:space-x-3">
-        <div className="lg:flex-9/12 border border-line-1 bg-secondary rounded-lg p-5">
-          <FleetChart chartData={chartData} />
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-10">
+        <div className="lg:col-span-7">
+          <AdminRevenueChart data={chartData} />
         </div>
-        <div className="lg:flex-3/12 border border-line-1 bg-secondary rounded-lg p-3">
-          <h3 className="font-bold text-center">Top Performing Drives</h3>
-          <PerformingDrivers data={topPerformingDrivers} />
+        <div className="lg:col-span-3">
+          <AdminTopPerformersCard performers={topPerformingDrivers} />
         </div>
       </div>
     </div>

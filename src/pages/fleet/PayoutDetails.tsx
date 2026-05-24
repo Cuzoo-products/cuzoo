@@ -1,7 +1,8 @@
-import { useParams, Link } from "react-router";
-import { Button } from "@/components/ui/button";
+import { useParams } from "react-router";
+import PageHeader from "@/components/admin/PageHeader";
+import StatusBadge from "@/components/admin/StatusBadge";
+import { DetailShell } from "@/components/admin/DetailShell";
 import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
 import { useGetPayout } from "@/api/fleet/finance/useFinance";
 import Loader from "@/components/utilities/Loader";
 import { sanitizePayoutRouteId, payoutRecordId } from "@/lib/payoutId";
@@ -70,17 +71,18 @@ export default function FleetPayoutDetails() {
 
   const payout = data?.data;
 
+  const payoutsBack = "/fleet/payouts";
+  const crumbs = [
+    { label: "Dashboard", href: "/fleet/dashboard" },
+    { label: "Payouts", href: payoutsBack },
+    { label: "Details" },
+  ];
+
   if (!id) {
     return (
-      <div className="@container/main">
-        <div className="my-6">
-          <h3 className="!font-bold text-3xl">Payout details</h3>
-          <p className="text-red-500 text-sm">No payout ID provided.</p>
-          <Button asChild variant="outline" className="mt-2">
-            <Link to="/fleet/payouts">Back to Payouts</Link>
-          </Button>
-        </div>
-      </div>
+      <DetailShell backHref={payoutsBack} backLabel="Payouts" crumbs={crumbs}>
+        <PageHeader title="Payout details" subtitle="No payout ID provided." />
+      </DetailShell>
     );
   }
 
@@ -90,54 +92,34 @@ export default function FleetPayoutDetails() {
 
   if (error || !payout) {
     return (
-      <div className="@container/main">
-        <div className="my-6">
-          <h3 className="!font-bold text-3xl">Payout details</h3>
-          <p className="text-red-500">Failed to load payout details.</p>
-          <Button asChild variant="outline" className="mt-2">
-            <Link to="/fleet/payouts">Back to Payouts</Link>
-          </Button>
-        </div>
-      </div>
+      <DetailShell backHref={payoutsBack} backLabel="Payouts" crumbs={crumbs}>
+        <PageHeader title="Payout details" subtitle="Failed to load payout details." />
+      </DetailShell>
     );
   }
-
-  const statusVariant: Record<
-    string,
-    "default" | "secondary" | "destructive" | "outline"
-  > = {
-    completed: "default",
-    pending: "secondary",
-    processing: "outline",
-    failed: "destructive",
-    resolved: "default",
-  };
 
   const details = payout.details;
   const payoutIdDisplay = payoutRecordId(payout);
   const recipientLine = displayRecipientLine(payout.recipient, details?.accountName);
 
   return (
-    <div className="@container/main">
-      <div className="my-6 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h3 className="!font-bold text-3xl">Payout details</h3>
-          <p className="text-sm text-muted-foreground">
-            {payout.reference ? `Reference · ${payout.reference}` : "Payout request"}
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <Badge variant={statusVariant[payout.status] ?? "outline"}>
-            {payout.status}
-          </Badge>
-          {payout.resolved && <Badge variant="default">Resolved</Badge>}
-          <Button asChild variant="outline" size="sm">
-            <Link to="/fleet/payouts">Back to Payouts</Link>
-          </Button>
-        </div>
-      </div>
+    <DetailShell backHref={payoutsBack} backLabel="Payouts" crumbs={crumbs}>
+      <PageHeader
+        title="Payout details"
+        subtitle={
+          payout.reference ? `Reference · ${payout.reference}` : "Payout request"
+        }
+        actions={
+          <div className="flex flex-wrap items-center gap-2">
+            <StatusBadge status={payout.status} />
+            {payout.resolved ? (
+              <StatusBadge status="resolved" />
+            ) : null}
+          </div>
+        }
+      />
 
-      <div className="bg-secondary max-w-3xl mx-auto mb-10 p-6 rounded-lg space-y-6">
+      <div className="portal-detail-panel mb-10 space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 text-sm">
           <div>
             <h4 className="font-semibold mb-1">Amount</h4>
@@ -248,6 +230,6 @@ export default function FleetPayoutDetails() {
           </>
         )}
       </div>
-    </div>
+    </DetailShell>
   );
 }

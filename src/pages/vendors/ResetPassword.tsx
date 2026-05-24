@@ -1,3 +1,4 @@
+import PageHeader from "@/components/admin/PageHeader";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
@@ -100,12 +101,9 @@ function VendorResetPassword() {
   }
 
   return (
-    <div className="@container/main">
-      <div className="my-6">
-        <h3 className="!font-bold text-3xl">Password</h3>
-        <p>Reset your password here</p>
-      </div>
-      <div className="bg-secondary max-w-3xl mx-auto p-6 rounded-lg space-y-4">
+    <div className="space-y-5">
+      <PageHeader title="Password" subtitle="Reset your password here" />
+      <div className="portal-form-panel space-y-4">
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
@@ -121,7 +119,7 @@ function VendorResetPassword() {
                     <div className="relative">
                       <Input
                         type={showOldPassword ? "text" : "password"}
-                        className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3] pr-12"
+                        className="h-11 pr-12"
                         placeholder="********"
                         {...field}
                       />
@@ -129,7 +127,11 @@ function VendorResetPassword() {
                         type="button"
                         onClick={() => setShowOldPassword((s) => !s)}
                         className="absolute inset-y-0 right-3 flex items-center text-muted-foreground"
-                        aria-label={showOldPassword ? "Hide old password" : "Show old password"}
+                        aria-label={
+                          showOldPassword
+                            ? "Hide old password"
+                            : "Show old password"
+                        }
                       >
                         {showOldPassword ? (
                           <EyeOff className="w-4 h-4" />
@@ -153,7 +155,7 @@ function VendorResetPassword() {
                   <FormControl>
                     <div className="relative">
                       <Input
-                        className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3] pr-12"
+                        className="h-11 pr-12"
                         type={showNewPassword ? "text" : "password"}
                         placeholder="••••••••"
                         {...field}
@@ -162,7 +164,11 @@ function VendorResetPassword() {
                         type="button"
                         onClick={() => setShowNewPassword((s) => !s)}
                         className="absolute inset-y-0 right-3 flex items-center text-muted-foreground"
-                        aria-label={showNewPassword ? "Hide new password" : "Show new password"}
+                        aria-label={
+                          showNewPassword
+                            ? "Hide new password"
+                            : "Show new password"
+                        }
                       >
                         {showNewPassword ? (
                           <EyeOff className="w-4 h-4" />
@@ -186,16 +192,14 @@ function VendorResetPassword() {
                   <FormControl>
                     <div className="relative">
                       <Input
-                        className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3] pr-12"
+                        className="h-11 pr-12"
                         type={showConfirmPassword ? "text" : "password"}
                         placeholder="••••••••"
                         {...field}
                       />
                       <button
                         type="button"
-                        onClick={() =>
-                          setShowConfirmPassword((s) => !s)
-                        }
+                        onClick={() => setShowConfirmPassword((s) => !s)}
                         className="absolute inset-y-0 right-3 flex items-center text-muted-foreground"
                         aria-label={
                           showConfirmPassword
@@ -218,7 +222,7 @@ function VendorResetPassword() {
 
             <Button
               type="submit"
-              className="w-full bg-[#4D37B3] text-white mt-3"
+              className="w-full mt-3"
               disabled={isSubmitting}
             >
               {isSubmitting ? "Updating…" : "Update password"}

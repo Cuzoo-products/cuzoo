@@ -1,10 +1,16 @@
+import { cn } from "@/lib/utils";
 import { SidebarTrigger } from "../ui/sidebar";
 import { Account } from "./Account";
 import { ModeToggle } from "./modeToggle";
 
-function Header() {
+function Header({ className }: { className?: string }) {
   return (
-    <nav className="w-full flex justify-between px-4 py-2">
+    <nav
+      className={cn(
+        "flex w-full justify-between px-4 py-2 md:px-5",
+        className,
+      )}
+    >
       <div>
         <SidebarTrigger />
       </div>

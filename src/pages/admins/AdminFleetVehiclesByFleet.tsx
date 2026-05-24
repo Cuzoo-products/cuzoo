@@ -1,12 +1,8 @@
 import { useMemo } from "react";
-import { useParams, Link } from "react-router";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Link, useParams } from "react-router";
+import NestedAdminPage from "@/components/admin/NestedAdminPage";
+import StatusBadge from "@/components/admin/StatusBadge";
+import { Section } from "@/components/admin/DetailShell";
 import {
   Table,
   TableBody,
@@ -74,6 +70,7 @@ function hasAssignedRiderId(v: FleetVehicleApi): boolean {
 export default function AdminFleetVehiclesByFleet() {
   const { id } = useParams<{ id: string }>();
   const fleetId = id ?? "";
+  const fleetBack = `/admins/fleet_managers/${encodeURIComponent(fleetId)}`;
 
   const { data: payload, isLoading, isError } = useGetVehicleByFleetId(fleetId);
 
@@ -88,136 +85,112 @@ export default function AdminFleetVehiclesByFleet() {
 
   const vehicles = useMemo(() => parseFleetVehicleList(payload), [payload]);
 
-  if (isLoading) {
-    return <Loader />;
-  }
+  const crumbs = [
+    { label: "Dashboard", href: "/admins/dashboard" },
+    { label: "Fleet Managers", href: "/admins/fleet_managers" },
+    { label: "Fleet", href: fleetBack },
+    { label: "Vehicles" },
+  ];
+
+  if (isLoading) return <Loader />;
 
   if (isError) {
     return (
-      <div className="@container/main p-6">
-        <h3 className="!font-bold text-3xl">Fleet vehicles</h3>
-        <p className="mt-2 text-sm text-destructive">
-          Failed to load vehicles for this fleet.
-        </p>
-        <Button asChild variant="outline" className="mt-4">
-          <Link to={`/admins/fleet_managers/${encodeURIComponent(fleetId)}`}>
-            Back to fleet
-          </Link>
-        </Button>
-      </div>
+      <NestedAdminPage
+        backHref={fleetBack}
+        backLabel="Fleet"
+        crumbs={crumbs}
+        title="Fleet vehicles"
+        subtitle="Failed to load vehicles for this fleet."
+      >
+        <></>
+      </NestedAdminPage>
     );
   }
 
+  const subtitle = `Vehicles linked to this fleet manager${
+    meta.count != null ? ` · ${meta.count} total` : ""
+  }${meta.limit != null ? ` (limit ${meta.limit})` : ""}`;
+
   return (
-    <div className="@container/main">
-      <div className="my-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h3 className="!font-bold text-3xl">Fleet vehicles</h3>
-          <p className="text-muted-foreground">
-            Vehicles linked to this fleet manager
-            {meta.count != null ? (
-              <span className="text-foreground"> · {meta.count} total</span>
-            ) : null}
-            {meta.limit != null ? (
-              <span className="text-muted-foreground">
-                {" "}
-                (limit {meta.limit})
-              </span>
-            ) : null}
-            {meta.lastCursor != null ? (
-              <span className="text-muted-foreground text-xs ml-1">
-                · cursor {String(meta.lastCursor)}
-              </span>
-            ) : null}
-          </p>
-        </div>
-        <Button asChild variant="outline" className="shrink-0">
-          <Link to={`/admins/fleet_managers/${encodeURIComponent(fleetId)}`}>
-            Back to fleet
-          </Link>
-        </Button>
-      </div>
-
-      <Card className="bg-secondary">
-        <CardHeader>
-          <CardTitle>Vehicles</CardTitle>
-          <CardDescription>
-            All vehicles returned for company ID{" "}
-            <span className="font-mono text-xs">{fleetId}</span>
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
+    <NestedAdminPage
+      backHref={fleetBack}
+      backLabel="Fleet"
+      crumbs={crumbs}
+      title="Fleet vehicles"
+      subtitle={subtitle}
+    >
+      <Section
+        title="Vehicles"
+        subtitle={`Company ID ${fleetId}`}
+      >
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Plate</TableHead>
+                <TableHead>Model</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead>Year</TableHead>
+                <TableHead>Color</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Assigned</TableHead>
+                <TableHead className="w-[100px]" />
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {vehicles.length === 0 ? (
                 <TableRow>
-                  <TableHead>Plate</TableHead>
-                  <TableHead>Model</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Year</TableHead>
-                  <TableHead>Color</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Assigned</TableHead>
-
-                  <TableHead className="w-[100px]"> </TableHead>
+                  <TableCell
+                    colSpan={8}
+                    className="py-10 text-center text-[var(--admin-text-muted)]"
+                  >
+                    No vehicles for this fleet.
+                  </TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {vehicles.length === 0 ? (
-                  <TableRow>
-                    <TableCell
-                      colSpan={9}
-                      className="text-center text-muted-foreground py-10"
-                    >
-                      No vehicles for this fleet.
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  vehicles.map((v, index) => {
-                    const vid = rowId(v, index);
-                    return (
-                      <TableRow key={vid}>
-                        <TableCell className="font-mono text-sm">
-                          {v.plateNumber ?? "—"}
-                        </TableCell>
-                        <TableCell>{v.model ?? "—"}</TableCell>
-                        <TableCell className="capitalize">
-                          {v.type ?? "—"}
-                        </TableCell>
-                        <TableCell>
-                          {v.year != null ? String(v.year) : "—"}
-                        </TableCell>
-                        <TableCell>{v.color ?? "—"}</TableCell>
-                        <TableCell className="capitalize">
-                          {v.status ?? "—"}
-                        </TableCell>
-                        <TableCell>
-                          {hasAssignedRiderId(v) ? "Yes" : "No"}
-                        </TableCell>
-
-                        <TableCell>
-                          <Button
-                            asChild
-                            variant="ghost"
-                            size="sm"
-                            className="h-8"
+              ) : (
+                vehicles.map((v, index) => {
+                  const vid = rowId(v, index);
+                  return (
+                    <TableRow key={vid}>
+                      <TableCell className="font-mono text-sm">
+                        {v.plateNumber ?? "—"}
+                      </TableCell>
+                      <TableCell>{v.model ?? "—"}</TableCell>
+                      <TableCell className="capitalize">
+                        {v.type ?? "—"}
+                      </TableCell>
+                      <TableCell>
+                        {v.year != null ? String(v.year) : "—"}
+                      </TableCell>
+                      <TableCell>{v.color ?? "—"}</TableCell>
+                      <TableCell>
+                        {v.status ? (
+                          <StatusBadge status={v.status} />
+                        ) : (
+                          "—"
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {hasAssignedRiderId(v) ? "Yes" : "No"}
+                      </TableCell>
+                      <TableCell>
+                        <Button asChild variant="ghost" size="sm" className="h-8">
+                          <Link
+                            to={`/admins/vehicles/${encodeURIComponent(vid)}`}
                           >
-                            <Link
-                              to={`/admins/vehicles/${encodeURIComponent(vid)}`}
-                            >
-                              View
-                            </Link>
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+                            View
+                          </Link>
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      </Section>
+    </NestedAdminPage>
   );
 }

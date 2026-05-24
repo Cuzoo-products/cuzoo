@@ -13,6 +13,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 export type WithdrawPayload = { accountNumber: string; amount: number };
 
@@ -28,6 +29,8 @@ export type WithdrawDialogProps = {
   isPending?: boolean;
   accounts?: WithdrawAccount[];
   disabled?: boolean;
+  triggerClassName?: string;
+  contentClassName?: string;
 };
 
 export function WithdrawDialog({
@@ -36,6 +39,8 @@ export function WithdrawDialog({
   isPending = false,
   accounts = [],
   disabled = false,
+  triggerClassName,
+  contentClassName,
 }: WithdrawDialogProps) {
   const [open, setOpen] = useState(false);
 
@@ -68,9 +73,13 @@ export function WithdrawDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button disabled={disabled}>Withdraw</Button>
+        <Button disabled={disabled} className={triggerClassName}>
+          Withdraw
+        </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent
+        className={cn("sm:max-w-[425px]", contentClassName)}
+      >
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Withdraw Funds</DialogTitle>
@@ -84,7 +93,7 @@ export function WithdrawDialog({
               <select
                 id="accountNumber"
                 name="accountNumber"
-                className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                className="vendor-dialog-select h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 defaultValue=""
                 disabled={accounts.length === 0}
               >

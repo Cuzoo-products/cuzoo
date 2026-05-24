@@ -1,5 +1,6 @@
 import { useMemo } from "react";
-import { Link, useParams } from "react-router";
+import { useParams } from "react-router";
+import NestedAdminPage from "@/components/admin/NestedAdminPage";
 import { DataTable } from "@/components/ui/data-table";
 import {
   columns,
@@ -11,7 +12,6 @@ import {
   type AdminTripListItem,
 } from "@/api/admin/trips/trips";
 import Loader from "@/components/utilities/Loader";
-import { Button } from "@/components/ui/button";
 
 const PACKAGE_ORDER_TYPE = "Package";
 
@@ -121,12 +121,25 @@ export default function IndivdualDriverTrips() {
     return name || "Driver";
   }, [trips]);
 
+  const driverBack = `/admins/drivers/${driverId ?? ""}`;
+  const crumbs = [
+    { label: "Dashboard", href: "/admins/dashboard" },
+    { label: "Riders", href: "/admins/drivers" },
+    { label: "Driver", href: driverBack },
+    { label: "Trips" },
+  ];
+
   if (!driverId) {
     return (
-      <div className="@container/main p-6">
-        <h3 className="!font-bold text-3xl">Driver trips</h3>
-        <p className="mt-2 text-sm text-destructive">No driver ID in the URL.</p>
-      </div>
+      <NestedAdminPage
+        backHref="/admins/drivers"
+        backLabel="Riders"
+        crumbs={crumbs}
+        title="Driver trips"
+        subtitle="No driver ID in the URL."
+      >
+        <></>
+      </NestedAdminPage>
     );
   }
 
@@ -134,42 +147,36 @@ export default function IndivdualDriverTrips() {
 
   if (isError) {
     return (
-      <div className="@container/main p-6">
-        <h3 className="!font-bold text-3xl">Driver trips</h3>
-        <p className="mt-2 text-sm text-destructive">
-          Failed to load trips for this driver.
-        </p>
-        <Button asChild variant="outline" className="mt-4">
-          <Link to={`/admins/drivers/${driverId}`}>Back to driver</Link>
-        </Button>
-      </div>
+      <NestedAdminPage
+        backHref={driverBack}
+        backLabel="Driver"
+        crumbs={crumbs}
+        title="Driver trips"
+        subtitle="Failed to load trips for this driver."
+      >
+        <></>
+      </NestedAdminPage>
     );
   }
 
-  return (
-    <div className="@container/main">
-      <div className="my-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h3 className="!font-bold text-3xl">{driverLabel} trips</h3>
-          <p className="text-muted-foreground">
-            Package trips assigned to this driver
-            {meta.count != null ? (
-              <span className="text-foreground"> · {meta.count} total</span>
-            ) : null}
-            {meta.limit != null ? (
-              <span className="text-muted-foreground">
-                {" "}
-                (limit {meta.limit})
-              </span>
-            ) : null}
-          </p>
-        </div>
-        <Button asChild variant="outline">
-          <Link to={`/admins/drivers/${driverId}`}>Back to driver</Link>
-        </Button>
-      </div>
+  const subtitle = `Package trips assigned to this driver${
+    meta.count != null ? ` · ${meta.count} total` : ""
+  }${meta.limit != null ? ` (limit ${meta.limit})` : ""}`;
 
-      <DataTable columns={columns} data={tableData} />
-    </div>
+  return (
+    <NestedAdminPage
+      backHref={driverBack}
+      backLabel="Driver"
+      crumbs={crumbs}
+      title={`${driverLabel} trips`}
+      subtitle={subtitle}
+    >
+      <DataTable
+        adminVariant
+        searchPlaceholder="Search..."
+        columns={columns}
+        data={tableData}
+      />
+    </NestedAdminPage>
   );
 }

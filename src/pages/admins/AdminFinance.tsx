@@ -1,109 +1,87 @@
-import { Activity, CreditCard, DollarSign, Users } from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import type { ColumnDef } from "@tanstack/react-table";
+import { CreditCard, DollarSign, TrendingUp, Users } from "lucide-react";
+import PageHeader from "@/components/admin/PageHeader";
+import KpiCard from "@/components/admin/KpiCard";
+import StatusBadge from "@/components/admin/StatusBadge";
+import { Section } from "@/components/admin/DetailShell";
+import { DataTable } from "@/components/ui/data-table";
 
-const kpiData = [
-  {
-    title: "Total Revenue",
-    value: "₦455,231.89",
-    change: "+20.1% from last month",
-    icon: <DollarSign className="h-4 w-4 text-muted-foreground" />,
-  },
-  {
-    title: "From Riders",
-    value: "₦9,235",
-    change: "+180.1% from last month",
-    icon: <Users className="h-4 w-4 text-muted-foreground" />,
-  },
-  {
-    title: "From Vendors",
-    value: "₦12,234",
-    change: "+19% from last month",
-    icon: <CreditCard className="h-4 w-4 text-muted-foreground" />,
-  },
-  {
-    title: "From Fleets",
-    value: "₦573",
-    change: "+201 since last hour",
-    icon: <Activity className="h-4 w-4 text-muted-foreground" />,
-  },
+type FinancialRecord = {
+  date: string;
+  type: "InFlow" | "OutFlow";
+  amount: string;
+};
+
+const financialRecordsData: FinancialRecord[] = [
+  { date: "24th, May 2025", type: "InFlow", amount: "₦250.00" },
+  { date: "24th, May 2025", type: "OutFlow", amount: "₦250.00" },
 ];
 
-const financialRecordsData = [
+const columns: ColumnDef<FinancialRecord>[] = [
+  { accessorKey: "date", header: "Date" },
+  { accessorKey: "amount", header: "Amount" },
   {
-    date: "24th, May 2025",
-    type: "InFlow",
-    amount: "$250.00",
-  },
-  {
-    date: "24th, May 2025",
-    type: "OutFlow",
-    amount: "$250.00",
+    accessorKey: "type",
+    header: "Type",
+    cell: ({ row }) => <StatusBadge status={row.original.type} />,
   },
 ];
 
 export default function AdminFinance() {
   return (
-    <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
-      {/* KPI Cards */}
-      <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
-        {kpiData.map((kpi, index) => (
-          <Card key={index} className="py-3 bg-secondary">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0">
-              <CardTitle className="text-sm font-medium">{kpi.title}</CardTitle>
-              {kpi.icon}
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{kpi.value}</div>
-              <p className="text-xs text-muted-foreground">{kpi.change}</p>
-            </CardContent>
-          </Card>
-        ))}
+    <div className="space-y-6">
+      <PageHeader
+        title="Finance"
+        subtitle="Overview of platform financials"
+      />
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <KpiCard
+          icon={<DollarSign className="h-5 w-5 text-[var(--admin-accent)]" />}
+          label="Total Revenue"
+          value={455231.89}
+          prefix="₦"
+          decimals={2}
+          trend="+20.1% from last month"
+          trendColor="success"
+        />
+        <KpiCard
+          icon={<Users className="h-5 w-5 text-[var(--admin-accent)]" />}
+          label="From Riders"
+          value={9235}
+          prefix="₦"
+          trend="+180.1% from last month"
+          trendColor="success"
+        />
+        <KpiCard
+          icon={<CreditCard className="h-5 w-5 text-[var(--admin-accent)]" />}
+          label="From Vendors"
+          value={12234}
+          prefix="₦"
+          trend="+19% from last month"
+          trendColor="success"
+        />
+        <KpiCard
+          icon={<TrendingUp className="h-5 w-5 text-[var(--admin-accent)]" />}
+          label="From Fleets"
+          value={573}
+          prefix="₦"
+          trend="+201 since last hour"
+          trendColor="success"
+        />
       </div>
 
-      <Card className="py-6 bg-secondary">
-        <CardHeader>
-          <CardTitle>Financial Records</CardTitle>
-          <CardDescription>
-            A list of recent financial transactions.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>Amount</TableHead>
-                <TableHead className="text-right">Type</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {financialRecordsData.map((record) => (
-                <TableRow key={record.date}>
-                  <TableCell className="font-medium">{record.date}</TableCell>
-                  <TableCell className="font-medium">{record.amount}</TableCell>
-                  <TableCell className="font-medium text-right">
-                    {record.type}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-    </main>
+      <Section
+        title="Financial Records"
+        subtitle="A list of recent financial transactions."
+      >
+        <DataTable
+          adminVariant
+          searchPlaceholder="Search transactions..."
+          columns={columns}
+          data={financialRecordsData}
+        />
+      </Section>
+    </div>
   );
 }

@@ -1,3 +1,4 @@
+import PageHeader from "@/components/admin/PageHeader";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -163,11 +164,8 @@ export default function VendorProfile() {
 
   if (error || !data?.data) {
     return (
-      <div className="@container/main">
-        <div className="my-6">
-          <h3 className="!font-bold text-3xl">Profile</h3>
-          <p className="text-red-500">Unable to load profile data.</p>
-        </div>
+      <div className="space-y-6">
+        <PageHeader title="Profile" subtitle="Unable to load profile data." />
       </div>
     );
   }
@@ -198,40 +196,44 @@ export default function VendorProfile() {
   ];
 
   return (
-    <div className="@container/main">
-      <div className="my-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h3 className="!font-bold text-3xl">Profile</h3>
-          <p className="text-muted-foreground">Vendor profile</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <Avatar className="h-14 w-14">
-            <AvatarImage src={profile.logo?.url} alt={profile.businessName} />
-            <AvatarFallback>
-              {(profile.businessName || profile.firstName || "V")
-                .substring(0, 2)
-                .toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-          <div>
-            <p className="font-medium">{profile.businessName ?? EM_DASH}</p>
-            <p className="text-xs text-muted-foreground capitalize">
-              {profile.approvalStatus ?? EM_DASH}
-            </p>
+    <div className="space-y-6">
+      <PageHeader
+        title="Profile"
+        subtitle="Vendor profile"
+        actions={
+          <div className="flex items-center gap-3">
+            <Avatar className="h-14 w-14">
+              <AvatarImage src={profile.logo?.url} alt={profile.businessName} />
+              <AvatarFallback>
+                {(profile.businessName || profile.firstName || "V")
+                  .substring(0, 2)
+                  .toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <p className="font-medium">{profile.businessName ?? EM_DASH}</p>
+              <p className="text-xs text-muted-foreground capitalize">
+                {profile.approvalStatus ?? EM_DASH}
+              </p>
+            </div>
           </div>
-        </div>
-      </div>
+        }
+      />
 
       <div className="space-y-6 max-w-5xl mx-auto">
-        <Card className="bg-secondary py-4">
+        <Card className="py-4">
           <CardHeader>
             <CardTitle>Account</CardTitle>
-            <CardDescription>Core account and verification details.</CardDescription>
+            <CardDescription>
+              Core account and verification details.
+            </CardDescription>
           </CardHeader>
           <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
             <div>
               <p className="text-muted-foreground text-xs">Vendor ID</p>
-              <p className="font-mono break-all">{profile.Id ?? profile.id ?? EM_DASH}</p>
+              <p className="font-mono break-all">
+                {profile.Id ?? profile.id ?? EM_DASH}
+              </p>
             </div>
             <div>
               <p className="text-muted-foreground text-xs">Full name</p>
@@ -251,7 +253,9 @@ export default function VendorProfile() {
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant={profile.emailVerified ? "default" : "secondary"}>
-                {profile.emailVerified ? "Email verified" : "Email not verified"}
+                {profile.emailVerified
+                  ? "Email verified"
+                  : "Email not verified"}
               </Badge>
               {!profile.emailVerified ? (
                 <Button
@@ -265,29 +269,37 @@ export default function VendorProfile() {
               ) : null}
             </div>
             <div className="flex flex-wrap items-center gap-2 sm:col-span-2">
-             
-              {profile.suspended ? <Badge variant="destructive">Suspended</Badge> : null}
-             
+              {profile.suspended ? (
+                <Badge variant="destructive">Suspended</Badge>
+              ) : null}
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-secondary py-4">
+        <Card className="py-4">
           <CardHeader>
             <CardTitle>Business</CardTitle>
-            <CardDescription>Registration and offering details.</CardDescription>
+            <CardDescription>
+              Registration and offering details.
+            </CardDescription>
           </CardHeader>
           <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
             <div>
-              <p className="text-muted-foreground text-xs">Registration number</p>
+              <p className="text-muted-foreground text-xs">
+                Registration number
+              </p>
               <p>{profile.registrationNumber ?? EM_DASH}</p>
             </div>
             <div>
-              <p className="text-muted-foreground text-xs">Date of incorporation</p>
+              <p className="text-muted-foreground text-xs">
+                Date of incorporation
+              </p>
               <p>{formatDate(profile.dateOfIncorporation)}</p>
             </div>
             <div>
-              <p className="text-muted-foreground text-xs">Place of incorporation</p>
+              <p className="text-muted-foreground text-xs">
+                Place of incorporation
+              </p>
               <p>{profile.placeOfIncorporation ?? EM_DASH}</p>
             </div>
             <div>
@@ -295,16 +307,20 @@ export default function VendorProfile() {
               <p>{profile.businessType ?? EM_DASH}</p>
             </div>
             <div className="sm:col-span-2">
-              <p className="text-muted-foreground text-xs">Type of goods sold</p>
+              <p className="text-muted-foreground text-xs">
+                Type of goods sold
+              </p>
               <p>{profile.typeOfGoodsSold ?? EM_DASH}</p>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-secondary py-4">
+        <Card className="py-4">
           <CardHeader>
             <CardTitle>Address</CardTitle>
-            <CardDescription>Location and place details from your profile.</CardDescription>
+            <CardDescription>
+              Location and place details from your profile.
+            </CardDescription>
           </CardHeader>
           <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
             <div className="sm:col-span-2">
@@ -319,7 +335,7 @@ export default function VendorProfile() {
               <p className="text-muted-foreground text-xs">Description</p>
               <p>{addr?.description ?? EM_DASH}</p>
             </div>
-            
+
             <div>
               <p className="text-muted-foreground text-xs">Landmark</p>
               <p>{addr?.landMark ?? EM_DASH}</p>
@@ -337,7 +353,9 @@ export default function VendorProfile() {
               <p>{addr?.direction ?? EM_DASH}</p>
             </div>
             <div>
-              <p className="text-muted-foreground text-xs">Distance / duration</p>
+              <p className="text-muted-foreground text-xs">
+                Distance / duration
+              </p>
               <p>
                 {addr?.distance != null || addr?.duration != null
                   ? `${addr?.distance ?? EM_DASH} / ${addr?.duration ?? EM_DASH}`
@@ -345,15 +363,20 @@ export default function VendorProfile() {
               </p>
             </div>
             <div>
-              <p className="text-muted-foreground text-xs">Coordinates (lat, lng)</p>
+              <p className="text-muted-foreground text-xs">
+                Coordinates (lat, lng)
+              </p>
               <p className="font-mono text-xs">
-                {formatCoord(addr?.geometry?.location?.lat, addr?.geometry?.location?.lng)}
+                {formatCoord(
+                  addr?.geometry?.location?.lat,
+                  addr?.geometry?.location?.lng,
+                )}
               </p>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-secondary py-4">
+        <Card className="py-4">
           <CardHeader>
             <CardTitle>Contact</CardTitle>
             <CardDescription>Phone numbers on file.</CardDescription>
@@ -367,7 +390,7 @@ export default function VendorProfile() {
               <p className="text-muted-foreground text-xs">National</p>
               <p>{profile.phoneNumber?.nationalFormat ?? EM_DASH}</p>
             </div>
-           
+
             <div>
               <p className="text-muted-foreground text-xs">Country code</p>
               <p>{profile.phoneNumber?.countryCode ?? EM_DASH}</p>
@@ -375,7 +398,7 @@ export default function VendorProfile() {
           </CardContent>
         </Card>
 
-        <Card className="bg-secondary py-4">
+        <Card className="py-4">
           <CardHeader>
             <CardTitle>Proprietor</CardTitle>
             <CardDescription>Registered proprietor details.</CardDescription>
@@ -394,22 +417,26 @@ export default function VendorProfile() {
               <p>{profile.proprietor?.state ?? EM_DASH}</p>
             </div>
             <div className="sm:col-span-2">
-              <p className="text-muted-foreground text-xs">Residential address</p>
+              <p className="text-muted-foreground text-xs">
+                Residential address
+              </p>
               <p>{profile.proprietor?.residentialAddress ?? EM_DASH}</p>
             </div>
             <div className="sm:col-span-2">
               <p className="text-muted-foreground text-xs">Declaration</p>
-              <p className="whitespace-pre-wrap">{profile.proprietor?.declaration ?? EM_DASH}</p>
+              <p className="whitespace-pre-wrap">
+                {profile.proprietor?.declaration ?? EM_DASH}
+              </p>
             </div>
           </CardContent>
         </Card>
 
-        
-
-        <Card className="bg-secondary py-4">
+        <Card className="py-4">
           <CardHeader>
             <CardTitle>Verification documents</CardTitle>
-            <CardDescription>KYC assets linked to this vendor profile.</CardDescription>
+            <CardDescription>
+              KYC assets linked to this vendor profile.
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <Table>
@@ -424,7 +451,10 @@ export default function VendorProfile() {
               <TableBody>
                 {docs.filter(([, d]) => d?.url).length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center text-muted-foreground">
+                    <TableCell
+                      colSpan={4}
+                      className="text-center text-muted-foreground"
+                    >
                       No document URLs on file.
                     </TableCell>
                   </TableRow>
@@ -434,13 +464,19 @@ export default function VendorProfile() {
                     .map(([name, d]) => (
                       <TableRow key={name}>
                         <TableCell>{name}</TableCell>
-                        <TableCell className="hidden sm:table-cell">{d?.type ?? EM_DASH}</TableCell>
+                        <TableCell className="hidden sm:table-cell">
+                          {d?.type ?? EM_DASH}
+                        </TableCell>
                         <TableCell className="hidden md:table-cell max-w-[220px] truncate text-muted-foreground">
                           {d?.path ?? EM_DASH}
                         </TableCell>
                         <TableCell className="text-right">
                           <Button asChild variant="outline" size="sm">
-                            <a href={d?.url} target="_blank" rel="noopener noreferrer">
+                            <a
+                              href={d?.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
                               View
                             </a>
                           </Button>
@@ -453,7 +489,7 @@ export default function VendorProfile() {
           </CardContent>
         </Card>
 
-        <Card className="bg-secondary py-4">
+        <Card className="py-4">
           <CardHeader>
             <CardTitle>Timestamps</CardTitle>
           </CardHeader>

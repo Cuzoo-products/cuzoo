@@ -1,3 +1,4 @@
+import { FleetFileInput } from "@/components/fleet/FleetFileInput";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -96,16 +97,17 @@ function AddVehicles() {
   }
 
   return (
-    <div className="@container/main">
-      <div className="my-6">
-        <h3 className="!font-bold text-3xl">Add Vehicle</h3>
-        <p>Add to your fleet of vehicles</p>
-      </div>
-      <div className="bg-secondary md:w-3/4 mx-auto py-10 rounded-2xl mb-10">
+    <div className="fleet-form-page">
+      <div className="fleet-form-shell fleet-form-shell--wide">
+        <div className="fleet-form-header">
+          <h1>Add vehicle</h1>
+          <p>Add to your fleet of vehicles</p>
+        </div>
+        <div className="fleet-form-card">
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
-            className="w-4/5 md:w-3/4 lg:w-2/3 space-y-6 mx-auto"
+            className="space-y-6"
           >
             <FormField
               control={form.control}
@@ -115,10 +117,10 @@ function AddVehicles() {
                   <FormLabel>Vehicle Type</FormLabel>
                   <FormControl>
                     <Select onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger className="h-11 w-full border-[#d6d6d6]">
+                      <SelectTrigger className="fleet-form-control w-full">
                         <SelectValue placeholder="Select Vehicle type" />
                       </SelectTrigger>
-                      <SelectContent className="bg-background border-0 shadow-accent shadow-sm">
+                      <SelectContent className="fleet-select-menu">
                         <SelectItem value="car">Car</SelectItem>
                         <SelectItem value="bike">Bike</SelectItem>
                         <SelectItem value="truck">Truck</SelectItem>
@@ -142,7 +144,7 @@ function AddVehicles() {
                   <FormControl>
                     <Input
                       placeholder="Corolla, F-150, etc."
-                      className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
+                      className="h-11"
                       {...field}
                     />
                   </FormControl>
@@ -163,7 +165,7 @@ function AddVehicles() {
                       min="1900"
                       max={new Date().getFullYear() + 1}
                       placeholder="2024"
-                      className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
+                      className="h-11"
                       {...field}
                       onChange={(e) =>
                         field.onChange(parseInt(e.target.value) || 0)
@@ -184,7 +186,7 @@ function AddVehicles() {
                   <FormControl>
                     <Input
                       placeholder="Red, Blue, White, etc."
-                      className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
+                      className="h-11"
                       {...field}
                     />
                   </FormControl>
@@ -202,7 +204,7 @@ function AddVehicles() {
                   <FormControl>
                     <Input
                       placeholder="EKY 345 XV"
-                      className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
+                      className="h-11"
                       {...field}
                     />
                   </FormControl>
@@ -218,12 +220,8 @@ function AddVehicles() {
                 <FormItem>
                   <FormLabel>Vehicle Image</FormLabel>
                   <FormControl>
-                    <Input
-                      type="file"
-                      accept="image/*"
-                      className="h-11 border-[#d6d6d6] focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
-                      onChange={async (e) => {
-                        const file = e.target.files?.[0];
+                    <FleetFileInput
+                      onFileSelect={async (file) => {
                         if (file) {
                           try {
                             const base64 = await fileToBase64(file);
@@ -249,10 +247,10 @@ function AddVehicles() {
                   <FormLabel>Vehicle Status</FormLabel>
                   <FormControl>
                     <Select onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger className="h-11 w-full border-[#d6d6d6]">
+                      <SelectTrigger className="fleet-form-control w-full">
                         <SelectValue placeholder="Select Vehicle Status" />
                       </SelectTrigger>
-                      <SelectContent className="bg-background border-0 shadow-accent shadow-sm">
+                      <SelectContent className="fleet-select-menu">
                         <SelectItem value="available">Available</SelectItem>
                         <SelectItem value="in use">In Use</SelectItem>
                         <SelectItem value="under maintenance">
@@ -280,7 +278,7 @@ function AddVehicles() {
                           variant="outline"
                           role="combobox"
                           className={cn(
-                            "w-full justify-between bg-transparent border-[#d6d6d6]",
+                            "fleet-form-control w-full justify-between",
                             !field.value && "text-muted-foreground",
                           )}
                         >
@@ -293,7 +291,7 @@ function AddVehicles() {
                         </Button>
                       </FormControl>
                     </PopoverTrigger>
-                    <PopoverContent className="w-full bg-background border-0 shadow-accent shadow-sm p-0">
+                    <PopoverContent className="fleet-combobox-menu w-full p-0">
                       <Command>
                         <CommandInput
                           placeholder="Search driver..."
@@ -347,12 +345,13 @@ function AddVehicles() {
             <Button
               type="submit"
               disabled={isPending}
-              className="w-full mt-3 h-11 bg-[#4D37B3] text-white"
+              className="fleet-form-submit mt-3"
             >
               {isPending ? "Submitting..." : "Submit"}
             </Button>
           </form>
         </Form>
+        </div>
       </div>
     </div>
   );

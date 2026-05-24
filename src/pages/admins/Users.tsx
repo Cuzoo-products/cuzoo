@@ -1,3 +1,4 @@
+import PageHeader from "@/components/admin/PageHeader";
 import { DataTable } from "@/components/ui/data-table";
 import { columns } from "@/components/utilities/Admins/UsersDataTable";
 import { useUsers } from "@/api/admin/users/useUsers";
@@ -10,13 +11,12 @@ function Users() {
     return <Loader />;
   }
   return (
-    <div className="@container/main">
-      <div className="my-6">
-        <h3 className="!font-bold text-3xl">Users</h3>
-        <p>Manage all users data and information</p>
-      </div>
-
-      <DataTable columns={columns} data={users?.data?.data} />
+    <div className="space-y-5">
+      <PageHeader
+        title="Users"
+        subtitle="Manage all users data and information"
+      />
+      <DataTable adminVariant searchPlaceholder="Search..." columns={columns} data={users?.data?.data} />
     </div>
   );
 }

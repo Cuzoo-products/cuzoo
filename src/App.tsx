@@ -11,7 +11,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { LoginFormSchema } from "@/lib/zodVaildation";
 import Image from "./components/ui/image";
 import logo1 from "@/assets/logo2.png";
@@ -20,7 +19,6 @@ import { useDispatch } from "react-redux";
 import { login } from "@/redux/slices/authSlice";
 import { useGetUserDetails } from "@/api/shared/useAuth";
 import { Link, useNavigate } from "react-router";
-
 import { auth } from "./firebase";
 import {
   signInWithEmailAndPassword,
@@ -28,7 +26,10 @@ import {
   type User,
 } from "firebase/auth";
 import Loader from "./components/utilities/Loader";
-import { Eye, EyeOff } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Loader2 } from "lucide-react";
+
+const AUTH_INPUT_CLASS =
+  "h-12 w-full rounded-lg border border-[var(--auth-border)] bg-[var(--auth-bg-card-alt)] px-4 text-sm text-[var(--auth-text-primary)] placeholder:text-[var(--auth-text-muted)] focus:border-[var(--auth-accent)] focus:outline-none";
 
 function App() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -37,10 +38,9 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
 
-  // Listen to Firebase auth state changes
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user ?? null);
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      setUser(firebaseUser ?? null);
       setLoading(false);
     });
     return unsubscribe;
@@ -49,7 +49,6 @@ function App() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  // Get user details after Firebase authentication
   const {
     data: userDetails,
     isLoading: isLoadingUserDetails,
@@ -68,8 +67,6 @@ function App() {
     const handleUserLogin = async () => {
       if (user && userDetails) {
         try {
-          // Dispatch Redux login action with user data only
-          // Token is handled directly by Firebase in axios interceptor
           dispatch(
             login({
               user: {
@@ -83,15 +80,12 @@ function App() {
             }),
           );
 
-          // Check if user needs KYC verification (only for fleet and vendor)
           const needsKyc =
             userDetails.data.approvalStatus !== "approved" &&
             (userDetails.data.type === "fleet" ||
               userDetails.data.type === "vendor");
 
-          // Navigate based on user type and verification status
           if (needsKyc) {
-            // Redirect to KYC page if not verified
             switch (userDetails.data.type) {
               case "fleet":
                 navigate("/fleetkyc");
@@ -101,7 +95,6 @@ function App() {
                 break;
             }
           } else {
-            // Navigate to dashboard if verified or admin
             switch (userDetails.data.type) {
               case "fleet":
                 navigate("/fleet/dashboard");
@@ -116,9 +109,9 @@ function App() {
                 toast.error("Unknown user type");
             }
           }
-        } catch (error) {
+        } catch (err) {
           toast.error(
-            error instanceof Error ? error.message : "Failed to get user data",
+            err instanceof Error ? err.message : "Failed to get user data",
           );
         }
       }
@@ -130,13 +123,12 @@ function App() {
   async function onSubmit(data: z.infer<typeof LoginFormSchema>) {
     try {
       setIsSubmitting(true);
-      setError(null); // Clear previous errors
+      setError(null);
       await signInWithEmailAndPassword(auth, data.email, data.password);
       await refetchUserDetails();
       toast.success("Login successful! Welcome back!");
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Login failed";
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Login failed";
       toast.error(errorMessage);
       setError(errorMessage);
     } finally {
@@ -144,112 +136,142 @@ function App() {
     }
   }
 
-  // Show loading state while checking authentication
   if (loading || isLoadingUserDetails) {
     return <Loader />;
   }
 
-  // If user is authenticated, they will be redirected by useEffect
-  // So we only show login form for unauthenticated users
-
   return (
-    <div className="bg-background h-screen px-3 md:px-0 flex justify-center my-10 items-center">
-      <div className="w-full md:w-1/2 rounded-2xl">
-        <div className="bg-secondary shadow-md py-7 rounded">
-          <div className="flex justify-center items-center">
-            <Image source={logo1} alt="" className="w-16 h-16" />
-          </div>
-          <div className="text-center mt-1 mb-10">
-            <h2 className="text-2xl font-bold">Login</h2>
-            <p>Welcome back!👋🏽</p>
-          </div>
-          <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(onSubmit)}
-              className="w-3/4 lg:w-2/3 space-y-6 mx-auto"
-            >
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Enter mail</FormLabel>
-                    <FormControl>
-                      <Input
-                        className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
-                        type="email"
-                        placeholder="johndoe@example.com"
+    <main className="auth-portal relative flex min-h-screen flex-col items-center justify-center p-6">
+      <a
+        href="https://cuzoo.com"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="absolute left-4 top-4 flex items-center gap-1.5 text-sm text-[var(--auth-text-muted)] transition-colors hover:text-[var(--auth-text-primary)]"
+      >
+        <ArrowLeft size={14} />
+        Back to Website
+      </a>
+
+      <div className="w-full max-w-[480px] rounded-xl border border-[var(--auth-border)] bg-[var(--auth-bg-card)] p-8 shadow-2xl">
+        <div className="mb-8 flex flex-col items-center space-y-3 text-center">
+          <Image
+            source={logo1}
+            alt="Cuzoo"
+            className="h-16 w-16 rounded-2xl object-contain"
+          />
+          <h1 className="text-2xl font-bold text-[var(--auth-text-primary)]">
+            Login
+          </h1>
+          <p className="text-sm text-[var(--auth-text-muted)]">
+            Welcome back! 👋
+          </p>
+        </div>
+
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem className="space-y-2">
+                  <FormLabel className="text-sm font-medium text-[var(--auth-text-primary)]">
+                    Enter mail
+                  </FormLabel>
+                  <FormControl>
+                    <input
+                      type="email"
+                      autoComplete="email"
+                      placeholder="johndoe@example.com"
+                      className={AUTH_INPUT_CLASS}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage className="text-red-500" />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem className="space-y-2">
+                  <FormLabel className="text-sm font-medium text-[var(--auth-text-primary)]">
+                    Password
+                  </FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        autoComplete="current-password"
+                        placeholder="••••••••"
+                        className={`${AUTH_INPUT_CLASS} pr-11`}
                         {...field}
                       />
-                    </FormControl>
-                    <FormMessage className="text-red-600" />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Input
-                          className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3] pr-12"
-                          type={showPassword ? "text" : "password"}
-                          placeholder="••••••••"
-                          {...field}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword((s) => !s)}
-                          className="absolute inset-y-0 right-3 flex items-center text-muted-foreground"
-                          aria-label={
-                            showPassword ? "Hide password" : "Show password"
-                          }
-                        >
-                          {showPassword ? (
-                            <EyeOff className="w-4 h-4" />
-                          ) : (
-                            <Eye className="w-4 h-4" />
-                          )}
-                        </button>
-                      </div>
-                    </FormControl>
-                    <FormMessage className="text-red-600" />
-                  </FormItem>
-                )}
-              />
-
-              <div className="flex justify-end -mt-2">
-                <Link
-                  to="/forgot-password"
-                  className="text-sm text-[#4D37B3] hover:underline"
-                >
-                  Forgot password?
-                </Link>
-              </div>
-
-              <Button
-                type="submit"
-                disabled={isSubmitting || loading}
-                className="w-full mt-3 h-11 bg-[#4D37B3] text-white disabled:opacity-50"
-              >
-                {isSubmitting ? "Signing in..." : "Sign In"}
-              </Button>
-
-              {error && (
-                <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
-                  <p className="text-red-600 text-sm">{error}</p>
-                </div>
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword((s) => !s)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--auth-text-muted)] hover:text-[var(--auth-text-primary)]"
+                        aria-label={
+                          showPassword ? "Hide password" : "Show password"
+                        }
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </button>
+                    </div>
+                  </FormControl>
+                  <FormMessage className="text-red-500" />
+                </FormItem>
               )}
-            </form>
-          </Form>
-        </div>
-        <p className="text-center mt-5">©2025 Cuzoo. All Rights reserved.</p>
+            />
+
+            <div className="flex justify-end">
+              <Link
+                to="/forgot-password"
+                className="text-sm text-[var(--auth-accent)] hover:text-[var(--auth-accent-hover)]"
+              >
+                Forgot password?
+              </Link>
+            </div>
+
+            <Button
+              type="submit"
+              disabled={isSubmitting || loading}
+              className="flex h-12 w-full items-center justify-center rounded-lg bg-[var(--auth-accent)] font-semibold text-white hover:bg-[var(--auth-accent-hover)] disabled:opacity-70"
+            >
+              {isSubmitting ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                "Sign In"
+              )}
+            </Button>
+
+            {error && (
+              <p className="text-center text-sm text-[var(--auth-danger)]">
+                {error}
+              </p>
+            )}
+          </form>
+        </Form>
+
+        <p className="mt-6 text-center text-xs text-[var(--auth-text-muted)]">
+          ©2025 Cuzoo. All Rights Reserved.
+        </p>
       </div>
-    </div>
+
+      <a
+        href="https://cuzoo.com"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="mt-6 text-xs text-[var(--auth-text-muted)] transition-colors hover:text-[var(--auth-text-primary)]"
+      >
+        ← Back to Cuzoo website
+      </a>
+    </main>
   );
 }
 

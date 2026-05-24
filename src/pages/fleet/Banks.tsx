@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import PageHeader from "@/components/admin/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -122,13 +123,11 @@ export default function Banks() {
   };
 
   return (
-    <div className="@container/main">
-      <div className="my-6">
-        <h3 className="!font-bold text-3xl">Banks</h3>
-        <p className="text-muted-foreground">
-          Manage payout bank accounts for your fleet.
-        </p>
-      </div>
+    <div className="space-y-5">
+      <PageHeader
+        title="Banks"
+        subtitle="Manage payout bank accounts for your fleet."
+      />
 
       <div className="grid gap-4 lg:grid-cols-3">
         <Card className="bg-secondary lg:col-span-1">

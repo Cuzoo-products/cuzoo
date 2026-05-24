@@ -1,3 +1,4 @@
+import { FleetFileInput } from "@/components/fleet/FleetFileInput";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -97,16 +98,17 @@ function AddDriver() {
   }
 
   return (
-    <div className="@container/main">
-      <div className="my-6">
-        <h3 className="!font-bold text-3xl">Drivers</h3>
-        <p>Add to your list of drivers</p>
-      </div>
-      <div className="bg-secondary md:w-3/4 mx-auto py-10 rounded-2xl mb-10">
+    <div className="fleet-form-page">
+      <div className="fleet-form-shell fleet-form-shell--wide">
+        <div className="fleet-form-header">
+          <h1>Add driver</h1>
+          <p>Add to your list of drivers</p>
+        </div>
+        <div className="fleet-form-card">
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
-            className="w-4/5 md:w-3/4 lg:w-2/3 space-y-6 mx-auto"
+            className="space-y-6"
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField
@@ -117,7 +119,7 @@ function AddDriver() {
                     <FormLabel>First Name</FormLabel>
                     <FormControl>
                       <Input
-                        className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
+                        className="h-11"
                         placeholder="John"
                         {...field}
                       />
@@ -135,7 +137,7 @@ function AddDriver() {
                     <FormLabel>Last Name</FormLabel>
                     <FormControl>
                       <Input
-                        className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
+                        className="h-11"
                         placeholder="Doe"
                         {...field}
                       />
@@ -158,7 +160,7 @@ function AddDriver() {
                         type="tel"
                         autoComplete="tel"
                         placeholder="+2348031234567"
-                        className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
+                        className="h-11"
                         {...field}
                       />
                     </FormControl>
@@ -181,10 +183,10 @@ function AddDriver() {
                         onValueChange={field.onChange}
                         value={field.value}
                       >
-                        <SelectTrigger className="h-11 w-full border-[#d6d6d6]">
+                        <SelectTrigger className="fleet-form-control w-full">
                           <SelectValue placeholder="Select gender" />
                         </SelectTrigger>
-                        <SelectContent className="bg-background">
+                        <SelectContent className="fleet-select-menu">
                           <SelectItem value="Male">Male</SelectItem>
                           <SelectItem value="Female">Female</SelectItem>
                         </SelectContent>
@@ -205,7 +207,7 @@ function AddDriver() {
                   <FormControl>
                     <Input
                       type="date"
-                      className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
+                      className="h-11"
                       {...field}
                     />
                   </FormControl>
@@ -225,7 +227,7 @@ function AddDriver() {
                       type="tel"
                       autoComplete="tel"
                       placeholder="+2349021234567"
-                      className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
+                      className="h-11"
                       {...field}
                     />
                   </FormControl>
@@ -267,12 +269,8 @@ function AddDriver() {
                   <FormItem>
                     <FormLabel>Passport Image</FormLabel>
                     <FormControl>
-                      <Input
-                        type="file"
-                        accept="image/*"
-                        className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
-                        onChange={async (e) => {
-                          const file = e.target.files?.[0];
+                      <FleetFileInput
+                        onFileSelect={async (file) => {
                           if (file) {
                             try {
                               const base64 = await fileToBase64(file);
@@ -300,12 +298,8 @@ function AddDriver() {
                   <FormItem>
                     <FormLabel>Driver's License Image</FormLabel>
                     <FormControl>
-                      <Input
-                        type="file"
-                        accept="image/*"
-                        className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
-                        onChange={async (e) => {
-                          const file = e.target.files?.[0];
+                      <FleetFileInput
+                        onFileSelect={async (file) => {
                           if (file) {
                             try {
                               const base64 = await fileToBase64(file);
@@ -343,7 +337,7 @@ function AddDriver() {
                           role="combobox"
                           disabled={vehiclesLoading}
                           className={cn(
-                            "w-full justify-between bg-transparent border-[#d6d6d6]",
+                            "fleet-form-control w-full justify-between",
                             !field.value && "text-muted-foreground",
                           )}
                         >
@@ -358,7 +352,7 @@ function AddDriver() {
                         </Button>
                       </FormControl>
                     </PopoverTrigger>
-                    <PopoverContent className="w-full bg-background border-0 shadow-accent shadow-sm p-0">
+                    <PopoverContent className="fleet-combobox-menu w-full p-0">
                       <Command>
                         <CommandInput
                           placeholder="Search vehicles..."
@@ -412,12 +406,13 @@ function AddDriver() {
             <Button
               type="submit"
               disabled={isPending}
-              className="w-full mt-3 h-11 bg-[#4D37B3] text-white"
+              className="fleet-form-submit mt-3"
             >
               {isPending ? "Submitting..." : "Submit"}
             </Button>
           </form>
         </Form>
+        </div>
       </div>
     </div>
   );

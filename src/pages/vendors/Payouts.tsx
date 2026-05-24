@@ -1,4 +1,5 @@
 import { useGetPayouts } from "@/api/vendor/finance/useFinance";
+import PageHeader from "@/components/admin/PageHeader";
 import { DataTable } from "@/components/ui/data-table";
 import {
   columns,
@@ -6,7 +7,6 @@ import {
 } from "@/components/utilities/Vendors/PayoutsDataTable";
 import Loader from "@/components/utilities/Loader";
 import { payoutRecordId } from "@/lib/payoutId";
-
 
 export type PayoutsListResponse = {
   success: boolean;
@@ -61,7 +61,9 @@ const formatRequestedAt = (value: string) => {
   }
 };
 
-const formatBankAccount = (details: { bankName: string; accountNumber: string } | undefined) => {
+const formatBankAccount = (
+  details: { bankName: string; accountNumber: string } | undefined,
+) => {
   if (!details) return "—";
   const last4 = details.accountNumber?.slice(-4) ?? "****";
   return `${details.bankName} ****${last4}`;
@@ -90,23 +92,28 @@ function VendorPayouts() {
 
   if (error) {
     return (
-      <div className="@container/main">
-        <div className="my-6">
-          <h3 className="!font-bold text-3xl">Payouts</h3>
-          <p className="text-red-500">Failed to load payouts.</p>
-        </div>
+      <div className="space-y-6">
+        <PageHeader
+          title="Payouts"
+          subtitle="Failed to load payouts."
+        />
       </div>
     );
   }
 
   return (
-    <div className="@container/main">
-      <div className="my-6">
-        <h3 className="!font-bold text-3xl">Payouts</h3>
-        <p className="text-muted-foreground">View your payout requests and status</p>
-      </div>
+    <div className="space-y-6">
+      <PageHeader
+        title="Payouts"
+        subtitle="Track your payout requests"
+      />
 
-      <DataTable columns={columns} data={tableData} />
+      <DataTable
+        adminVariant
+        searchPlaceholder="Search payouts..."
+        columns={columns}
+        data={tableData}
+      />
     </div>
   );
 }

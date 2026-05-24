@@ -132,7 +132,7 @@ export default function VehicleInfo({
   const modelLabel = vehicle.model || "—";
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
+    <div className="fleet-detail-stack">
       {/* Hero card with image or placeholder */}
       <Card className="overflow-hidden py-4">
         <div className="bg-muted/50">
@@ -226,10 +226,10 @@ export default function VehicleInfo({
               onValueChange={handleStatusChange}
               disabled={isUpdatingStatus}
             >
-              <SelectTrigger className="w-full sm:max-w-xs">
+              <SelectTrigger className="fleet-form-control w-full sm:max-w-xs">
                 <SelectValue placeholder="Select status" />
               </SelectTrigger>
-              <SelectContent className="bg-secondary">
+              <SelectContent className="fleet-select-menu">
                 <SelectItem value="available">Available</SelectItem>
                 <SelectItem value="in use">In use</SelectItem>
                 <SelectItem value="under maintenance">

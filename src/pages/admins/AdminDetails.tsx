@@ -18,6 +18,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useGetAdmin, useToggleReleaseAdmin } from "@/api/admin/admin/useAdmin";
 import { useParams } from "react-router";
 import Loader from "@/components/utilities/Loader";
+import PageHeader from "@/components/admin/PageHeader";
+import StatusBadge from "@/components/admin/StatusBadge";
+import { DetailShell } from "@/components/admin/DetailShell";
 
 const AVAILABLE_ROLES: string[] = [
   "Admin",
@@ -125,15 +128,28 @@ function AdminDetails() {
 
   if (isLoading) return <Loader />;
 
-  return (
-    <div>
-      <div className="my-6">
-        <h3 className="!font-bold text-3xl">John Doe</h3>
-        <p>Manage John Doe here</p>
-      </div>
+  const adminName =
+    `${adminData.firstName || ""} ${adminData.lastName || ""}`.trim() ||
+    "Admin";
 
-      <div className="bg-background min-h-screen p-4 sm:p-6 lg:p-8">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
+  return (
+    <DetailShell
+      backHref="/admins/admins"
+      backLabel="Admins"
+      crumbs={[
+        { label: "Dashboard", href: "/admins/dashboard" },
+        { label: "Admins", href: "/admins/admins" },
+        { label: adminName },
+      ]}
+    >
+      <PageHeader
+        title={adminName}
+        subtitle="Manage admin account and permissions"
+        actions={
+          <StatusBadge status={isAccountActive ? "active" : "suspended"} />
+        }
+      />
+      <div className="mx-auto grid max-w-7xl grid-cols-1 gap-8 lg:grid-cols-3">
           {/* Left Column: Admin Info */}
           <div className="lg:col-span-1 space-y-8">
             <Card className="bg-secondary">
@@ -316,8 +332,7 @@ function AdminDetails() {
             </Card>
           </div>
         </div>
-      </div>
-    </div>
+    </DetailShell>
   );
 }
 

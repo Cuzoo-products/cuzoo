@@ -1,4 +1,5 @@
 import { useGetOrders } from "@/api/vendor/order/useOrder";
+import PageHeader from "@/components/admin/PageHeader";
 import { DataTable } from "@/components/ui/data-table";
 import {
   Select,
@@ -73,27 +74,31 @@ function Orders() {
   if (isLoading) return <Loader />;
 
   return (
-    <div className="@container/main">
-      <div className="my-6">
-        <h3 className="!font-bold text-3xl">Orders</h3>
-        <p>Manage all orders here</p>
-      </div>
+    <div className="space-y-6">
+      <PageHeader
+        title="Orders"
+        subtitle="Manage all orders here"
+        actions={
+          <Select onValueChange={(value) => setValue(value)} value={value}>
+            <SelectTrigger className="h-11 w-[180px]">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent className="vendor-select-menu">
+              <SelectItem value="Pending">Pending</SelectItem>
+              <SelectItem value="Ongoing">Ongoing</SelectItem>
+              <SelectItem value="Completed">Completed</SelectItem>
+              <SelectItem value="All">All</SelectItem>
+            </SelectContent>
+          </Select>
+        }
+      />
 
-      <div className="md:absolute right-25 my-5 md:my-0">
-        <Select onValueChange={(value) => setValue(value)} value={value}>
-          <SelectTrigger className="h-11 w-full border-[#d6d6d6]">
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent className="rounded bg-background border-0 shadow-accent shadow-sm">
-            <SelectItem value="Pending">Pending</SelectItem>
-            <SelectItem value="Ongoing">Ongoing</SelectItem>
-            <SelectItem value="Completed">Completed</SelectItem>
-            <SelectItem value="All">All</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <DataTable columns={columns} data={filteredData} />
+      <DataTable
+        adminVariant
+        searchPlaceholder="Search orders..."
+        columns={columns}
+        data={filteredData}
+      />
     </div>
   );
 }

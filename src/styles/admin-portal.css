@@ -1,0 +1,425 @@
+/* Admin portal design — ported from cuzoo-admin-main */
+
+.admin-portal {
+  --admin-bg-base: #0d1117;
+  --admin-bg-sidebar: #0d1117;
+  --admin-bg-card: #161b22;
+  --admin-bg-card-alt: #1c2128;
+  --admin-text-primary: #e6edf3;
+  --admin-text-muted: #7d8590;
+  --admin-accent: #6e56cf;
+  --admin-accent-hover: #7c66dc;
+  --admin-border: #30363d;
+  --admin-success: #3fb950;
+  --admin-warning: #d29922;
+  --admin-danger: #f85149;
+  --admin-sidebar-bg: var(--admin-bg-sidebar);
+  --admin-sidebar-fg: var(--admin-text-primary);
+  --admin-sidebar-muted: var(--admin-text-muted);
+  --admin-sidebar-border: var(--admin-border);
+  --admin-sidebar-primary: #6e56cf;
+  --admin-sidebar-primary-fg: #ffffff;
+  --admin-sidebar-accent: var(--admin-bg-card-alt);
+  --admin-sidebar-accent-fg: var(--admin-text-primary);
+  --admin-header-bg: var(--admin-bg-base);
+  --admin-topbar-btn-bg: var(--admin-bg-card-alt);
+  --admin-topbar-btn-fg: var(--admin-text-primary);
+  --admin-placeholder: #484f58;
+
+  font-family: "Quicksand", "Gabarito", system-ui, sans-serif;
+  background-color: var(--admin-bg-base);
+  color: var(--admin-text-primary);
+  min-height: 100vh;
+}
+
+:root:not(.dark) .admin-portal {
+  --admin-bg-base: #f6f8fa;
+  --admin-bg-sidebar: #f6f8fa;
+  --admin-bg-card: #ffffff;
+  --admin-bg-card-alt: #f6f8fa;
+  --admin-text-primary: #1f2328;
+  --admin-text-muted: #656d76;
+  --admin-border: #d0d7de;
+  --admin-success: #1a7f37;
+  --admin-warning: #9a6700;
+  --admin-danger: #cf222e;
+  --admin-placeholder: #9ba3af;
+  --admin-sidebar-bg: #f6f8fa;
+  --admin-sidebar-fg: #24292f;
+  --admin-sidebar-muted: #57606a;
+  --admin-sidebar-border: #d0d7de;
+  --admin-sidebar-accent: #e1e4e8;
+  --admin-sidebar-accent-fg: #24292f;
+  --admin-header-bg: #f6f8fa;
+  --admin-topbar-btn-bg: #e1e4e8;
+  --admin-topbar-btn-fg: #24292f;
+}
+
+.admin-portal *,
+.admin-portal *::before,
+.admin-portal *::after {
+  border-color: var(--admin-border);
+}
+
+.admin-portal .scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.admin-portal .scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.admin-portal .scrollbar-thin::-webkit-scrollbar-thumb {
+  background: var(--admin-border);
+  border-radius: 3px;
+}
+
+/* Inputs & buttons */
+.admin-portal [data-slot="input"],
+.admin-portal input:not([type="checkbox"]):not([type="radio"]),
+.admin-portal select,
+.admin-portal textarea {
+  background-color: var(--admin-bg-card-alt) !important;
+  border-color: var(--admin-border) !important;
+  color: var(--admin-text-primary) !important;
+  font-family: "Quicksand", "Gabarito", system-ui, sans-serif;
+}
+
+.admin-portal [data-slot="input"]::placeholder,
+.admin-portal input::placeholder,
+.admin-portal textarea::placeholder {
+  color: var(--admin-text-muted) !important;
+}
+
+.admin-portal [data-slot="button"].bg-primary,
+.admin-portal button.admin-btn-primary {
+  background-color: var(--admin-accent) !important;
+  color: #fff !important;
+}
+
+.admin-portal [data-slot="button"].bg-primary:hover {
+  background-color: var(--admin-accent-hover) !important;
+}
+
+.admin-portal button:focus-visible,
+.admin-portal [data-slot="input"]:focus-visible,
+.admin-portal a:focus-visible {
+  outline: 2px solid var(--admin-accent);
+  outline-offset: 2px;
+}
+
+/* Cards */
+.admin-portal [data-slot="card"],
+.admin-portal .admin-card {
+  background-color: var(--admin-bg-card) !important;
+  border-color: var(--admin-border) !important;
+  color: var(--admin-text-primary);
+}
+
+/* Tables */
+.admin-portal [data-slot="table-container"],
+.admin-portal .rounded-md.border {
+  border-color: var(--admin-border) !important;
+  background-color: var(--admin-bg-card);
+}
+
+.admin-portal thead,
+.admin-portal [data-slot="table-header"] {
+  background-color: var(--admin-bg-card-alt) !important;
+}
+
+.admin-portal tbody tr:hover {
+  background-color: var(--admin-bg-card-alt);
+}
+
+.admin-portal [data-slot="table-head"],
+.admin-portal [data-slot="table-cell"] {
+  color: var(--admin-text-primary);
+}
+
+/* Dropdowns */
+.admin-portal [data-slot="dropdown-menu-content"] {
+  background-color: var(--admin-bg-card) !important;
+  border-color: var(--admin-border) !important;
+  color: var(--admin-text-primary);
+  font-family: "Quicksand", "Gabarito", system-ui, sans-serif;
+}
+
+.admin-portal [data-slot="dropdown-menu-item"]:hover {
+  background-color: var(--admin-bg-card-alt) !important;
+}
+
+/* Legacy page titles (until all use PageHeader) */
+.admin-portal h1,
+.admin-portal h2,
+.admin-portal h3 {
+  color: var(--admin-text-primary);
+}
+
+.admin-portal .my-6 > p,
+.admin-portal .text-muted-foreground {
+  color: var(--admin-text-muted);
+}
+
+.admin-portal .text-foreground {
+  color: var(--admin-text-primary);
+}
+
+/* Header & topbar */
+.admin-portal .admin-portal-header {
+  border-bottom-color: var(--admin-sidebar-border);
+  background-color: var(--admin-header-bg);
+}
+
+.admin-portal .admin-topbar-btn {
+  background-color: var(--admin-topbar-btn-bg);
+  color: var(--admin-topbar-btn-fg);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.admin-portal .admin-topbar-btn:hover {
+  background-color: var(--admin-sidebar-primary);
+  color: var(--admin-sidebar-primary-fg);
+}
+
+.admin-portal .admin-account-trigger {
+  background-color: var(--admin-topbar-btn-bg);
+  color: var(--admin-topbar-btn-fg);
+}
+
+.admin-portal .admin-account-trigger:hover {
+  background-color: var(--admin-sidebar-primary);
+  color: var(--admin-sidebar-primary-fg);
+}
+
+.admin-portal .admin-topbar-theme button {
+  background-color: var(--admin-topbar-btn-bg);
+  color: var(--admin-topbar-btn-fg);
+}
+
+.admin-portal .admin-topbar-theme button:hover {
+  background-color: var(--admin-sidebar-primary);
+  color: var(--admin-sidebar-primary-fg);
+}
+
+/* Sidebar */
+.admin-portal .admin-sidebar-brand-icon {
+  background-color: var(--admin-sidebar-primary);
+}
+
+.admin-portal .admin-sidebar-nav-link--active {
+  background-color: var(--admin-sidebar-primary) !important;
+  color: var(--admin-sidebar-primary-fg) !important;
+}
+
+.admin-portal .admin-sidebar-nav-link--active svg {
+  color: var(--admin-sidebar-primary-fg) !important;
+}
+
+.admin-portal .admin-sidebar--collapsed .admin-sidebar-nav-link {
+  margin-inline: auto;
+}
+
+.admin-sidebar-tooltip {
+  font-family: "Quicksand", "Gabarito", system-ui, sans-serif !important;
+  background-color: var(--admin-sidebar-primary) !important;
+  color: #ffffff !important;
+  border: 0 !important;
+}
+
+/* Select triggers */
+.admin-portal [data-slot="select-trigger"] {
+  font-family: "Quicksand", "Gabarito", system-ui, sans-serif;
+}
+
+.admin-portal [data-slot="select-trigger"][data-placeholder] {
+  color: var(--admin-placeholder);
+}
+
+.admin-select-menu [data-slot="select-item"] {
+  font-family: "Quicksand", "Gabarito", system-ui, sans-serif !important;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 0.375rem;
+}
+
+:root:not(.dark) .admin-select-menu [data-slot="select-item"] {
+  color: #24292f;
+}
+
+.dark .admin-select-menu [data-slot="select-item"] {
+  color: #e6edf3;
+}
+
+:root:not(.dark) .admin-select-menu [data-slot="select-item"][data-highlighted] {
+  background-color: rgb(110 86 207 / 0.12) !important;
+  color: #24292f !important;
+}
+
+.dark .admin-select-menu [data-slot="select-item"][data-highlighted] {
+  background-color: rgb(110 86 207 / 0.2) !important;
+  color: #e6edf3 !important;
+}
+
+.admin-combobox-menu,
+.admin-combobox-menu [data-slot="command"],
+.admin-combobox-menu [data-slot="command-input"],
+.admin-combobox-menu [data-slot="command-item"],
+.admin-combobox-menu [data-slot="command-empty"] {
+  font-family: "Quicksand", "Gabarito", system-ui, sans-serif !important;
+}
+
+.admin-combobox-menu [data-slot="command-item"] {
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 0.375rem;
+}
+
+:root:not(.dark) .admin-combobox-menu [data-slot="command-item"] {
+  color: #24292f;
+}
+
+.dark .admin-combobox-menu [data-slot="command-item"] {
+  color: #e6edf3;
+}
+
+:root:not(.dark) .admin-combobox-menu [data-slot="command-item"][data-selected="true"] {
+  background-color: rgb(110 86 207 / 0.12) !important;
+  color: #24292f !important;
+}
+
+.dark .admin-combobox-menu [data-slot="command-item"][data-selected="true"] {
+  background-color: rgb(110 86 207 / 0.2) !important;
+  color: #e6edf3 !important;
+}
+
+/* Portaled overlays */
+.admin-theme-menu,
+.admin-select-menu,
+.admin-combobox-menu,
+.admin-dropdown-menu,
+.admin-account-menu,
+.admin-portal-dialog {
+  font-family: "Quicksand", "Gabarito", system-ui, sans-serif !important;
+}
+
+:root:not(.dark) .admin-theme-menu,
+:root:not(.dark) .admin-select-menu,
+:root:not(.dark) .admin-combobox-menu,
+:root:not(.dark) .admin-dropdown-menu,
+:root:not(.dark) .admin-account-menu,
+:root:not(.dark) .admin-portal-dialog {
+  background-color: #ffffff !important;
+  border: 1px solid #d0d7de !important;
+  color: #24292f !important;
+  box-shadow: 0 10px 30px rgb(0 0 0 / 0.08) !important;
+}
+
+.dark .admin-theme-menu,
+.dark .admin-select-menu,
+.dark .admin-combobox-menu,
+.dark .admin-dropdown-menu,
+.dark .admin-account-menu,
+.dark .admin-portal-dialog {
+  background-color: #161b22 !important;
+  border: 1px solid #30363d !important;
+  color: #e6edf3 !important;
+  box-shadow: 0 10px 30px rgb(0 0 0 / 0.35) !important;
+}
+
+.admin-theme-menu__item {
+  cursor: pointer;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+:root:not(.dark) .admin-theme-menu__item {
+  color: #24292f;
+}
+
+.dark .admin-theme-menu__item {
+  color: #e6edf3;
+}
+
+:root:not(.dark) .admin-theme-menu__item:hover,
+:root:not(.dark) .admin-theme-menu__item:focus {
+  background-color: #f6f8fa !important;
+  color: #24292f !important;
+}
+
+.dark .admin-theme-menu__item:hover,
+.dark .admin-theme-menu__item:focus {
+  background-color: #21262d !important;
+  color: #e6edf3 !important;
+}
+
+.admin-dropdown-menu [data-slot="dropdown-menu-item"],
+.admin-account-menu__item {
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 0.375rem;
+  cursor: pointer;
+}
+
+:root:not(.dark) .admin-dropdown-menu [data-slot="dropdown-menu-item"],
+:root:not(.dark) .admin-account-menu__item {
+  color: #24292f;
+}
+
+.dark .admin-dropdown-menu [data-slot="dropdown-menu-item"],
+.dark .admin-account-menu__item {
+  color: #e6edf3;
+}
+
+:root:not(.dark) .admin-dropdown-menu [data-slot="dropdown-menu-item"]:hover,
+:root:not(.dark) .admin-dropdown-menu [data-slot="dropdown-menu-item"]:focus,
+:root:not(.dark) .admin-account-menu__item:hover,
+:root:not(.dark) .admin-account-menu__item:focus {
+  background-color: #f6f8fa !important;
+  color: #24292f !important;
+}
+
+.dark .admin-dropdown-menu [data-slot="dropdown-menu-item"]:hover,
+.dark .admin-dropdown-menu [data-slot="dropdown-menu-item"]:focus,
+.dark .admin-account-menu__item:hover,
+.dark .admin-account-menu__item:focus {
+  background-color: #21262d !important;
+  color: #e6edf3 !important;
+}
+
+.admin-account-menu {
+  overflow: hidden;
+  border-radius: 0.625rem !important;
+}
+
+.admin-account-menu__header {
+  border-bottom: 1px solid var(--admin-border);
+}
+
+.admin-account-menu__name {
+  font-weight: 600;
+  color: inherit;
+}
+
+.admin-account-menu__email {
+  font-size: 0.75rem;
+  color: var(--admin-text-muted);
+}
+
+.admin-account-menu__logout {
+  color: var(--admin-danger) !important;
+}
+
+.admin-account-menu__logout:hover,
+.admin-account-menu__logout:focus {
+  background-color: rgb(207 34 46 / 0.1) !important;
+  color: var(--admin-danger) !important;
+}
+
+.dark .admin-account-menu__logout:hover,
+.dark .admin-account-menu__logout:focus {
+  background-color: rgb(248 81 73 / 0.12) !important;
+  color: #f85149 !important;
+}

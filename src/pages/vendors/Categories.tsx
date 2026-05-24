@@ -1,3 +1,4 @@
+import PageHeader from "@/components/admin/PageHeader";
 import { DataTable } from "@/components/ui/data-table";
 import { columns } from "@/components/utilities/Vendors/CategoryDataTable";
 import { useGetCategories } from "@/api/vendor/categories/useCategories";
@@ -11,13 +12,17 @@ function Categories() {
   }
 
   return (
-    <div className="@container/main">
-      <div className="my-6">
-        <h3 className="!font-bold text-3xl">Categories</h3>
-        <p>Manage all categories information</p>
-      </div>
-
-      <DataTable columns={columns} data={categories?.data || []} />
+    <div className="space-y-6">
+      <PageHeader
+        title="Categories"
+        subtitle="Manage all categories information"
+      />
+      <DataTable
+        adminVariant
+        searchPlaceholder="Search categories..."
+        columns={columns}
+        data={categories?.data || []}
+      />
     </div>
   );
 }

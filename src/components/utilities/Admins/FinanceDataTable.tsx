@@ -55,7 +55,7 @@ export const columns: ColumnDef<FinanceData>[] = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent
-            className="bg-background shadow-accent shadow-sm border-0"
+            className="admin-dropdown-menu p-1"
             align="end"
           >
             <DropdownMenuLabel>Actions</DropdownMenuLabel>

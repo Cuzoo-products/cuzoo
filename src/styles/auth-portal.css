@@ -1,0 +1,43 @@
+/* Shared login — matches cuzoo-admin-main auth screens */
+
+.auth-portal {
+  --auth-bg-base: #0d1117;
+  --auth-bg-card: #161b22;
+  --auth-bg-card-alt: #1c2128;
+  --auth-text-primary: #e6edf3;
+  --auth-text-muted: #7d8590;
+  --auth-accent: #6e56cf;
+  --auth-accent-hover: #7c66dc;
+  --auth-border: #30363d;
+  --auth-danger: #f85149;
+
+  min-height: 100vh;
+  background-color: var(--auth-bg-base);
+  color: var(--auth-text-primary);
+  font-family: "Quicksand", "Gabarito", system-ui, sans-serif;
+}
+
+:root:not(.dark) .auth-portal {
+  --auth-bg-base: #f6f8fa;
+  --auth-bg-card: #ffffff;
+  --auth-bg-card-alt: #f6f8fa;
+  --auth-text-primary: #1f2328;
+  --auth-text-muted: #656d76;
+  --auth-border: #d0d7de;
+}
+
+.auth-portal input {
+  background-color: var(--auth-bg-card-alt);
+  border-color: var(--auth-border);
+  color: var(--auth-text-primary);
+}
+
+.auth-portal input::placeholder {
+  color: var(--auth-text-muted);
+}
+
+.auth-portal input:focus-visible {
+  border-color: var(--auth-accent);
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--auth-accent) 25%, transparent);
+}

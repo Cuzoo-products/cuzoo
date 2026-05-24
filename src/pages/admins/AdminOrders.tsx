@@ -1,3 +1,4 @@
+import PageHeader from "@/components/admin/PageHeader";
 import { useGetOrdersForAdmin } from "@/api/admin/orders/useOrders";
 import { DataTable } from "@/components/ui/data-table";
 import {
@@ -80,27 +81,25 @@ export default function AdminOrders() {
   if (isLoading) return <Loader />;
 
   return (
-    <div className="@container/main">
-      <div className="my-6">
-        <h3 className="!font-bold text-3xl">Orders</h3>
-        <p>Manage all orders here</p>
-      </div>
-
-      <div className="md:absolute right-25 my-5 md:my-0">
-        <Select onValueChange={(v) => setValue(v)} value={value}>
-          <SelectTrigger className="h-11 w-full border-[#d6d6d6]">
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent className="rounded bg-background border-0 shadow-accent shadow-sm">
-            <SelectItem value="Pending">Pending</SelectItem>
-            <SelectItem value="Ongoing">Ongoing</SelectItem>
-            <SelectItem value="Completed">Completed</SelectItem>
-            <SelectItem value="All">All</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <DataTable columns={columns} data={filteredData} />
+    <div className="space-y-5">
+      <PageHeader
+        title="Orders"
+        subtitle="Manage all orders here"
+        actions={
+          <Select onValueChange={(v) => setValue(v)} value={value}>
+            <SelectTrigger className="h-10 w-[180px] border-[var(--admin-border)] bg-[var(--admin-bg-card-alt)]">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent className="admin-select-menu">
+              <SelectItem value="Pending">Pending</SelectItem>
+              <SelectItem value="Ongoing">Ongoing</SelectItem>
+              <SelectItem value="Completed">Completed</SelectItem>
+              <SelectItem value="All">All</SelectItem>
+            </SelectContent>
+          </Select>
+        }
+      />
+      <DataTable adminVariant searchPlaceholder="Search..." columns={columns} data={filteredData} />
     </div>
   );
 }

@@ -36,6 +36,9 @@ import {
   useFleetWalletAction,
   useGetOneFleet,
 } from "@/api/admin/fleet/useFleet";
+import PageHeader from "@/components/admin/PageHeader";
+import StatusBadge from "@/components/admin/StatusBadge";
+import { DetailShell } from "@/components/admin/DetailShell";
 
 type DocAsset = { path?: string; url?: string; type?: string };
 
@@ -179,13 +182,37 @@ export default function FleetOwnersProfile() {
   };
 
   if (isLoading) return <Loader />;
-  if (!fleet) return <div className="p-6">Fleet profile not found.</div>;
+  if (!fleet) {
+    return (
+      <DetailShell
+        backHref="/admins/fleet_managers"
+        backLabel="Fleet Managers"
+        crumbs={[
+          { label: "Dashboard", href: "/admins/dashboard" },
+          { label: "Fleet Managers", href: "/admins/fleet_managers" },
+          { label: "Not found" },
+        ]}
+      >
+        <PageHeader title="Fleet profile" subtitle="Fleet profile not found." />
+      </DetailShell>
+    );
+  }
 
   const phone = fleet.phoneNumber;
+  const fleetTitle = fleet.businessName || "Fleet manager";
 
   return (
-    <div className="min-h-screen p-4 sm:p-6 lg:p-8 font-sans">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <DetailShell
+      backHref="/admins/fleet_managers"
+      backLabel="Fleet Managers"
+      crumbs={[
+        { label: "Dashboard", href: "/admins/dashboard" },
+        { label: "Fleet Managers", href: "/admins/fleet_managers" },
+        { label: fleetTitle },
+      ]}
+    >
+      <PageHeader title={fleetTitle} subtitle={fleet.email} />
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <Card className="bg-secondary lg:col-span-1 h-fit">
           <CardHeader className="py-4 flex flex-row items-start gap-4">
             <Avatar className="h-16 w-16 shrink-0 rounded-md">
@@ -207,7 +234,7 @@ export default function FleetOwnersProfile() {
               </CardDescription>
               <div className="flex flex-wrap gap-1.5 mt-2">
                 {fleet.approvalStatus ? (
-                  <Badge variant="secondary">{fleet.approvalStatus}</Badge>
+                  <StatusBadge status={fleet.approvalStatus} />
                 ) : null}
                 {fleet.emailVerified ? (
                   <Badge variant="outline">Email verified</Badge>
@@ -526,6 +553,6 @@ export default function FleetOwnersProfile() {
           </Card>
         </div>
       </div>
-    </div>
+    </DetailShell>
   );
 }

@@ -1,7 +1,6 @@
 import { Link } from "react-router";
 import { Car, Mail, Phone, MapPin, Calendar, User, FileCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {
   Card,
@@ -90,13 +89,16 @@ const getInitials = (driver: Driver) => {
   return `${first}${last}`.toUpperCase() || "?";
 };
 
-const statusConfig: Record<
-  DriverStatus,
-  { label: string; variant: "default" | "secondary" | "destructive" | "outline" }
-> = {
-  assigned: { label: "Assigned", variant: "default" },
-  unassigned: { label: "Unassigned", variant: "secondary" },
-  disabled: { label: "Disabled", variant: "destructive" },
+const statusLabels: Record<DriverStatus, string> = {
+  assigned: "Assigned",
+  unassigned: "Unassigned",
+  disabled: "Disabled",
+};
+
+const statusBadgeClass: Record<DriverStatus, string> = {
+  assigned: "fleet-status-badge fleet-status-badge--success",
+  unassigned: "fleet-status-badge fleet-status-badge--neutral",
+  disabled: "fleet-status-badge fleet-status-badge--danger",
 };
 
 export const DriverInfo = ({
@@ -140,13 +142,14 @@ export const DriverInfo = ({
     }
   };
 
-  const statusStyle = statusConfig[status] ?? statusConfig.unassigned;
+  const statusStyle = statusBadgeClass[status] ?? statusBadgeClass.unassigned;
+  const statusLabel = statusLabels[status] ?? statusLabels.unassigned;
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
+    <div className="fleet-detail-stack">
       {/* Profile card */}
       <Card className="overflow-hidden">
-        <div className="bg-muted/50 px-6 py-5">
+        <div className="px-6 py-5">
           <div className="flex flex-col sm:flex-row sm:items-center gap-4">
             <Avatar className="size-24 rounded-xl border-4 border-background shadow-md">
               <AvatarImage src={driver.passport?.url} alt={name} className="object-cover" />
@@ -157,9 +160,11 @@ export const DriverInfo = ({
             <div className="flex-1 min-w-0">
               <CardTitle className="text-2xl truncate">{name}</CardTitle>
               <div className="flex flex-wrap items-center gap-2 mt-2">
-                <Badge variant={statusStyle.variant}>{statusStyle.label}</Badge>
+                <span className={statusStyle}>{statusLabel}</span>
                 {suspended && (
-                  <Badge variant="destructive">Suspended</Badge>
+                  <span className="fleet-status-badge fleet-status-badge--danger">
+                    Suspended
+                  </span>
                 )}
                 {driver.gender && (
                   <span className="text-sm text-muted-foreground capitalize">
@@ -340,12 +345,12 @@ export const DriverInfo = ({
           {!hasAssignedVehicle ? (
             <div className="space-y-2">
               <p className="text-sm font-medium">Assign vehicle</p>
-              <ComboboxForm info={availableVehicle} />
+              <ComboboxForm info={availableVehicle} menuClassName="fleet-combobox-menu" />
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-[var(--admin-text-muted)]">
               Driver is assigned to{" "}
-              <span className="font-medium text-foreground">
+              <span className="font-medium text-[var(--admin-text-primary)]">
                 {assignedPlateNumbers.length > 0
                   ? assignedPlateNumbers.join(", ")
                   : `${driver.vehicles?.length ?? 0} vehicle(s)`}
@@ -376,7 +381,7 @@ export const DriverInfo = ({
                 onClick={handleSuspend}
                 disabled={isSuspendPending}
               >
-                {isSuspendPending ? "Suspending…" : "Suspend rider"}
+                {isSuspendPending ? "Suspending…" : "Suspend driver"}
               </Button>
             )}
           </div>

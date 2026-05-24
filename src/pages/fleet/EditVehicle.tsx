@@ -1,3 +1,5 @@
+import PageHeader from "@/components/admin/PageHeader";
+import { FleetFileInput } from "@/components/fleet/FleetFileInput";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -195,34 +197,24 @@ function EditVehicle() {
 
   if (isLoading) {
     return (
-      <div className="@container/main">
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#4D37B3]"></div>
-        </div>
+      <div className="flex h-64 items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-[var(--admin-accent)]" />
       </div>
     );
   }
 
   if (error || !vehicle?.data) {
     return (
-      <div className="@container/main">
-        <div className="my-6">
-          <h3 className="!font-bold text-3xl text-red-600">
-            Vehicle Not Found
-          </h3>
-          <p>Unable to load vehicle details</p>
-        </div>
+      <div className="space-y-5">
+        <PageHeader title="Edit vehicle" subtitle="Unable to load vehicle details" />
       </div>
     );
   }
 
   return (
-    <div className="@container/main">
-      <div className="my-6">
-        <h3 className="!font-bold text-3xl">Edit Vehicle</h3>
-        <p>Edit this vehicle</p>
-      </div>
-      <div className="bg-secondary md:w-3/4 mx-auto py-10 rounded-2xl mb-10">
+    <div className="space-y-5">
+      <PageHeader title="Edit vehicle" subtitle="Edit this vehicle" />
+      <div className="portal-form-panel mb-10">
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
@@ -240,10 +232,10 @@ function EditVehicle() {
                         onValueChange={field.onChange}
                         value={field.value || vehicle?.data?.type || "car"}
                       >
-                        <SelectTrigger className="h-11 w-full border-[#d6d6d6]">
+                        <SelectTrigger className="fleet-form-control w-full">
                           <SelectValue placeholder="Select Vehicle type" />
                         </SelectTrigger>
-                        <SelectContent className="bg-background border-0 shadow-accent shadow-sm">
+                        <SelectContent className="fleet-select-menu">
                           <SelectItem value="car">Car</SelectItem>
                           <SelectItem value="bike">Bike</SelectItem>
                           <SelectItem value="truck">Truck</SelectItem>
@@ -268,7 +260,7 @@ function EditVehicle() {
                   <FormControl>
                     <Input
                       placeholder="Corolla, F-150, etc."
-                      className="border-[rgb(214,214,214)] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
+                      className="h-11"
                       {...field}
                     />
                   </FormControl>
@@ -289,7 +281,7 @@ function EditVehicle() {
                       min="1900"
                       max={new Date().getFullYear() + 1}
                       placeholder="2024"
-                      className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
+                      className="h-11"
                       {...field}
                       onChange={(e) =>
                         field.onChange(parseInt(e.target.value) || 0)
@@ -310,7 +302,7 @@ function EditVehicle() {
                   <FormControl>
                     <Input
                       placeholder="Red, Blue, White, etc."
-                      className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
+                      className="h-11"
                       {...field}
                     />
                   </FormControl>
@@ -328,7 +320,7 @@ function EditVehicle() {
                   <FormControl>
                     <Input
                       placeholder="EKY 345 XV"
-                      className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
+                      className="h-11"
                       {...field}
                     />
                   </FormControl>
@@ -355,12 +347,8 @@ function EditVehicle() {
                 <FormItem>
                   <FormLabel>Change Vehicle Image (Optional)</FormLabel>
                   <FormControl>
-                    <Input
-                      type="file"
-                      accept="image/*"
-                      className="h-11 border-[#d6d6d6] focus-visible:shadow-md focus-visible:ring-[#4D37B3]"
-                      onChange={async (e) => {
-                        const file = e.target.files?.[0];
+                    <FleetFileInput
+                      onFileSelect={async (file) => {
                         if (file) {
                           try {
                             const base64 = await fileToBase64(file);
@@ -391,10 +379,10 @@ function EditVehicle() {
                       onValueChange={field.onChange}
                       value={normalizeVehicleStatus(field.value)}
                     >
-                      <SelectTrigger className="h-11 w-full border-[#d6d6d6]">
+                      <SelectTrigger className="fleet-form-control w-full">
                         <SelectValue placeholder="Select Vehicle Status" />
                       </SelectTrigger>
-                      <SelectContent className="bg-background border-0 shadow-accent shadow-sm">
+                      <SelectContent className="fleet-select-menu">
                         <SelectItem value="available">Available</SelectItem>
                         <SelectItem value="in use">In Use</SelectItem>
                         <SelectItem value="under maintenance">
@@ -422,7 +410,7 @@ function EditVehicle() {
                           variant="outline"
                           role="combobox"
                           className={cn(
-                            "w-full justify-between bg-transparent border-[#d6d6d6]",
+                            "fleet-form-control w-full justify-between",
                             !field.value && "text-muted-foreground",
                           )}
                         >
@@ -435,7 +423,7 @@ function EditVehicle() {
                         </Button>
                       </FormControl>
                     </PopoverTrigger>
-                    <PopoverContent className="w-full bg-background border-0 shadow-accent shadow-sm p-0">
+                    <PopoverContent className="fleet-combobox-menu w-full p-0">
                       <Command>
                         <CommandInput
                           placeholder="Search driver..."
@@ -489,7 +477,7 @@ function EditVehicle() {
             <Button
               type="submit"
               disabled={isPending}
-              className="w-full mt-3 h-11 bg-[#4D37B3] text-white"
+              className="w-full mt-3 h-11"
             >
               {isPending ? "Updating..." : "Update Vehicle"}
             </Button>

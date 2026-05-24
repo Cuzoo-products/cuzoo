@@ -1,7 +1,10 @@
 import { useParams, Link } from "react-router";
+import PageHeader from "@/components/admin/PageHeader";
+import VendorStatusBadge from "@/components/utilities/Vendors/VendorStatusBadge";
+import { DetailShell } from "@/components/admin/DetailShell";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
+import Loader from "@/components/utilities/Loader";
 import { useGetPayout } from "@/api/vendor/finance/useFinance";
 import { sanitizePayoutRouteId, payoutRecordId } from "@/lib/payoutId";
 import { displayRecipientLine } from "@/lib/payoutDetailsHelpers";
@@ -66,82 +69,64 @@ export default function VendorPayoutDetails() {
   };
 
   const payout = data?.data;
+  const payoutsBack = "/vendor/payouts";
+  const crumbs = [
+    { label: "Dashboard", href: "/vendor/dashboard" },
+    { label: "Payouts", href: payoutsBack },
+    { label: "Details" },
+  ];
 
   if (!id) {
     return (
-      <div className="@container/main">
-        <div className="my-6">
-          <h3 className="!font-bold text-3xl">Payout details</h3>
-          <p className="text-red-500 text-sm">No payout ID provided.</p>
-          <Button asChild variant="outline" className="mt-2">
-            <Link to="/vendor/payouts">Back to Payouts</Link>
-          </Button>
-        </div>
-      </div>
+      <DetailShell backHref={payoutsBack} backLabel="Payouts" crumbs={crumbs}>
+        <PageHeader title="Payout details" subtitle="No payout ID provided." />
+      </DetailShell>
     );
   }
 
   if (isLoading) {
-    return (
-      <div className="@container/main">
-        <div className="my-6">
-          <h3 className="!font-bold text-3xl">Payout details</h3>
-          <p className="text-muted-foreground">Loading payout…</p>
-        </div>
-      </div>
-    );
+    return <Loader />;
   }
 
   if (error || !payout) {
     return (
-      <div className="@container/main">
-        <div className="my-6">
-          <h3 className="!font-bold text-3xl">Payout details</h3>
-          <p className="text-red-500">Failed to load payout details.</p>
-          <Button asChild variant="outline" className="mt-2">
-            <Link to="/vendor/payouts">Back to Payouts</Link>
-          </Button>
-        </div>
-      </div>
+      <DetailShell backHref={payoutsBack} backLabel="Payouts" crumbs={crumbs}>
+        <PageHeader
+          title="Payout details"
+          subtitle="Failed to load payout details."
+        />
+      </DetailShell>
     );
   }
 
-  const statusVariant: Record<
-    string,
-    "default" | "secondary" | "destructive" | "outline"
-  > = {
-    completed: "default",
-    pending: "secondary",
-    processing: "outline",
-    failed: "destructive",
-    resolved: "default",
-  };
-
   const details = payout.details;
   const payoutIdDisplay = payoutRecordId(payout);
-  const recipientLine = displayRecipientLine(payout.recipient, details?.accountName);
+  const recipientLine = displayRecipientLine(
+    payout.recipient,
+    details?.accountName,
+  );
 
   return (
-    <div className="@container/main">
-      <div className="my-6 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h3 className="!font-bold text-3xl">Payout details</h3>
-          <p className="text-sm text-muted-foreground">
-            {payout.reference ? `Reference · ${payout.reference}` : "Payout request"}
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <Badge variant={statusVariant[payout.status] ?? "outline"}>
-            {payout.status}
-          </Badge>
-          {payout.resolved && <Badge variant="default">Resolved</Badge>}
-          <Button asChild variant="outline" size="sm">
-            <Link to="/vendor/payouts">Back to Payouts</Link>
-          </Button>
-        </div>
-      </div>
+    <DetailShell backHref={payoutsBack} backLabel="Payouts" crumbs={crumbs}>
+      <PageHeader
+        title="Payout details"
+        subtitle={
+          payout.reference
+            ? `Reference · ${payout.reference}`
+            : "Payout request"
+        }
+        actions={
+          <div className="flex flex-wrap items-center gap-2">
+            <VendorStatusBadge status={payout.status} />
+            {payout.resolved ? <VendorStatusBadge status="resolved" /> : null}
+            <Button asChild variant="outline" size="sm">
+              <Link to="/vendor/payouts">Back to Payouts</Link>
+            </Button>
+          </div>
+        }
+      />
 
-      <div className="bg-secondary max-w-3xl mx-auto mb-10 p-6 rounded-lg space-y-6">
+      <div className="portal-detail-panel mb-10 space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 text-sm">
           <div>
             <h4 className="font-semibold mb-1">Amount</h4>
@@ -155,11 +140,15 @@ export default function VendorPayoutDetails() {
           </div>
           <div>
             <h4 className="font-semibold mb-1">Payout ID</h4>
-            <p className="font-mono text-xs break-all">{payoutIdDisplay || "—"}</p>
+            <p className="font-mono text-xs break-all">
+              {payoutIdDisplay || "—"}
+            </p>
           </div>
           <div>
             <h4 className="font-semibold mb-1">Reference</h4>
-            <p className="font-mono text-xs break-all">{payout.reference || "—"}</p>
+            <p className="font-mono text-xs break-all">
+              {payout.reference || "—"}
+            </p>
           </div>
           <div>
             <h4 className="font-semibold mb-1">Recipient</h4>
@@ -171,7 +160,9 @@ export default function VendorPayoutDetails() {
           </div>
           <div className="md:col-span-2">
             <h4 className="font-semibold mb-1">Transaction ID</h4>
-            <p className="font-mono text-xs break-all">{payout.transactionId || "—"}</p>
+            <p className="font-mono text-xs break-all">
+              {payout.transactionId || "—"}
+            </p>
           </div>
         </div>
 
@@ -242,6 +233,6 @@ export default function VendorPayoutDetails() {
           </>
         )}
       </div>
-    </div>
+    </DetailShell>
   );
 }

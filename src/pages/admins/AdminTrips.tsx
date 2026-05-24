@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import PageHeader from "@/components/admin/PageHeader";
 import { DataTable } from "@/components/ui/data-table";
 import {
   columns,
@@ -109,31 +110,23 @@ export default function AdminTrips() {
 
   if (isError) {
     return (
-      <div className="@container/main p-6">
-        <h3 className="!font-bold text-3xl">Trips</h3>
-        <p className="mt-2 text-sm text-destructive">
-          Failed to load trips. Check that GET /admins/trips is available.
-        </p>
+      <div className="space-y-5">
+        <PageHeader
+          title="Trips"
+          subtitle="Failed to load trips. Check that GET /admins/trips is available."
+        />
       </div>
     );
   }
 
   return (
-    <div className="@container/main">
-      <div className="my-6">
-        <h3 className="!font-bold text-3xl">Trips</h3>
-        <p className="text-muted-foreground">
-          Fleet and delivery trips
-          {meta.count != null ? (
-            <span className="text-foreground"> · {meta.count} total</span>
-          ) : null}
-          {meta.limit != null ? (
-            <span className="text-muted-foreground"> (limit {meta.limit})</span>
-          ) : null}
-        </p>
-      </div>
+    <div className="space-y-5">
+      <PageHeader
+        title="trips"
+        subtitle={`Fleet and delivery trips${meta.count != null ? ` · ${meta.count} total` : ""}${meta.limit != null ? ` (limit ${meta.limit})` : ""}`}
+      />
 
-      <DataTable columns={columns} data={tableData} />
+      <DataTable adminVariant searchPlaceholder="Search..." columns={columns} data={tableData} />
     </div>
   );
 }

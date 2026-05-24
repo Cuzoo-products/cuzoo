@@ -1,6 +1,7 @@
-import { Link, useParams } from "react-router";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import PageHeader from "@/components/admin/PageHeader";
+import StatusBadge from "@/components/admin/StatusBadge";
+import { DetailShell, GridItem, Section } from "@/components/admin/DetailShell";
+import { useParams } from "react-router";
 import { Separator } from "@/components/ui/separator";
 import {
   Table,
@@ -105,12 +106,20 @@ export default function AdminOrderDetails() {
 
   if (!id) {
     return (
-      <div className="@container/main">
-        <div className="my-6">
-          <h3 className="!font-bold text-3xl">Order Details</h3>
-          <p className="text-sm text-red-500">No order ID provided.</p>
-        </div>
-      </div>
+      <DetailShell
+        backHref="/admins/orders"
+        backLabel="Orders"
+        crumbs={[
+          { label: "Dashboard", href: "/admins/dashboard" },
+          { label: "Orders", href: "/admins/orders" },
+          { label: "Error" },
+        ]}
+      >
+        <PageHeader
+          title="Order Details"
+          subtitle="No order ID provided."
+        />
+      </DetailShell>
     );
   }
 
@@ -122,25 +131,23 @@ export default function AdminOrderDetails() {
 
   if (error || !order) {
     return (
-      <div className="@container/main">
-        <div className="my-6">
-          <h3 className="!font-bold text-3xl">Order Details</h3>
-          <p className="text-sm text-red-500">Unable to load order details.</p>
-        </div>
-      </div>
+      <DetailShell
+        backHref="/admins/orders"
+        backLabel="Orders"
+        crumbs={[
+          { label: "Dashboard", href: "/admins/dashboard" },
+          { label: "Orders", href: "/admins/orders" },
+          { label: "Error" },
+        ]}
+      >
+        <PageHeader
+          title="Order Details"
+          subtitle="Unable to load order details."
+        />
+      </DetailShell>
     );
   }
   const products = order.products ?? [];
-
-  const statusColor: Record<
-    string,
-    "default" | "destructive" | "secondary" | "outline"
-  > = {
-    completed: "default",
-    success: "default",
-    queued: "secondary",
-    cancelled: "destructive",
-  };
 
   const paymentLabel =
     typeof order.paymentMethod === "object" && order.paymentMethod
@@ -150,64 +157,46 @@ export default function AdminOrderDetails() {
         : "—";
 
   return (
-    <div className="@container/main">
-      <div className="my-6 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h3 className="!font-bold text-3xl">Order Details</h3>
-          <p className="text-sm text-muted-foreground">
-            Order ID: {id} • Type: {order.orderType ?? "—"} • Delivery:{" "}
-            {order.deliveryType ?? "—"}
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Badge variant={statusColor[order.status?.toLowerCase() ?? ""] ?? "outline"}>
-            {order.status ?? "—"}
-          </Badge>
-        </div>
-      </div>
+    <DetailShell
+      backHref="/admins/orders"
+      backLabel="Orders"
+      crumbs={[
+        { label: "Dashboard", href: "/admins/dashboard" },
+        { label: "Orders", href: "/admins/orders" },
+        { label: id },
+      ]}
+    >
+      <PageHeader
+        title="Order Details"
+        subtitle={`Order ID: ${id} · Type: ${order.orderType ?? "—"} · Delivery: ${order.deliveryType ?? "—"}`}
+        actions={<StatusBadge status={order.status ?? "—"} />}
+      />
 
-      <div className="bg-secondary mx-auto mb-10 max-w-4xl space-y-6 rounded-lg p-6">
-        <div className="grid grid-cols-1 gap-4 text-sm md:grid-cols-3">
-          <div>
-            <h4 className="mb-1 font-semibold">Status</h4>
-            <p>
-              {order.completed
-                ? "Completed"
-                : order.cancelled
-                  ? "Cancelled"
-                  : (order.status ?? "—")}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              Created: {formatDate(order.createdAt)}
-            </p>
+      <div className="mx-auto max-w-4xl space-y-4">
+        <Section title="Order summary">
+          <div className="grid grid-cols-1 gap-4 text-sm md:grid-cols-3">
+            <GridItem
+              label="Status"
+              value={
+                order.completed
+                  ? "Completed"
+                  : order.cancelled
+                    ? "Cancelled"
+                    : (order.status ?? "—")
+              }
+            />
+            <div className="hidden md:block" />
+            <GridItem label="Created" value={formatDate(order.createdAt)} />
+            <GridItem
+              label="Payment"
+              value={`${paymentLabel} · ${order.paid ? "Paid" : "Unpaid"}`}
+            />
+            <GridItem
+              label="Amount"
+              value={`₦${(order.amount?.totalAmount ?? 0).toLocaleString("en-NG", { maximumFractionDigits: 2 })}`}
+            />
           </div>
-          <div>
-            <h4 className="mb-1 font-semibold">Payment</h4>
-            <p>
-              {paymentLabel} • {order.paid ? "Paid" : "Unpaid"}
-            </p>
-            {order.paidAt && (
-              <p className="text-xs text-muted-foreground">
-                Paid at: {formatDate(order.paidAt)}
-              </p>
-            )}
-          </div>
-          <div>
-            <h4 className="mb-1 font-semibold">Amount</h4>
-            <p>
-              Total: ₦
-              {(order.amount?.totalAmount ?? 0).toLocaleString("en-NG", {
-                maximumFractionDigits: 2,
-              })}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              Service charge: ₦
-              {(order.amount?.serviceCharge ?? 0).toLocaleString("en-NG", {
-                maximumFractionDigits: 2,
-              })}
-            </p>
-          </div>
-        </div>
+        </Section>
 
         <Separator />
 
@@ -315,12 +304,7 @@ export default function AdminOrderDetails() {
           )}
         </div>
 
-        <div className="flex flex-wrap justify-end gap-3 pt-4">
-          <Button variant="outline" asChild>
-            <Link to="/admins/orders">Back to orders</Link>
-          </Button>
-        </div>
       </div>
-    </div>
+    </DetailShell>
   );
 }

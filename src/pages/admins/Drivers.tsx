@@ -1,3 +1,4 @@
+import PageHeader from "@/components/admin/PageHeader";
 import { DataTable } from "@/components/ui/data-table";
 import {
   columns,
@@ -59,23 +60,23 @@ function DriversInAdmin() {
 
   if (error) {
     return (
-      <div className="@container/main">
-        <div className="my-6">
-          <h3 className="!font-bold text-3xl">Drivers</h3>
-          <p className="text-red-500">Failed to load drivers.</p>
-        </div>
+      <div className="space-y-5">
+        <PageHeader
+          title="Riders"
+          subtitle="Failed to load drivers."
+        />
       </div>
     );
   }
 
   return (
-    <div className="@container/main">
-      <div className="my-6">
-        <h3 className="!font-bold text-3xl">Drivers</h3>
-        <p>Manage all drivers data and information</p>
-      </div>
+    <div className="space-y-5">
+      <PageHeader
+        title="Riders"
+        subtitle="Manage all riders data and information"
+      />
 
-      <DataTable columns={columns} data={tableData} />
+      <DataTable adminVariant searchPlaceholder="Search..." columns={columns} data={tableData} />
     </div>
   );
 }

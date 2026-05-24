@@ -1,7 +1,8 @@
 import { useState } from "react";
+import PageHeader from "@/components/admin/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
+import VendorStatusBadge from "@/components/utilities/Vendors/VendorStatusBadge";
 import {
   Table,
   TableBody,
@@ -247,11 +248,8 @@ export default function OrderDetailsPage() {
 
   if (!id) {
     return (
-      <div className="@container/main">
-        <div className="my-6">
-          <h3 className="!font-bold text-3xl">Order Details</h3>
-          <p className="text-red-500 text-sm">No order ID provided.</p>
-        </div>
+      <div className="space-y-6">
+        <PageHeader title="Order Details" subtitle="No order ID provided." />
       </div>
     );
   }
@@ -262,47 +260,29 @@ export default function OrderDetailsPage() {
 
   if (error || !data?.data) {
     return (
-      <div className="@container/main">
-        <div className="my-6">
-          <h3 className="!font-bold text-3xl">Order Details</h3>
-          <p className="text-sm text-red-500">Unable to load order details.</p>
-        </div>
+      <div className="space-y-6">
+        <PageHeader
+          title="Order Details"
+          subtitle="Unable to load order details."
+        />
       </div>
     );
   }
 
   const order = data.data;
 
-  const statusColor: Record<
-    string,
-    "default" | "destructive" | "secondary" | "outline"
-  > = {
-    completed: "default",
-    queued: "secondary",
-    cancelled: "destructive",
-  };
-
   const chats = order.chats ?? [];
   const products = order.products ?? [];
 
   return (
-    <div className="@container/main">
-      <div className="my-6 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h3 className="!font-bold text-3xl">Order Details</h3>
-          <p className="text-sm text-muted-foreground">
-            Order ID: {id} • Type: {order.orderType} • Delivery:{" "}
-            {order.deliveryType}
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Badge variant={statusColor[order.status] ?? "outline"}>
-            {order.status}
-          </Badge>
-        </div>
-      </div>
+    <div className="space-y-6">
+      <PageHeader
+        title="Order Details"
+        subtitle={`Order ID: ${id} • Type: ${order.orderType} • Delivery: ${order.deliveryType}`}
+        actions={<VendorStatusBadge status={order.status} />}
+      />
 
-      <div className="bg-secondary max-w-4xl mx-auto mb-10 p-6 rounded-lg space-y-6">
+      <div className="portal-detail-panel mb-10 space-y-6">
         {/* Summary */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
           <div>

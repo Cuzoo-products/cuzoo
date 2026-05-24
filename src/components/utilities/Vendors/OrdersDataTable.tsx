@@ -1,3 +1,4 @@
+import VendorStatusBadge from "@/components/utilities/Vendors/VendorStatusBadge";
 import type { ColumnDef } from "@tanstack/react-table";
 import { MoreHorizontal } from "lucide-react";
 
@@ -93,6 +94,9 @@ export const columns: ColumnDef<OrderData>[] = [
     header: ({ column }) => {
       return <DataTableColumnHeader column={column} title="Status" />;
     },
+    cell: ({ getValue }) => (
+      <VendorStatusBadge status={String(getValue() ?? "")} />
+    ),
   },
   {
     accessorKey: "payment",

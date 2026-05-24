@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import PageHeader from "@/components/admin/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -9,7 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
+import VendorStatusBadge from "@/components/utilities/Vendors/VendorStatusBadge";
 import { useParams } from "react-router";
 import { useGetOrder } from "@/api/vendor/order/useOrder";
 
@@ -145,33 +146,24 @@ export default function InvoicePage() {
 
   if (!id) {
     return (
-      <div className="@container/main">
-        <div className="my-6">
-          <h3 className="!font-bold text-3xl">Order</h3>
-          <p className="text-red-500 text-sm">No order ID provided.</p>
-        </div>
+      <div className="space-y-6">
+        <PageHeader title="Order" subtitle="No order ID provided." />
       </div>
     );
   }
 
   if (isLoading) {
     return (
-      <div className="@container/main">
-        <div className="my-6">
-          <h3 className="!font-bold text-3xl">Order</h3>
-          <p className="text-sm text-muted-foreground">Loading order...</p>
-        </div>
+      <div className="space-y-6">
+        <PageHeader title="Order" subtitle="Loading order..." />
       </div>
     );
   }
 
   if (error || !data?.data) {
     return (
-      <div className="@container/main">
-        <div className="my-6">
-          <h3 className="!font-bold text-3xl">Order</h3>
-          <p className="text-sm text-red-500">Unable to load order details.</p>
-        </div>
+      <div className="space-y-6">
+        <PageHeader title="Order" subtitle="Unable to load order details." />
       </div>
     );
   }
@@ -196,24 +188,14 @@ export default function InvoicePage() {
   const serviceCharge = order.amount.serviceCharge;
   const total = order.amount.totalAmount || subtotal + serviceCharge;
 
-  const statusColor: Record<
-    string,
-    "default" | "destructive" | "secondary" | "outline"
-  > = {
-    completed: "default",
-    queued: "secondary",
-    cancelled: "destructive",
-  };
-
   return (
-    <div className="@container/main">
-      <div className="my-6 no-print">
-        <h3 className="!font-bold text-3xl">Order</h3>
-        <p>View and manage user order</p>
+    <div className="space-y-6">
+      <div className="no-print">
+        <PageHeader title="Order" subtitle="View and manage user order" />
       </div>
       <div
         ref={invoiceRef}
-        className="invoice-print-area bg-secondary max-w-3xl mx-auto mb-10 p-6 rounded-lg"
+        className="invoice-print-area portal-detail-panel mb-10"
       >
         <div>
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
@@ -224,9 +206,7 @@ export default function InvoicePage() {
               </div>
             </div>
             <div className="flex flex-col items-start md:items-end gap-1">
-              <Badge variant={statusColor[order.status] ?? "outline"}>
-                {order.status}
-              </Badge>
+              <VendorStatusBadge status={order.status} />
               <span className="text-xs text-muted-foreground">
                 Payment: {order.paymentMethod.method}{" "}
                 {order.paid ? "(Paid)" : "(Unpaid)"}

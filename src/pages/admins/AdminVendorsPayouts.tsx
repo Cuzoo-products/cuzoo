@@ -1,3 +1,4 @@
+import PageHeader from "@/components/admin/PageHeader";
 import { useVendorsPayouts } from "@/api/admin/payouts/usePayouts";
 import { DataTable } from "@/components/ui/data-table";
 import Loader from "@/components/utilities/Loader";
@@ -44,12 +45,12 @@ export default function AdminVendorsPayouts() {
   }));
 
   return (
-    <div className="@container/main">
-      <div className="my-6">
-        <h3 className="!font-bold text-3xl">Vendor payouts</h3>
-        <p className="text-muted-foreground">Review vendor payout requests and status</p>
-      </div>
-      <DataTable columns={columns} data={tableData} />
+    <div className="space-y-5">
+      <PageHeader
+        title="Vendor Payouts"
+        subtitle="Review vendor payout requests and status"
+      />
+      <DataTable adminVariant searchPlaceholder="Search..." columns={columns} data={tableData} />
     </div>
   );
 }

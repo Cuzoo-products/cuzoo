@@ -1,3 +1,4 @@
+import PageHeader from "@/components/admin/PageHeader";
 import { useGetPayouts } from "@/api/fleet/finance/useFinance";
 import { DataTable } from "@/components/ui/data-table";
 import {
@@ -91,25 +92,24 @@ function FleetPayouts() {
 
   if (error) {
     return (
-      <div className="@container/main">
-        <div className="my-6">
-          <h3 className="!font-bold text-3xl">Payouts</h3>
-          <p className="text-red-500">Failed to load payouts.</p>
-        </div>
+      <div className="space-y-5">
+        <PageHeader title="Payouts" subtitle="Failed to load payouts." />
       </div>
     );
   }
 
   return (
-    <div className="@container/main">
-      <div className="my-6">
-        <h3 className="!font-bold text-3xl">Payouts</h3>
-        <p className="text-muted-foreground">
-          View your payout requests and status
-        </p>
-      </div>
-
-      <DataTable columns={columns} data={tableData} />
+    <div className="space-y-5">
+      <PageHeader
+        title="Payouts"
+        subtitle="View your payout requests and status"
+      />
+      <DataTable
+        adminVariant
+        searchPlaceholder="Search payouts..."
+        columns={columns}
+        data={tableData}
+      />
     </div>
   );
 }

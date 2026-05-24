@@ -1,4 +1,5 @@
 import { useGetFleetTrips } from "@/api/fleet/trips/useTrips";
+import PageHeader from "@/components/admin/PageHeader";
 import { DataTable } from "@/components/ui/data-table";
 import {
   columns,
@@ -73,23 +74,21 @@ function Trips() {
 
   if (error) {
     return (
-      <div className="@container/main">
-        <div className="my-6">
-          <h3 className="!font-bold text-3xl">Trips</h3>
-          <p className="text-red-500">Unable to load trips.</p>
-        </div>
+      <div className="space-y-5">
+        <PageHeader title="Trips" subtitle="Unable to load trips." />
       </div>
     );
   }
 
   return (
-    <div className="@container/main">
-      <div className="my-6">
-        <h3 className="!font-bold text-3xl">Trips</h3>
-        <p>View All Trips Here</p>
-      </div>
-
-      <DataTable columns={columns} data={tableData} />
+    <div className="space-y-5">
+      <PageHeader title="Trips" subtitle="View all trips here" />
+      <DataTable
+        adminVariant
+        searchPlaceholder="Search trips..."
+        columns={columns}
+        data={tableData}
+      />
     </div>
   );
 }

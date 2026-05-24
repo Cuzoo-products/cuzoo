@@ -1,5 +1,7 @@
 import { Link, useParams } from "react-router";
-import { ArrowLeft, Mail, Phone, User } from "lucide-react";
+import { Mail, Phone, User } from "lucide-react";
+import PageHeader from "@/components/admin/PageHeader";
+import { DetailShell } from "@/components/admin/DetailShell";
 import { useGetVehicle } from "@/api/fleet/vehicles/useVehicles";
 import { useGetRider } from "@/api/fleet/rider/useRiderQuery";
 import VehicleInfo from "@/components/utilities/Fleet/VehicleInfo";
@@ -67,22 +69,18 @@ function VehicleDetails() {
     (riderRecord?.companyEmail as string) ||
     "";
 
+  const fleetBack = "/fleet/fleets";
+  const crumbs = [
+    { label: "Dashboard", href: "/fleet/dashboard" },
+    { label: "Vehicles", href: fleetBack },
+    { label: "Vehicle" },
+  ];
+
   if (!id) {
     return (
-      <div className="@container/main">
-        <div className="my-6 flex items-center gap-3">
-          <Button variant="ghost" size="icon" asChild>
-            <Link to="/fleet/fleets">
-              <ArrowLeft className="size-5" />
-              <span className="sr-only">Back to vehicles</span>
-            </Link>
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold">Vehicle details</h1>
-            <p className="text-sm text-red-500">No vehicle ID provided.</p>
-          </div>
-        </div>
-      </div>
+      <DetailShell backHref={fleetBack} backLabel="Vehicles" crumbs={crumbs}>
+        <PageHeader title="Vehicle details" subtitle="No vehicle ID provided." />
+      </DetailShell>
     );
   }
 
@@ -92,33 +90,12 @@ function VehicleDetails() {
 
   if (error || !vehicle) {
     return (
-      <div className="@container/main">
-        <div className="my-6 flex items-center gap-3">
-          <Button variant="ghost" size="icon" asChild>
-            <Link to="/fleet/fleets">
-              <ArrowLeft className="size-5" />
-              <span className="sr-only">Back to vehicles</span>
-            </Link>
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold text-destructive">
-              Vehicle not found
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              Unable to load vehicle details. Please try again.
-            </p>
-          </div>
-        </div>
-        <div className="rounded-lg border border-destructive/50 bg-destructive/5 p-6 text-center">
-          <p className="text-sm text-muted-foreground">
-            You can{" "}
-            <Link to="/fleet/fleets" className="text-primary underline">
-              go back to vehicles
-            </Link>{" "}
-            and try another.
-          </p>
-        </div>
-      </div>
+      <DetailShell backHref={fleetBack} backLabel="Vehicles" crumbs={crumbs}>
+        <PageHeader
+          title="Vehicle not found"
+          subtitle="Unable to load vehicle details. Please try again."
+        />
+      </DetailShell>
     );
   }
 
@@ -128,24 +105,11 @@ function VehicleDetails() {
       .join(" • ") || "Vehicle";
 
   return (
-    <div className="@container/main">
-      <header className="my-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3 min-w-0">
-          <Button variant="ghost" size="icon" className="shrink-0" asChild>
-            <Link to="/fleet/fleets">
-              <ArrowLeft className="size-5" />
-              <span className="sr-only">Back to vehicles</span>
-            </Link>
-          </Button>
-          <div className="min-w-0">
-            <h1 className="text-2xl font-bold truncate">{title}</h1>
-            <p className="text-sm text-muted-foreground">
-              Manage details, status and driver assignment
-            </p>
-          </div>
-        </div>
-      </header>
-
+    <DetailShell backHref={fleetBack} backLabel="Vehicles" crumbs={crumbs}>
+      <PageHeader
+        title={title}
+        subtitle="Manage details, status and driver assignment"
+      />
       {riderId ? (
         <Card className="max-w-4xl mx-auto mb-6 border-primary/20">
           <CardHeader className="py-4">
@@ -213,7 +177,7 @@ function VehicleDetails() {
         riderPreviewName={riderName && riderName !== "—" ? riderName : undefined}
         riderPreviewLoading={Boolean(riderId) && riderLoading}
       />
-    </div>
+    </DetailShell>
   );
 }
 

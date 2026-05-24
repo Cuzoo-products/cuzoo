@@ -1,3 +1,4 @@
+import PageHeader from "@/components/admin/PageHeader";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
@@ -101,12 +102,9 @@ function ResetPassword() {
   }
 
   return (
-    <div className="@container/main">
-      <div className="my-6">
-        <h3 className="!font-bold text-3xl">Password</h3>
-        <p>Reset your password here</p>
-      </div>
-      <div className="bg-secondary max-w-3xl mx-auto p-6 rounded-lg space-y-4">
+    <div className="space-y-5">
+      <PageHeader title="Password" subtitle="Reset your password here" />
+      <div className="portal-form-panel space-y-4">
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
@@ -122,7 +120,7 @@ function ResetPassword() {
                     <div className="relative">
                       <Input
                         type={showOldPassword ? "text" : "password"}
-                        className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3] pr-12"
+                        className="h-11 pr-12"
                         placeholder="********"
                         {...field}
                       />
@@ -154,7 +152,7 @@ function ResetPassword() {
                   <FormControl>
                     <div className="relative">
                       <Input
-                        className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3] pr-12"
+                        className="h-11 pr-12"
                         type={showNewPassword ? "text" : "password"}
                         placeholder="••••••••"
                         {...field}
@@ -187,7 +185,7 @@ function ResetPassword() {
                   <FormControl>
                     <div className="relative">
                       <Input
-                        className="border-[#d6d6d6] h-11 focus-visible:shadow-md focus-visible:ring-[#4D37B3] pr-12"
+                        className="h-11 pr-12"
                         type={showConfirmPassword ? "text" : "password"}
                         placeholder="••••••••"
                         {...field}
@@ -219,7 +217,7 @@ function ResetPassword() {
 
             <Button
               type="submit"
-              className="w-full bg-[#4D37B3] text-white mt-3"
+              className="w-full mt-3"
               disabled={isSubmitting}
             >
               {isSubmitting ? "Updating…" : "Update password"}

@@ -1,5 +1,4 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
   CalendarClock,
   MapPin,
@@ -8,6 +7,9 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { Link, useParams } from "react-router";
+import PageHeader from "@/components/admin/PageHeader";
+import StatusBadge from "@/components/admin/StatusBadge";
+import { DetailShell } from "@/components/admin/DetailShell";
 import { useGetFleetTripById } from "@/api/fleet/trips/useTrips";
 
 type TripDetailsResponse = {
@@ -147,56 +149,48 @@ export default function TripDetails() {
 
   const trip = data?.data;
 
+  const tripsBack = "/fleet/trips";
+  const crumbs = [
+    { label: "Dashboard", href: "/fleet/dashboard" },
+    { label: "Trips", href: tripsBack },
+    { label: "Trip" },
+  ];
+
   if (!id) {
     return (
-      <div className="@container/main">
-        <div className="my-6">
-          <h3 className="!font-bold text-3xl">Trip Details</h3>
-          <p className="text-red-500">No trip ID provided.</p>
-        </div>
-      </div>
+      <DetailShell backHref={tripsBack} backLabel="Trips" crumbs={crumbs}>
+        <PageHeader title="Trip details" subtitle="No trip ID provided." />
+      </DetailShell>
     );
   }
 
   if (isLoading) {
     return (
-      <div className="@container/main">
-        <div className="my-6">
-          <h3 className="!font-bold text-3xl">Trip Details</h3>
-          <p>Loading trip details...</p>
-        </div>
-      </div>
+      <DetailShell backHref={tripsBack} backLabel="Trips" crumbs={crumbs}>
+        <PageHeader title="Trip details" subtitle="Loading trip details..." />
+      </DetailShell>
     );
   }
 
   if (error || !trip) {
     return (
-      <div className="@container/main">
-        <div className="my-6">
-          <h3 className="!font-bold text-3xl">Trip Details</h3>
-          <p className="text-red-500">Unable to load trip details.</p>
-        </div>
-      </div>
+      <DetailShell backHref={tripsBack} backLabel="Trips" crumbs={crumbs}>
+        <PageHeader title="Trip details" subtitle="Unable to load trip details." />
+      </DetailShell>
     );
   }
 
   const primaryDestination = trip.destinations[0];
 
   return (
-    <div className="@container/main">
-      <div className="my-6 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h3 className="!font-bold text-3xl">Trip Details</h3>
-          <p className="text-muted-foreground text-sm">
-            Order type: {trip.orderType} • Transport: {trip.transportType}
-          </p>
-        </div>
-        <Badge variant="outline" className="w-fit">
-          {trip.status}
-        </Badge>
-      </div>
+    <DetailShell backHref={tripsBack} backLabel="Trips" crumbs={crumbs}>
+      <PageHeader
+        title="Trip details"
+        subtitle={`Order type: ${trip.orderType} • Transport: ${trip.transportType}`}
+        actions={<StatusBadge status={trip.status} />}
+      />
 
-      <div className="bg-secondary rounded-lg p-4 md:p-6 space-y-4">
+      <div className="portal-detail-panel space-y-4">
         {/* Top layout: summary + payment */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Trip Summary */}
@@ -502,6 +496,6 @@ export default function TripDetails() {
           </div>
         </div>
       </div>
-    </div>
+    </DetailShell>
   );
 }

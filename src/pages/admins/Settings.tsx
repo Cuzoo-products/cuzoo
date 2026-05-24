@@ -1,3 +1,4 @@
+import PageHeader from "@/components/admin/PageHeader";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -250,21 +251,21 @@ export default function Settings() {
       Boolean(settings.notificationSubject.trim()));
 
   return (
-    <div className="min-h-screen p-4 sm:p-6 lg:p-8 font-sans">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
-          <div className="my-6">
-            <h3 className="!font-bold text-3xl">Global Settings</h3>
-            <p>Manage platform-wide configurations and controls.</p>
-          </div>
+    <div className="space-y-6">
+      <PageHeader
+        title="Settings"
+        subtitle="Manage platform-wide configurations and controls."
+        actions={
           <Button
             onClick={handleSaveChanges}
             disabled={!hasPendingChanges || isPending}
-            className="mt-4 sm:mt-0"
+            className="admin-btn-primary bg-[var(--admin-accent)] hover:bg-[var(--admin-accent-hover)]"
           >
             {isPending ? "Saving..." : "Save Changes"}
           </Button>
-        </div>
+        }
+      />
+      <div className="max-w-7xl">
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <Card className="lg:col-span-2 bg-secondary py-6">
