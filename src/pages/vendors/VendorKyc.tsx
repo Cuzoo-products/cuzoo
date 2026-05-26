@@ -1,9 +1,10 @@
+import "@/styles/vendor-portal.css";
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -16,13 +17,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import {
   Popover,
   PopoverTrigger,
@@ -42,6 +36,7 @@ import Header2 from "@/components/utilities/header2";
 import { GogglePlace } from "@/components/utilities/GogglePlace";
 import { useUpdateVendorProfile } from "@/api/vendor/auth/useAuth";
 import { useNavigate } from "react-router";
+import { VendorFileInput } from "@/components/utilities/Vendors/VendorFileInput";
 
 const BUSINESS_TYPES = [
   "Logistics",
@@ -188,17 +183,16 @@ export function VendorKycForm() {
   const prevStep = () => setStep((s) => Math.max(s - 1, 1));
 
   return (
-    <div>
+    <div className="vendor-portal min-h-screen">
       <Header2 showLogout />
 
-      <Card className="max-w-3xl mx-auto my-8 bg-secondary py-6">
-        <CardHeader>
-          <CardTitle>Vendor Registration KYC</CardTitle>
-          <CardDescription>
-            Step {step} of 3 — Fill all details carefully
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+      <main className="vendor-form-page px-4">
+        <div className="vendor-form-shell vendor-form-shell--wide">
+          <div className="vendor-form-header">
+            <h1>Vendor Registration KYC</h1>
+            <p>Step {step} of 3 - Fill all details carefully</p>
+          </div>
+          <div className="vendor-form-card">
           <Form {...form}>
             <form
               onSubmit={(e) => {
@@ -250,7 +244,7 @@ export function VendorKycForm() {
                           </PopoverTrigger>
                           <PopoverContent
                             align="start"
-                            className="p-0 bg-background"
+                            className="vendor-select-menu p-0"
                           >
                             <Calendar
                               mode="single"
@@ -287,11 +281,11 @@ export function VendorKycForm() {
                           value={field.value}
                         >
                           <FormControl>
-                            <SelectTrigger>
+                            <SelectTrigger className="vendor-form-control">
                               <SelectValue placeholder="Select business type" />
                             </SelectTrigger>
                           </FormControl>
-                          <SelectContent className="bg-background">
+                          <SelectContent className="vendor-select-menu">
                             {BUSINESS_TYPES.map((t) => (
                               <SelectItem key={t} value={t}>
                                 {t}
@@ -310,15 +304,12 @@ export function VendorKycForm() {
                       <FormItem>
                         <FormLabel>Logo (optional)</FormLabel>
                         <FormControl>
-                          <Input
-                            type="file"
+                          <VendorFileInput
                             accept="image/*"
-                            onChange={async (e) => {
-                              const file = e.target.files?.[0];
-                              if (file) {
-                                const base64 = await fileToBase64(file);
-                                field.onChange(base64);
-                              }
+                            onFileSelect={async (file) => {
+                              if (!file) return;
+                              const base64 = await fileToBase64(file);
+                              field.onChange(base64);
                             }}
                           />
                         </FormControl>
@@ -412,6 +403,7 @@ export function VendorKycForm() {
                         <FormLabel>Residential Address</FormLabel>
                         <FormControl>
                           <Textarea
+                            className="vendor-form-control min-h-28"
                             placeholder="45 Freedom Way, Lagos"
                             {...field}
                           />
@@ -428,6 +420,7 @@ export function VendorKycForm() {
                         <FormLabel>Declaration</FormLabel>
                         <FormControl>
                           <Textarea
+                            className="vendor-form-control min-h-28"
                             placeholder="I hereby declare..."
                             {...field}
                           />
@@ -449,10 +442,11 @@ export function VendorKycForm() {
                       <FormItem>
                         <FormLabel>Passport (required)</FormLabel>
                         <FormControl>
-                          <Input
-                            type="file"
+                          <VendorFileInput
                             accept="image/*,.pdf"
-                            onChange={(e) => field.onChange(e.target.files)}
+                            onFileSelect={(file) => {
+                              field.onChange(file);
+                            }}
                           />
                         </FormControl>
                         <FormMessage className="text-red-500" />
@@ -468,10 +462,11 @@ export function VendorKycForm() {
                           Certificate of incorporation (required)
                         </FormLabel>
                         <FormControl>
-                          <Input
-                            type="file"
+                          <VendorFileInput
                             accept="image/*,.pdf"
-                            onChange={(e) => field.onChange(e.target.files)}
+                            onFileSelect={(file) => {
+                              field.onChange(file);
+                            }}
                           />
                         </FormControl>
                         <FormMessage className="text-red-500" />
@@ -485,10 +480,11 @@ export function VendorKycForm() {
                       <FormItem>
                         <FormLabel>Government approved ID (required)</FormLabel>
                         <FormControl>
-                          <Input
-                            type="file"
+                          <VendorFileInput
                             accept="image/*,.pdf"
-                            onChange={(e) => field.onChange(e.target.files)}
+                            onFileSelect={(file) => {
+                              field.onChange(file);
+                            }}
                           />
                         </FormControl>
                         <FormMessage className="text-red-500" />
@@ -502,10 +498,11 @@ export function VendorKycForm() {
                       <FormItem>
                         <FormLabel>Proof of address (required)</FormLabel>
                         <FormControl>
-                          <Input
-                            type="file"
+                          <VendorFileInput
                             accept="image/*,.pdf"
-                            onChange={(e) => field.onChange(e.target.files)}
+                            onFileSelect={(file) => {
+                              field.onChange(file);
+                            }}
                           />
                         </FormControl>
                         <FormMessage className="text-red-500" />
@@ -519,10 +516,11 @@ export function VendorKycForm() {
                       <FormItem>
                         <FormLabel>LGA Permit</FormLabel>
                         <FormControl>
-                          <Input
-                            type="file"
+                          <VendorFileInput
                             accept="image/*,.pdf"
-                            onChange={(e) => field.onChange(e.target.files)}
+                            onFileSelect={(file) => {
+                              field.onChange(file);
+                            }}
                           />
                         </FormControl>
                         <FormMessage className="text-red-500" />
@@ -536,10 +534,11 @@ export function VendorKycForm() {
                       <FormItem>
                         <FormLabel>GPH License (if applicable)</FormLabel>
                         <FormControl>
-                          <Input
-                            type="file"
+                          <VendorFileInput
                             accept="image/*,.pdf"
-                            onChange={(e) => field.onChange(e.target.files)}
+                            onFileSelect={(file) => {
+                              field.onChange(file);
+                            }}
                           />
                         </FormControl>
                         <FormMessage className="text-red-500" />
@@ -555,10 +554,11 @@ export function VendorKycForm() {
                           NAFDAC Registration (if applicable)
                         </FormLabel>
                         <FormControl>
-                          <Input
-                            type="file"
+                          <VendorFileInput
                             accept="image/*,.pdf"
-                            onChange={(e) => field.onChange(e.target.files)}
+                            onFileSelect={(file) => {
+                              field.onChange(file);
+                            }}
                           />
                         </FormControl>
                         <FormMessage className="text-red-500" />
@@ -594,14 +594,19 @@ export function VendorKycForm() {
                   </Button>
                 ) : (
                   <Button type="submit" disabled={isUpdatingProfile}>
-                    {isUpdatingProfile ? "Submitting..." : "Submit"}
+                    {isUpdatingProfile ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      "Submit"
+                    )}
                   </Button>
                 )}
               </div>
             </form>
           </Form>
-        </CardContent>
-      </Card>
+          </div>
+        </div>
+      </main>
     </div>
   );
 }

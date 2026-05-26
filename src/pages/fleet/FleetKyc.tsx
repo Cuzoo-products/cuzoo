@@ -3,7 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useFieldArray } from "react-hook-form";
 import * as z from "zod";
 import { format } from "date-fns";
-import { CalendarIcon, Trash2 } from "lucide-react";
+import { CalendarIcon, Loader2, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router";
 
 import { Button } from "@/components/ui/button";
@@ -31,17 +31,11 @@ import {
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { cn, fileToBase64, omitEmptyPayloadValues } from "@/lib/utils";
 import { fleetKycformSchema } from "@/lib/zodVaildation";
 import Header2 from "@/components/utilities/header2";
 import { useFleetKyc } from "@/api/fleet/profile/useProfile";
+import { FleetFileInput } from "@/components/fleet/FleetFileInput";
 
 // --- DUMMY DATA ---
 const courierServiceOptions = [
@@ -169,20 +163,16 @@ export function FleetKyc() {
     }
   }
 
-  // File input helper
-  const fileRef = form.register;
-
   return (
-    <div>
+    <div className="fleet-portal min-h-screen">
       <Header2 showLogout />
-      <Card className="max-w-4xl mx-auto my-16 bg-secondary py-6">
-        <CardHeader>
-          <CardTitle>Fleet Company KYC Registration</CardTitle>
-          <CardDescription>
-            Step {step} of 4 — Please complete all sections
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+      <main className="fleet-form-page px-4">
+        <div className="fleet-form-shell fleet-form-shell--wide">
+          <div className="fleet-form-header">
+            <h1>Fleet Company KYC Registration</h1>
+            <p>Step {step} of 4 - Please complete all sections</p>
+          </div>
+          <div className="fleet-form-card">
           <Form {...form}>
             <form
               onSubmit={(e) => {
@@ -255,7 +245,7 @@ export function FleetKyc() {
                               </FormControl>
                             </PopoverTrigger>
                             <PopoverContent
-                              className="w-auto p-0 rounded bg-background border-0 shadow-accent shadow-sm"
+                              className="fleet-select-menu w-auto p-0 rounded"
                               align="start"
                             >
                               <Calendar
@@ -307,7 +297,7 @@ export function FleetKyc() {
                                 <SelectValue placeholder="Select type" />
                               </SelectTrigger>
                             </FormControl>
-                            <SelectContent className="rounded bg-background border-0 shadow-accent shadow-sm">
+                            <SelectContent className="fleet-select-menu">
                               <SelectItem value="Private Limited Company">
                                 Private Limited Company
                               </SelectItem>
@@ -496,13 +486,15 @@ export function FleetKyc() {
                     <FormField
                       control={form.control}
                       name="certificateOfIncorporation"
-                      render={() => (
+                      render={({ field }) => (
                         <FormItem className="my-3">
                           <FormLabel>Certificate of Incorporation</FormLabel>
                           <FormControl>
-                            <Input
-                              type="file"
-                              {...fileRef("certificateOfIncorporation")}
+                            <FleetFileInput
+                              accept="image/*,.pdf"
+                              onFileSelect={(file) => {
+                                field.onChange(file);
+                              }}
                             />
                           </FormControl>
                           <FormDescription>
@@ -515,11 +507,16 @@ export function FleetKyc() {
                     <FormField
                       control={form.control}
                       name="passport"
-                      render={() => (
+                      render={({ field }) => (
                         <FormItem className="my-3">
                           <FormLabel>Passport Photograph</FormLabel>
                           <FormControl>
-                            <Input type="file" {...fileRef("passport")} />
+                            <FleetFileInput
+                              accept="image/*"
+                              onFileSelect={(file) => {
+                                field.onChange(file);
+                              }}
+                            />
                           </FormControl>
                           <FormDescription>
                             JPG or PNG. Max 5MB.
@@ -531,13 +528,15 @@ export function FleetKyc() {
                     <FormField
                       control={form.control}
                       name="governmentApprovedId"
-                      render={() => (
+                      render={({ field }) => (
                         <FormItem>
                           <FormLabel>Government Approved ID</FormLabel>
                           <FormControl>
-                            <Input
-                              type="file"
-                              {...fileRef("governmentApprovedId")}
+                            <FleetFileInput
+                              accept="image/*,.pdf"
+                              onFileSelect={(file) => {
+                                field.onChange(file);
+                              }}
                             />
                           </FormControl>
                           <FormDescription>
@@ -550,11 +549,16 @@ export function FleetKyc() {
                     <FormField
                       control={form.control}
                       name="proofOfAddress"
-                      render={() => (
+                      render={({ field }) => (
                         <FormItem className="my-3">
                           <FormLabel>Proof of Address Document</FormLabel>
                           <FormControl>
-                            <Input type="file" {...fileRef("proofOfAddress")} />
+                            <FleetFileInput
+                              accept="image/*,.pdf"
+                              onFileSelect={(file) => {
+                                field.onChange(file);
+                              }}
+                            />
                           </FormControl>
                           <FormDescription>
                             Utility Bill, PDF, JPG, PNG.
@@ -566,13 +570,15 @@ export function FleetKyc() {
                     <FormField
                       control={form.control}
                       name="insuranceCertificate"
-                      render={() => (
+                      render={({ field }) => (
                         <FormItem className="my-3">
                           <FormLabel>Insurance Certificate</FormLabel>
                           <FormControl>
-                            <Input
-                              type="file"
-                              {...fileRef("insuranceCertificate")}
+                            <FleetFileInput
+                              accept="image/*,.pdf"
+                              onFileSelect={(file) => {
+                                field.onChange(file);
+                              }}
                             />
                           </FormControl>
                           <FormDescription>
@@ -585,11 +591,16 @@ export function FleetKyc() {
                     <FormField
                       control={form.control}
                       name="courierLicense"
-                      render={() => (
+                      render={({ field }) => (
                         <FormItem className="my-3">
                           <FormLabel>Courier License</FormLabel>
                           <FormControl>
-                            <Input type="file" {...fileRef("courierLicense")} />
+                            <FleetFileInput
+                              accept="image/*,.pdf"
+                              onFileSelect={(file) => {
+                                field.onChange(file);
+                              }}
+                            />
                           </FormControl>
                           <FormDescription>
                             PDF, JPG, PNG. Max 5MB.
@@ -622,14 +633,19 @@ export function FleetKyc() {
                   </Button>
                 ) : (
                   <Button disabled={isPending} type="submit">
-                    {isPending ? "Submitting..." : "Submit KYC"}
+                    {isPending ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      "Submit KYC"
+                    )}
                   </Button>
                 )}
               </div>
             </form>
           </Form>
-        </CardContent>
-      </Card>
+          </div>
+        </div>
+      </main>
     </div>
   );
 }
