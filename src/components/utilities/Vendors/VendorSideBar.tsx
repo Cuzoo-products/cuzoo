@@ -7,6 +7,7 @@ import {
   Wallet,
   Ticket,
   CreditCard,
+  QrCode,
   Zap,
 } from "lucide-react";
 import {
@@ -43,6 +44,7 @@ const items = [
   { title: "Finance", url: "finance", icon: Wallet },
   { title: "Coupons", url: "coupons", icon: Ticket },
   { title: "Payouts", url: "payouts", icon: CreditCard },
+  { title: "Store Flyer", url: "store-flyer", icon: QrCode },
 ];
 
 export default function VendorSideBar() {

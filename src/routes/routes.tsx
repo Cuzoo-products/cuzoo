@@ -79,6 +79,7 @@ import VendorPayouts from "@/pages/vendors/Payouts";
 import VendorPayoutDetails from "@/pages/vendors/PayoutDetails";
 import VendorProfile from "@/pages/vendors/Profile";
 import VendorResetPassword from "@/pages/vendors/ResetPassword";
+import StoreFlyer from "@/pages/vendors/StoreFlyer";
 import FleetPayouts from "@/pages/fleet/Payouts";
 import FleetPayoutDetails from "@/pages/fleet/PayoutDetails";
 
@@ -282,6 +283,10 @@ export const routes = createBrowserRouter([
       {
         path: "payouts/:id",
         element: <VendorPayoutDetails />,
+      },
+      {
+        path: "store-flyer",
+        element: <StoreFlyer />,
       },
       {
         path: "profile",
