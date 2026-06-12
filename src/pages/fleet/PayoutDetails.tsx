@@ -5,7 +5,7 @@ import { DetailShell } from "@/components/admin/DetailShell";
 import { Separator } from "@/components/ui/separator";
 import { useGetPayout } from "@/api/fleet/finance/useFinance";
 import Loader from "@/components/utilities/Loader";
-import { sanitizePayoutRouteId, payoutRecordId } from "@/lib/payoutId";
+import { sanitizePayoutRouteId } from "@/lib/payoutId";
 import { displayRecipientLine } from "@/lib/payoutDetailsHelpers";
 
 export type PayoutDetailResponse = {
@@ -99,16 +99,13 @@ export default function FleetPayoutDetails() {
   }
 
   const details = payout.details;
-  const payoutIdDisplay = payoutRecordId(payout);
   const recipientLine = displayRecipientLine(payout.recipient, details?.accountName);
 
   return (
     <DetailShell backHref={payoutsBack} backLabel="Payouts" crumbs={crumbs}>
       <PageHeader
         title="Payout details"
-        subtitle={
-          payout.reference ? `Reference · ${payout.reference}` : "Payout request"
-        }
+        subtitle="Payout request"
         actions={
           <div className="flex flex-wrap items-center gap-2">
             <StatusBadge status={payout.status} />
@@ -132,10 +129,6 @@ export default function FleetPayoutDetails() {
             </p>
           </div>
           <div>
-            <h4 className="font-semibold mb-1">Payout ID</h4>
-            <p className="font-mono text-xs break-all">{payoutIdDisplay || "—"}</p>
-          </div>
-          <div>
             <h4 className="font-semibold mb-1">Company ID</h4>
             <p className="font-mono text-xs break-all">{payout.companyId || "—"}</p>
           </div>
@@ -146,20 +139,12 @@ export default function FleetPayoutDetails() {
             </div>
           ) : null}
           <div>
-            <h4 className="font-semibold mb-1">Reference</h4>
-            <p className="font-mono text-xs break-all">{payout.reference || "—"}</p>
-          </div>
-          <div>
             <h4 className="font-semibold mb-1">Recipient</h4>
             <p>{recipientLine || "—"}</p>
           </div>
           <div>
             <h4 className="font-semibold mb-1">Resolved</h4>
             <p>{payout.resolved ? "Yes" : "No"}</p>
-          </div>
-          <div className="md:col-span-2">
-            <h4 className="font-semibold mb-1">Transaction ID</h4>
-            <p className="font-mono text-xs break-all">{payout.transactionId || "—"}</p>
           </div>
         </div>
 

@@ -26,10 +26,11 @@ export const useGetRider = (id: string | undefined) => {
 };
 
 export const useCreateRiders = () => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: createRiders,
     onSuccess: () => {
-      toast.success("Riders created successfully");
+      queryClient.invalidateQueries({ queryKey: ["getRiders"] });
     },
     onError: (error) => {
       const message =

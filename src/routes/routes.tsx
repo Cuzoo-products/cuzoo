@@ -1,7 +1,7 @@
 import { createBrowserRouter } from "react-router";
 import App from "@/App";
 import NotFoundPage from "@/pages/shared/NotFoundPage";
-import VerifyEmail from "@/pages/shared/VerifyEmail";
+import VerifyEmailRoute from "@/pages/shared/VerifyEmailRoute";
 import ForgotPassword from "@/pages/shared/ForgotPassword";
 import KycSubmitted from "@/pages/shared/KycSubmitted";
 import { ProtectedRoute } from "@/routes/ProtectedRoute";
@@ -9,6 +9,7 @@ import Maps from "@/pages/fleet/Maps";
 import Drivers from "@/pages/fleet/Drivers";
 import DriverDetails from "@/pages/fleet/DriverDetails";
 import AddDriver from "@/pages/fleet/AddDriver";
+import DriverCredentials from "@/pages/fleet/DriverCredentials";
 import AddVehicles from "@/pages/fleet/AddVehicles";
 import Fleets from "@/pages/fleet/Fleets";
 import EditDriver from "@/pages/fleet/EditDriver";
@@ -91,7 +92,7 @@ export const routes = createBrowserRouter([
   },
   {
     path: "/verify-email",
-    element: <VerifyEmail />,
+    element: <VerifyEmailRoute />,
   },
   {
     path: "/forgot-password",
@@ -149,6 +150,10 @@ export const routes = createBrowserRouter([
       {
         path: "drivers",
         element: <Drivers />,
+      },
+      {
+        path: "drivers/credentials",
+        element: <DriverCredentials />,
       },
       {
         path: "drivers/:id",

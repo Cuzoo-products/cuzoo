@@ -36,10 +36,10 @@ function vendorNavItemActive(pathname: string, url: string): boolean {
 
 const items = [
   { title: "Dashboard", url: "dashboard", icon: LayoutDashboard },
-  { title: "Categories", url: "categories", icon: Tag },
   { title: "Add Category", url: "add_category", icon: Plus },
-  { title: "Products", url: "products", icon: Package },
+  { title: "Categories", url: "categories", icon: Tag },
   { title: "Add Products", url: "add_product", icon: Plus },
+  { title: "Products", url: "products", icon: Package },
   { title: "Orders", url: "orders", icon: ShoppingCart },
   { title: "Finance", url: "finance", icon: Wallet },
   { title: "Coupons", url: "coupons", icon: Ticket },

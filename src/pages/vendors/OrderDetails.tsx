@@ -25,6 +25,7 @@ import {
   useConfirmPickup,
   useGetOrder,
   useProcessOrder,
+  useRequestOtp,
 } from "@/api/vendor/order/useOrder";
 import Loader from "@/components/utilities/Loader";
 
@@ -35,6 +36,7 @@ type OrderDetailsResponse = {
     pickup: {
       customerName: string;
       phoneNumber: string;
+      deliveryType: string;
       email: string;
       pickupAddress: {
         formatted_address: string;
@@ -148,51 +150,72 @@ const formatDate = (value?: string) => {
   }
 };
 
+const isHomeDelivery = (deliveryType?: string) =>
+  deliveryType?.toLowerCase() === "home delivery";
+
 function OrderActions({
   status,
+  deliveryType,
+  otp,
   otpLength = 6,
   processOrder,
+  requestOtp,
   confirmPickup,
 }: {
   status?: string;
+  deliveryType?: string;
+  otp?: string;
   otpLength?: number;
   processOrder: { run: () => void; isPending: boolean };
+  requestOtp: { run: () => void; isPending: boolean };
   confirmPickup: {
     run: (payload: { otp: string }) => void;
     isPending: boolean;
   };
 }) {
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const [otp, setOtp] = useState("");
+  const [otpInput, setOtpInput] = useState("");
   const normalizedStatus = status?.toLowerCase();
   const isPrePackaged = normalizedStatus === "pre-packaged";
   const isPackaged = normalizedStatus === "packaged";
   const isPickupConfirmed = normalizedStatus === "success";
+  const homeDelivery = isHomeDelivery(deliveryType);
 
   if (isPickupConfirmed) return null;
 
   const handleConfirmSubmit = () => {
-    const trimmed = otp.trim();
+    const trimmed = otpInput.trim();
     if (!trimmed) return;
     confirmPickup.run({ otp: trimmed });
-    setOtp("");
+    setOtpInput("");
     setConfirmOpen(false);
   };
 
   return (
     <>
-      {/* When pre-packaged: only show Process order */}
       {(isPrePackaged || !isPackaged) && (
         <Button
           variant="secondary"
           onClick={() => processOrder.run()}
-          disabled={processOrder.isPending}
+          disabled={processOrder.isPending || requestOtp.isPending}
         >
-          {processOrder.isPending ? "Processing…" : "Process order"}
+          {processOrder.isPending || requestOtp.isPending
+            ? "Processing…"
+            : "Process order"}
         </Button>
       )}
-      {/* Hide Confirm pick up when status is pre-packaged; show otherwise */}
-      {!isPrePackaged && (
+
+      {homeDelivery && isPackaged && !otp && (
+        <Button
+          variant="default"
+          onClick={() => requestOtp.run()}
+          disabled={requestOtp.isPending}
+        >
+          {requestOtp.isPending ? "Requesting OTP…" : "Request OTP for rider"}
+        </Button>
+      )}
+
+      {!homeDelivery && !isPrePackaged && (
         <Button
           variant="default"
           onClick={() => setConfirmOpen(true)}
@@ -201,34 +224,37 @@ function OrderActions({
           {confirmPickup.isPending ? "Confirming…" : "Confirm pick up"}
         </Button>
       )}
-      <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Confirm pick up</DialogTitle>
-          </DialogHeader>
-          <div className="grid gap-2 py-2">
-            <Label htmlFor="confirm-otp">OTP code</Label>
-            <Input
-              id="confirm-otp"
-              value={otp}
-              onChange={(e) => setOtp(e.target.value)}
-              placeholder="Enter OTP"
-              maxLength={otpLength}
-            />
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setConfirmOpen(false)}>
-              Cancel
-            </Button>
-            <Button
-              onClick={handleConfirmSubmit}
-              disabled={!otp.trim() || confirmPickup.isPending}
-            >
-              Confirm
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+
+      {!homeDelivery && (
+        <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Confirm pick up</DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-2 py-2">
+              <Label htmlFor="confirm-otp">OTP code</Label>
+              <Input
+                id="confirm-otp"
+                value={otpInput}
+                onChange={(e) => setOtpInput(e.target.value)}
+                placeholder="Enter OTP"
+                maxLength={otpLength}
+              />
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setConfirmOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                onClick={handleConfirmSubmit}
+                disabled={!otpInput.trim() || confirmPickup.isPending}
+              >
+                Confirm
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </>
   );
 }
@@ -243,8 +269,21 @@ export default function OrderDetailsPage() {
 
   const { mutate: processOrder, isPending: processOrderPending } =
     useProcessOrder(id as string);
+  const { mutate: requestOtp, isPending: requestOtpPending } = useRequestOtp(
+    id as string,
+  );
   const { mutate: confirmPickup, isPending: confirmPickupPending } =
     useConfirmPickup(id as string);
+
+  const handleProcessOrder = () => {
+    processOrder(undefined, {
+      onSuccess: () => {
+        if (isHomeDelivery(data?.data?.deliveryType)) {
+          requestOtp();
+        }
+      },
+    });
+  };
 
   if (!id) {
     return (
@@ -270,6 +309,7 @@ export default function OrderDetailsPage() {
   }
 
   const order = data.data;
+  const homeDelivery = isHomeDelivery(order.deliveryType);
 
   const chats = order.chats ?? [];
   const products = order.products ?? [];
@@ -313,13 +353,13 @@ export default function OrderDetailsPage() {
             <h4 className="font-semibold mb-1">Amount</h4>
             <p>
               Total: ₦
-              {order.amount.totalAmount.toLocaleString("en-NG", {
+              {order.amount.vendorTotalAmount.toLocaleString("en-NG", {
                 maximumFractionDigits: 2,
               })}
             </p>
             <p className="text-xs text-muted-foreground">
-              Service charge: ₦
-              {order.amount.serviceCharge.toLocaleString("en-NG", {
+              Commission: ₦
+              {order.amount.cuzooVendorCommission.toLocaleString("en-NG", {
                 maximumFractionDigits: 2,
               })}
             </p>
@@ -327,6 +367,19 @@ export default function OrderDetailsPage() {
         </div>
 
         <Separator />
+
+        {homeDelivery && order.otp ? (
+          <>
+            <div className="rounded-md border border-primary/30 bg-primary/5 p-4 text-sm">
+              <h4 className="font-semibold mb-1">Rider OTP</h4>
+              <p className="text-2xl font-mono tracking-[0.3em]">{order.otp}</p>
+              <p className="text-xs text-muted-foreground mt-2">
+                Give this code to the rider when they arrive to collect the order.
+              </p>
+            </div>
+            <Separator />
+          </>
+        ) : null}
 
         {/* Order Items */}
         <div className="space-y-2 text-sm">
@@ -474,10 +527,16 @@ export default function OrderDetailsPage() {
           )}
           <OrderActions
             status={order.status}
+            deliveryType={order.deliveryType}
+            otp={order.otp}
             otpLength={order.otpLength}
             processOrder={{
-              run: () => processOrder(),
+              run: handleProcessOrder,
               isPending: processOrderPending,
+            }}
+            requestOtp={{
+              run: () => requestOtp(),
+              isPending: requestOtpPending,
             }}
             confirmPickup={{
               run: confirmPickup,

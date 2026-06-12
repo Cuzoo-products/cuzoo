@@ -1,17 +1,9 @@
 import type { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal } from "lucide-react";
-import { Link } from "react-router";
 
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import StatusBadge from "@/components/admin/StatusBadge";
+import { createViewActionsColumn } from "@/components/ui/data-table-actions-column";
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
+import { DataTableIdCell } from "@/components/ui/data-table-id-cell";
 
 export type AdminOrderData = {
   id: string;
@@ -32,6 +24,7 @@ export const columns: ColumnDef<AdminOrderData>[] = [
     header: ({ column }) => {
       return <DataTableColumnHeader column={column} title="Order ID" />;
     },
+    cell: ({ getValue }) => <DataTableIdCell id={getValue() as string} />,
   },
   {
     accessorKey: "customer",
@@ -106,36 +99,8 @@ export const columns: ColumnDef<AdminOrderData>[] = [
       return <DataTableColumnHeader column={column} title="Created At" />;
     },
   },
-  {
-    id: "actions",
-    cell: ({ row }) => {
-      const orderData = row.original;
-
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            className="admin-dropdown-menu p-1"
-            align="end"
-          >
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(orderData.id)}
-            >
-              Copy Order ID
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Link to={`/admins/orders/${orderData.id}`}>View Order</Link>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      );
-    },
-  },
+  createViewActionsColumn<AdminOrderData>({
+    getHref: (order) => `/admins/orders/${order.id}`,
+  }),
 ];
 

@@ -19,7 +19,7 @@ import {
   useRiderPayout,
   useVendorPayout,
 } from "@/api/admin/payouts/usePayouts";
-import { sanitizePayoutRouteId, payoutRecordId } from "@/lib/payoutId";
+import { sanitizePayoutRouteId } from "@/lib/payoutId";
 import { displayRecipientLine } from "@/lib/payoutDetailsHelpers";
 
 const normalizeType = (value?: string) =>
@@ -145,7 +145,6 @@ export default function AdminPayoutDetails() {
 
   const canResolve = payout.resolved === false;
   const details = payout.details;
-  const payoutIdDisplay = payoutRecordId(payout);
   const recipientLine = displayRecipientLine(
     payout.recipient,
     details?.accountName,
@@ -198,16 +197,12 @@ export default function AdminPayoutDetails() {
       crumbs={[
         { label: "Dashboard", href: "/admins/dashboard" },
         { label: "Payouts", href: `/admins/payouts/${payoutType}` },
-        { label: payout.reference || id || "Details" },
+        { label: "Details" },
       ]}
     >
       <PageHeader
         title="Payout details"
-        subtitle={
-          payout.reference
-            ? `Reference · ${payout.reference}`
-            : "Admin review"
-        }
+        subtitle="Admin review"
         actions={
           <div className="flex flex-wrap gap-2">
             <StatusBadge status={payout.status ?? "pending"} />
@@ -227,8 +222,6 @@ export default function AdminPayoutDetails() {
               })}`}
             />
             <GridItem label="Type" value={payout.type || "—"} />
-            <GridItem label="Payout ID" value={payoutIdDisplay || "—"} />
-            <GridItem label="Reference" value={payout.reference || "—"} />
             <GridItem label="Owner ID" value={payout.ownerId || "—"} />
             {payout.vendorId ? (
               <GridItem label="Vendor ID" value={payout.vendorId} />
@@ -243,10 +236,6 @@ export default function AdminPayoutDetails() {
             <GridItem
               label="Resolved"
               value={payout.resolved ? "Yes" : "No"}
-            />
-            <GridItem
-              label="Transaction ID"
-              value={payout.transactionId || "—"}
             />
             <GridItem label="Created at" value={formatDate(payout.createdAt)} />
             <GridItem label="Updated at" value={formatDate(payout.updatedAt)} />

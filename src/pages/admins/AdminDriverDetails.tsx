@@ -4,7 +4,6 @@ import { Link, useParams } from "react-router";
 import { toast } from "sonner";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -257,24 +256,16 @@ export default function AdminDriverDetails() {
                 <h2 className="text-2xl font-bold">{driver.name}</h2>
                 <p className="text-sm text-muted-foreground">{driver.id}</p>
 
-                <div className="mt-4 flex items-center gap-2">
-                  <Badge
-                    variant={
-                      driver.status === "Active" ? "default" : "destructive"
-                    }
-                  >
-                    Account: {driver.status}
-                  </Badge>
+                <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground">Account</span>
+                    <StatusBadge status={driver.status} />
+                  </div>
 
-                  <Badge
-                    variant={
-                      driver.walletStatus === "Active"
-                        ? "default"
-                        : "destructive"
-                    }
-                  >
-                    Wallet: {driver.walletStatus}
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground">Wallet</span>
+                    <StatusBadge status={driver.walletStatus} />
+                  </div>
                 </div>
               </div>
             </CardContent>

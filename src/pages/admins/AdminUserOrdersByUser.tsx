@@ -18,6 +18,7 @@ import {
   type AdminTripListItem,
 } from "@/api/admin/trips/trips";
 import Loader from "@/components/utilities/Loader";
+import { DataTableIdCell } from "@/components/ui/data-table-id-cell";
 
 function formatWhen(iso?: string): string {
   if (!iso) return "—";
@@ -158,7 +159,7 @@ export default function AdminUserOrdersByUser() {
                 <TableHead>Amount</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Created</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead className="text-right">Action</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -174,10 +175,8 @@ export default function AdminUserOrdersByUser() {
               ) : (
                 rows.map((row) => (
                   <TableRow key={row.id}>
-                    <TableCell className="max-w-[140px] font-mono text-xs">
-                      <span className="line-clamp-2" title={row.id}>
-                        {row.id}
-                      </span>
+                    <TableCell>
+                      <DataTableIdCell id={row.id} />
                     </TableCell>
                     <TableCell>{row.orderType ?? "—"}</TableCell>
                     <TableCell className="max-w-[220px]">

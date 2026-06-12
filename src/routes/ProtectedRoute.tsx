@@ -5,12 +5,14 @@ import { useState, useEffect } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/firebase";
 import type { User } from "firebase/auth";
+import { hasSubmittedKyc } from "@/lib/kycStatus";
 
 interface AuthUser {
   id: string;
   email: string;
   accountType: "fleet" | "vendor" | "admin";
   status: string;
+  registrationNumber?: string;
 }
 
 interface ProtectedRouteProps {
@@ -77,9 +79,12 @@ export const ProtectedRoute = ({
     reduxUser &&
     (reduxUser.accountType === "fleet" || reduxUser.accountType === "vendor") &&
     reduxUser.status !== "approved" &&
-    !location.pathname.includes("kyc") // Allow access to KYC pages
+    !location.pathname.includes("kyc")
   ) {
-    // Redirect to appropriate KYC page if not verified
+    if (hasSubmittedKyc(reduxUser.registrationNumber)) {
+      return <Navigate to="/kyc-submitted" replace />;
+    }
+
     switch (reduxUser.accountType) {
       case "fleet":
         return <Navigate to="/fleetkyc" replace />;

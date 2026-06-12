@@ -18,7 +18,7 @@ export default function VerifyEmail() {
 
   const handleResend = () => {
     if (!email || !accountType) return;
-    sendVerificationMail({ email, accountType: "users" });
+    sendVerificationMail({ email, accountType });
   };
 
   return (

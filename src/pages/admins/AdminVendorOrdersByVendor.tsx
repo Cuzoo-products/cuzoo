@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import Loader from "@/components/utilities/Loader";
+import { DataTableIdCell } from "@/components/ui/data-table-id-cell";
 import { useGetOrdersForAdminByVendorId } from "@/api/admin/orders/useOrders";
 
 /** Matches GET /admins/orders?orderType=&vendorId= */
@@ -137,7 +138,7 @@ export default function AdminVendorOrdersByVendor() {
                 <TableHead>Type</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Date</TableHead>
-                <TableHead className="text-right"> </TableHead>
+                <TableHead className="text-right">Action</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -153,7 +154,9 @@ export default function AdminVendorOrdersByVendor() {
               ) : (
                 rows.map((r) => (
                   <TableRow key={r.id}>
-                    <TableCell className="font-mono text-xs">{r.id}</TableCell>
+                    <TableCell>
+                      <DataTableIdCell id={r.id} />
+                    </TableCell>
                     <TableCell>{r.customer}</TableCell>
                     <TableCell>{r.vendor}</TableCell>
                     <TableCell className="max-w-[220px] whitespace-pre-line text-xs">
@@ -177,7 +180,7 @@ export default function AdminVendorOrdersByVendor() {
                         : "—"}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button variant="link" className="h-auto p-0" asChild>
+                      <Button variant="outline" size="sm" asChild>
                         <Link to={`/admins/orders/${r.id}`}>View</Link>
                       </Button>
                     </TableCell>

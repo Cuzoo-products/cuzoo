@@ -135,7 +135,7 @@ export default function AdminFleetVehiclesByFleet() {
                 <TableHead>Color</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Assigned</TableHead>
-                <TableHead className="w-[100px]" />
+                <TableHead className="text-right">Action</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -174,8 +174,8 @@ export default function AdminFleetVehiclesByFleet() {
                       <TableCell>
                         {hasAssignedRiderId(v) ? "Yes" : "No"}
                       </TableCell>
-                      <TableCell>
-                        <Button asChild variant="ghost" size="sm" className="h-8">
+                      <TableCell className="text-right">
+                        <Button variant="outline" size="sm" asChild>
                           <Link
                             to={`/admins/vehicles/${encodeURIComponent(vid)}`}
                           >

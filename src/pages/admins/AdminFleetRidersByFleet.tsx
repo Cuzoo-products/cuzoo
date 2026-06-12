@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import Loader from "@/components/utilities/Loader";
+import { DataTableIdCell } from "@/components/ui/data-table-id-cell";
 import { useGetRidersByFleetId } from "@/api/admin/riders/useRiders";
 import { parseRidersListPayload } from "@/api/admin/riders/riders";
 
@@ -143,7 +144,7 @@ export default function AdminFleetRidersByFleet() {
                 <TableHead>Company</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Joined</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead className="text-right">Action</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -159,10 +160,8 @@ export default function AdminFleetRidersByFleet() {
               ) : (
                 rows.map((r) => (
                   <TableRow key={r.id || r.email}>
-                    <TableCell className="max-w-[120px] font-mono text-xs">
-                      <span className="line-clamp-2" title={r.id}>
-                        {r.id || "—"}
-                      </span>
+                    <TableCell>
+                      <DataTableIdCell id={r.id} />
                     </TableCell>
                     <TableCell>{r.name}</TableCell>
                     <TableCell className="max-w-[180px] truncate text-sm">

@@ -1,7 +1,7 @@
 import "@/styles/vendor-portal.css";
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, type FieldPath } from "react-hook-form";
 import * as z from "zod";
 import { format } from "date-fns";
 import { CalendarIcon, Loader2 } from "lucide-react";
@@ -179,8 +179,38 @@ export function VendorKycForm() {
     });
   }
 
+  const step1FieldNames = [
+    "registrationNumber",
+    "dateOfIncorporation",
+    "placeOfIncorporation",
+    "businessType",
+    "addressPlaceId",
+    "typeOfGoodsSold",
+  ] as const satisfies readonly FieldPath<VendorKycFormValues>[];
+
+  const step2FieldNames = [
+    "proprietor.name",
+    "proprietor.nationality",
+    "proprietor.state",
+    "proprietor.residentialAddress",
+    "proprietor.declaration",
+  ] as const satisfies readonly FieldPath<VendorKycFormValues>[];
+
   const nextStep = () => setStep((s) => Math.min(s + 1, 3));
   const prevStep = () => setStep((s) => Math.max(s - 1, 1));
+
+  async function goNext() {
+    if (step === 1) {
+      const ok = await form.trigger([...step1FieldNames]);
+      if (ok) nextStep();
+      return;
+    }
+
+    if (step === 2) {
+      const ok = await form.trigger([...step2FieldNames]);
+      if (ok) nextStep();
+    }
+  }
 
   return (
     <div className="vendor-portal min-h-screen">
@@ -587,7 +617,7 @@ export function VendorKycForm() {
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      nextStep();
+                      void goNext();
                     }}
                   >
                     Next

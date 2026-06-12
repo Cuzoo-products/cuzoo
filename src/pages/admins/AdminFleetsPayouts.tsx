@@ -37,7 +37,6 @@ export default function AdminFleetsPayouts() {
 
   const tableData: PayoutData[] = (data?.data?.data ?? []).map((p: any) => ({
     id: payoutRecordId(p),
-    referenceNo: p.reference,
     amount: `₦${Number(p.amount ?? 0).toLocaleString("en-NG", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
     status: p.status ?? "—",
     requestedAt: formatRequestedAt(p.createdAt ?? ""),

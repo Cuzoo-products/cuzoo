@@ -27,6 +27,7 @@ import {
 } from "firebase/auth";
 import Loader from "./components/utilities/Loader";
 import { ArrowLeft, Eye, EyeOff, Loader2 } from "lucide-react";
+import { hasSubmittedKyc } from "@/lib/kycStatus";
 
 const AUTH_INPUT_CLASS =
   "h-12 w-full rounded-lg border border-[var(--auth-border)] bg-[var(--auth-bg-card-alt)] px-4 text-sm text-[var(--auth-text-primary)] placeholder:text-[var(--auth-text-muted)] focus:border-[var(--auth-accent)] focus:outline-none";
@@ -74,28 +75,33 @@ function App() {
                 email: userDetails.data.email,
                 accountType: userDetails.data.type,
                 status: userDetails.data.approvalStatus,
+                registrationNumber: userDetails.data.registrationNumber ?? "",
                 photoURL: user.photoURL ?? "",
                 displayName: user.displayName ?? "",
               },
             }),
           );
 
-          const needsKyc =
-            userDetails.data.approvalStatus !== "approved" &&
-            (userDetails.data.type === "fleet" ||
-              userDetails.data.type === "vendor");
+          const accountType = userDetails.data.type;
+          const isApproved = userDetails.data.approvalStatus === "approved";
+          const kycSubmitted = hasSubmittedKyc(
+            userDetails.data.registrationNumber,
+          );
+          const isFleetOrVendor =
+            accountType === "fleet" || accountType === "vendor";
 
-          if (needsKyc) {
-            switch (userDetails.data.type) {
-              case "fleet":
-                navigate("/fleetkyc");
-                break;
-              case "vendor":
-                navigate("/vendorkyc");
-                break;
+          if (isFleetOrVendor && !isApproved) {
+            if (kycSubmitted) {
+              navigate("/kyc-submitted");
+            } else if (accountType === "fleet") {
+              navigate("/fleetkyc");
+            } else {
+              navigate("/vendorkyc");
             }
-          } else {
-            switch (userDetails.data.type) {
+            return;
+          }
+
+          switch (accountType) {
               case "fleet":
                 navigate("/fleet/dashboard");
                 break;
@@ -107,7 +113,6 @@ function App() {
                 break;
               default:
                 toast.error("Unknown user type");
-            }
           }
         } catch (err) {
           toast.error(

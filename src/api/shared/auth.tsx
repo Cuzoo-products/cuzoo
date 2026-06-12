@@ -17,7 +17,9 @@ export const sendVerificationMail = async (data: {
 };
 
 export const verifyEmail = async (token: string) => {
-  const response = await axiosInstance.get(`auth/verify-email?token=${token}`);
+  const response = await axiosInstance.get(
+    `auth/verify-email?token=${encodeURIComponent(token)}`,
+  );
   return response.data;
 };
 

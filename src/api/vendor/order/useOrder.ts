@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { confirmPickup, getOrder, getOrders, processOrder } from "./order";
+import { confirmPickup, getOrder, getOrders, processOrder, requestOtp } from "./order";
 import { toast } from "sonner";
 
 export const useGetOrders = () => {
@@ -26,6 +26,20 @@ export const useProcessOrder = (id: string) => {
     },
     onError: (e) => {
       toast.error(e.message || "Failed to process order");
+    },
+  });
+};
+
+export const useRequestOtp = (id: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => requestOtp(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["getOrder", id] });
+      toast.success("OTP generated. Share it with the rider.");
+    },
+    onError: (e) => {
+      toast.error(e.message || "Failed to request OTP");
     },
   });
 };

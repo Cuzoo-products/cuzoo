@@ -1,3 +1,4 @@
+import { DataTableIdCell } from "@/components/ui/data-table-id-cell";
 import {
   Table,
   TableBody,
@@ -84,8 +85,8 @@ export function PayoutAccountsTable({ accounts }: { accounts: unknown }) {
               </TableCell>
               <TableCell>{row.type || "—"}</TableCell>
               <TableCell>{row.currency || "—"}</TableCell>
-              <TableCell className="font-mono text-xs">
-                {row.recipient_code || "—"}
+              <TableCell>
+                <DataTableIdCell id={row.recipient_code} />
               </TableCell>
             </TableRow>
           ))}

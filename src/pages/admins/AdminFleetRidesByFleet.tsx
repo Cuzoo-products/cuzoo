@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import Loader from "@/components/utilities/Loader";
+import { DataTableIdCell } from "@/components/ui/data-table-id-cell";
 import { useGetOrdersForAdminByCompanyId } from "@/api/admin/orders/useOrders";
 import { parseAdminTripsPayload } from "@/api/admin/trips/trips";
 
@@ -152,7 +153,7 @@ export default function AdminFleetRidesByFleet() {
                 <TableHead>Status</TableHead>
                 <TableHead>Created</TableHead>
                 <TableHead>Schedule</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead className="text-right">Action</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -168,10 +169,8 @@ export default function AdminFleetRidesByFleet() {
               ) : (
                 rows.map((row) => (
                   <TableRow key={row.id}>
-                    <TableCell className="max-w-[140px] font-mono text-xs">
-                      <span className="line-clamp-2" title={row.id}>
-                        {row.id}
-                      </span>
+                    <TableCell>
+                      <DataTableIdCell id={row.id} />
                     </TableCell>
                     <TableCell>{row.orderType ?? "—"}</TableCell>
                     <TableCell className="max-w-[160px]">

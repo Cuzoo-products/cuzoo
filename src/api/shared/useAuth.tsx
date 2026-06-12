@@ -43,6 +43,15 @@ export const useVerifyEmail = () => {
   });
 };
 
+export const useVerifyEmailToken = (token: string) => {
+  return useQuery({
+    queryKey: ["verifyEmail", token],
+    queryFn: () => verifyEmail(token),
+    enabled: Boolean(token),
+    retry: false,
+  });
+};
+
 export const useForgotPassword = () => {
   return useMutation({
     mutationFn: (data: { email: string }) => forgotPassword(data),

@@ -10,7 +10,13 @@ const successSet = new Set([
   "inflow",
 ]);
 
-const warnSet = new Set(["pending", "in-progress", "ongoing", "queued"]);
+const warnSet = new Set([
+  "pending",
+  "in-progress",
+  "ongoing",
+  "queued",
+  "frozen",
+]);
 
 const dangerSet = new Set([
   "rejected",
@@ -23,6 +29,16 @@ const dangerSet = new Set([
   "outflow",
 ]);
 
+type StatusVariant = "success" | "pending" | "danger" | "neutral";
+
+function getVariant(status: string): StatusVariant {
+  const lower = String(status).toLowerCase();
+  if (successSet.has(lower)) return "success";
+  if (warnSet.has(lower)) return "pending";
+  if (dangerSet.has(lower)) return "danger";
+  return "neutral";
+}
+
 export default function StatusBadge({
   status,
   className,
@@ -30,25 +46,13 @@ export default function StatusBadge({
   status: string;
   className?: string;
 }) {
-  const lower = String(status).toLowerCase();
-  const isSuccess = successSet.has(lower);
-  const isWarn = warnSet.has(lower);
-  const isDanger = dangerSet.has(lower);
+  const variant = getVariant(status);
 
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide",
-        isSuccess &&
-          "border border-[var(--admin-success)]/30 bg-[var(--admin-success)]/15 text-[var(--admin-success)]",
-        isWarn &&
-          "border border-[var(--admin-warning)]/30 bg-[var(--admin-warning)]/15 text-[var(--admin-warning)]",
-        isDanger &&
-          "border border-[var(--admin-danger)]/30 bg-[var(--admin-danger)]/15 text-[var(--admin-danger)]",
-        !isSuccess &&
-          !isWarn &&
-          !isDanger &&
-          "border border-[var(--admin-border)] bg-[var(--admin-bg-card-alt)] text-[var(--admin-text-muted)]",
+        "admin-status-badge",
+        `admin-status-badge--${variant}`,
         className,
       )}
     >

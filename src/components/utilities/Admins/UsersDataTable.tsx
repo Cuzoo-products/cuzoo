@@ -1,16 +1,7 @@
 import type { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { createViewActionsColumn } from "@/components/ui/data-table-actions-column";
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
-import { Link } from "react-router";
 
 export type UserData = {
   id: string;
@@ -57,35 +48,7 @@ export const columns: ColumnDef<UserData>[] = [
       return <div>{`${row.original.phoneNumber.number || ""}`}</div>;
     },
   },
-  {
-    id: "actions",
-    cell: ({ row }) => {
-      const fleetManagerData = row.original;
-
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            className="admin-dropdown-menu p-1"
-            align="end"
-          >
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(fleetManagerData.id)}
-            >
-              Copy User ID
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Link to={`${fleetManagerData.id}`}>View User</Link>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      );
-    },
-  },
+  createViewActionsColumn<UserData>({
+    getHref: (user) => user.id,
+  }),
 ];

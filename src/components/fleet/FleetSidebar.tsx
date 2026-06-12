@@ -26,10 +26,10 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { label: "Dashboard", href: "/fleet/dashboard", icon: Home },
-  { label: "Vehicles", href: "/fleet/fleets", icon: Truck },
   { label: "Add Vehicle", href: "/fleet/add_vehicle", icon: Plus },
-  { label: "Drivers", href: "/fleet/drivers", icon: User },
+  { label: "Vehicles", href: "/fleet/fleets", icon: Truck },
   { label: "Add Driver", href: "/fleet/add_driver", icon: UserRoundPen },
+  { label: "Drivers", href: "/fleet/drivers", icon: User },
   { label: "Trips", href: "/fleet/trips", icon: BusFront },
   { label: "Finance", href: "/fleet/finance", icon: WalletMinimal },
   { label: "Payouts", href: "/fleet/payouts", icon: Banknote },
@@ -104,7 +104,8 @@ export default function FleetSidebar({
         "fleet-sidebar fixed inset-y-0 left-0 z-40 flex h-screen w-72 flex-shrink-0 flex-col border-r border-[var(--fleet-sidebar-border)] bg-[var(--fleet-sidebar-bg)] transition-all duration-200 ease-in-out lg:sticky lg:top-0",
         mobileOpen ? "translate-x-0" : "-translate-x-full",
         "lg:translate-x-0 lg:w-48",
-        iconOnly && "fleet-sidebar--collapsed lg:w-[calc(3rem+1rem+2px)] lg:p-2",
+        iconOnly &&
+          "fleet-sidebar--collapsed lg:w-[calc(3rem+1rem+2px)] lg:p-2",
       )}
     >
       <div
@@ -145,7 +146,9 @@ export default function FleetSidebar({
             return (
               <li
                 key={item.label}
-                className={cn(iconOnly && "flex justify-center lg:flex lg:justify-center")}
+                className={cn(
+                  iconOnly && "flex justify-center lg:flex lg:justify-center",
+                )}
               >
                 <FleetNavLink
                   item={item}

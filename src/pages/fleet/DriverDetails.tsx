@@ -6,7 +6,10 @@ import {
   useReleaseRider,
   useSuspendRider,
 } from "@/api/fleet/rider/useRiderQuery";
-import { DriverInfo, type Driver } from "@/components/utilities/Fleet/DriverInfo";
+import {
+  DriverInfo,
+  type Driver,
+} from "@/components/utilities/Fleet/DriverInfo";
 import PageHeader from "@/components/admin/PageHeader";
 import { DetailShell } from "@/components/admin/DetailShell";
 
