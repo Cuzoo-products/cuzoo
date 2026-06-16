@@ -150,12 +150,26 @@ const formatDate = (value?: string) => {
   }
 };
 
-const isHomeDelivery = (deliveryType?: string) =>
-  deliveryType?.toLowerCase() === "home delivery";
+const normalizeOrderStatus = (status?: string) =>
+  status?.trim().toLowerCase().replace(/_/g, "-").replace(/\s+/g, "-") ?? "";
+
+const isHomeDelivery = (...deliveryTypes: Array<string | undefined>) =>
+  deliveryTypes.some((deliveryType) => {
+    const normalized = deliveryType
+      ?.trim()
+      .toLowerCase()
+      .replace(/_/g, " ")
+      .replace(/\s+/g, " ");
+
+    return normalized === "home delivery" || normalized === "homedelivery";
+  });
+
+const hasOtpValue = (otp?: string) => Boolean(otp?.trim());
 
 function OrderActions({
   status,
   deliveryType,
+  pickupDeliveryType,
   otp,
   otpLength = 6,
   processOrder,
@@ -164,6 +178,7 @@ function OrderActions({
 }: {
   status?: string;
   deliveryType?: string;
+  pickupDeliveryType?: string;
   otp?: string;
   otpLength?: number;
   processOrder: { run: () => void; isPending: boolean };
@@ -175,13 +190,26 @@ function OrderActions({
 }) {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [otpInput, setOtpInput] = useState("");
-  const normalizedStatus = status?.toLowerCase();
+  const normalizedStatus = normalizeOrderStatus(status);
   const isPrePackaged = normalizedStatus === "pre-packaged";
+  const isPrePickup = normalizedStatus === "pre-pickup";
   const isPackaged = normalizedStatus === "packaged";
+  const isDelivery = normalizedStatus === "delivery";
   const isPickupConfirmed = normalizedStatus === "success";
-  const homeDelivery = isHomeDelivery(deliveryType);
+  const homeDelivery = isHomeDelivery(deliveryType, pickupDeliveryType);
+  const otpGenerated = hasOtpValue(otp);
 
   if (isPickupConfirmed) return null;
+
+  const showProcessOrder = homeDelivery
+    ? isPrePackaged
+    : isPrePackaged || (!isPackaged && !isDelivery);
+
+  const showRequestOtp = homeDelivery && isPrePickup && !otpGenerated;
+
+  const showConfirmPickup = !homeDelivery && isPackaged;
+
+  const showDeliveryNotice = homeDelivery && isDelivery;
 
   const handleConfirmSubmit = () => {
     const trimmed = otpInput.trim();
@@ -193,7 +221,7 @@ function OrderActions({
 
   return (
     <>
-      {(isPrePackaged || !isPackaged) && (
+      {showProcessOrder && (
         <Button
           variant="secondary"
           onClick={() => processOrder.run()}
@@ -205,7 +233,7 @@ function OrderActions({
         </Button>
       )}
 
-      {homeDelivery && isPackaged && !otp && (
+      {showRequestOtp && (
         <Button
           variant="default"
           onClick={() => requestOtp.run()}
@@ -215,7 +243,13 @@ function OrderActions({
         </Button>
       )}
 
-      {!homeDelivery && !isPrePackaged && (
+      {showDeliveryNotice && (
+        <p className="text-sm text-muted-foreground">
+          Rider has collected the order. It is now out for delivery.
+        </p>
+      )}
+
+      {showConfirmPickup && (
         <Button
           variant="default"
           onClick={() => setConfirmOpen(true)}
@@ -266,7 +300,6 @@ export default function OrderDetailsPage() {
     isLoading: boolean;
     error: unknown;
   };
-
   const { mutate: processOrder, isPending: processOrderPending } =
     useProcessOrder(id as string);
   const { mutate: requestOtp, isPending: requestOtpPending } = useRequestOtp(
@@ -276,13 +309,7 @@ export default function OrderDetailsPage() {
     useConfirmPickup(id as string);
 
   const handleProcessOrder = () => {
-    processOrder(undefined, {
-      onSuccess: () => {
-        if (isHomeDelivery(data?.data?.deliveryType)) {
-          requestOtp();
-        }
-      },
-    });
+    processOrder();
   };
 
   if (!id) {
@@ -309,7 +336,18 @@ export default function OrderDetailsPage() {
   }
 
   const order = data.data;
-  const homeDelivery = isHomeDelivery(order.deliveryType);
+  const resolvedDeliveryType =
+    order.deliveryType || order.pickup?.deliveryType;
+  const homeDelivery = isHomeDelivery(
+    order.deliveryType,
+    order.pickup?.deliveryType,
+  );
+
+  const normalizedOrderStatus = normalizeOrderStatus(order.status);
+  const showRiderOtp =
+    homeDelivery &&
+    normalizedOrderStatus === "pre-pickup" &&
+    hasOtpValue(order.otp);
 
   const chats = order.chats ?? [];
   const products = order.products ?? [];
@@ -318,7 +356,7 @@ export default function OrderDetailsPage() {
     <div className="space-y-6">
       <PageHeader
         title="Order Details"
-        subtitle={`Order ID: ${id} • Type: ${order.orderType} • Delivery: ${order.deliveryType}`}
+        subtitle={`Order ID: ${id} • Type: ${order.orderType} • Delivery: ${resolvedDeliveryType ?? "—"}`}
         actions={<VendorStatusBadge status={order.status} />}
       />
 
@@ -368,13 +406,14 @@ export default function OrderDetailsPage() {
 
         <Separator />
 
-        {homeDelivery && order.otp ? (
+        {showRiderOtp ? (
           <>
             <div className="rounded-md border border-primary/30 bg-primary/5 p-4 text-sm">
               <h4 className="font-semibold mb-1">Rider OTP</h4>
               <p className="text-2xl font-mono tracking-[0.3em]">{order.otp}</p>
               <p className="text-xs text-muted-foreground mt-2">
-                Give this code to the rider when they arrive to collect the order.
+                Give this code to the rider when they arrive to collect the
+                order.
               </p>
             </div>
             <Separator />
@@ -528,6 +567,7 @@ export default function OrderDetailsPage() {
           <OrderActions
             status={order.status}
             deliveryType={order.deliveryType}
+            pickupDeliveryType={order.pickup?.deliveryType}
             otp={order.otp}
             otpLength={order.otpLength}
             processOrder={{
