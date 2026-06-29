@@ -32,7 +32,6 @@ function CalendarSelectDropdown({
 
   return (
     <Select
-      modal={false}
       value={stringValue}
       onValueChange={(next) => {
         onChange?.({

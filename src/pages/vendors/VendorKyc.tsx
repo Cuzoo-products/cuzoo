@@ -25,7 +25,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { kycRequiredDocument } from "@/lib/zodVaildation";
-import { cn, fileToBase64, omitEmptyPayloadValues } from "@/lib/utils";
+import { fileToBase64, omitEmptyPayloadValues } from "@/lib/utils";
 import Header2 from "@/components/utilities/header2";
 import { GogglePlace } from "@/components/utilities/GogglePlace";
 import { useUpdateVendorProfile } from "@/api/vendor/auth/useAuth";
