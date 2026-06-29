@@ -17,6 +17,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { STATIC_SITE_URL } from "@/lib/siteUrls";
 
 interface NavItem {
   label: string;
@@ -167,7 +168,7 @@ export default function FleetSidebar({
           <Tooltip>
             <TooltipTrigger asChild>
               <a
-                href="https://cuzoo.com"
+                href={STATIC_SITE_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Back to Website"
@@ -187,7 +188,7 @@ export default function FleetSidebar({
         </div>
       ) : (
         <a
-          href="https://cuzoo.com"
+          href={STATIC_SITE_URL}
           target="_blank"
           rel="noopener noreferrer"
           className="mt-auto flex cursor-pointer items-center gap-2 border-t border-[var(--fleet-sidebar-border)] px-4 py-3 text-xs text-[var(--admin-text-muted)] transition-colors hover:text-[var(--admin-text-primary)]"

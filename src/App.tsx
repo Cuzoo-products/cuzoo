@@ -28,6 +28,7 @@ import {
 import Loader from "./components/utilities/Loader";
 import { ArrowLeft, Eye, EyeOff, Loader2 } from "lucide-react";
 import { hasSubmittedKyc } from "@/lib/kycStatus";
+import { STATIC_SITE_URL } from "@/lib/siteUrls";
 
 const AUTH_INPUT_CLASS =
   "h-12 w-full rounded-lg border border-[var(--auth-border)] bg-[var(--auth-bg-card-alt)] px-4 text-sm text-[var(--auth-text-primary)] placeholder:text-[var(--auth-text-muted)] focus:border-[var(--auth-accent)] focus:outline-none";
@@ -146,18 +147,19 @@ function App() {
   }
 
   return (
-    <main className="auth-portal relative flex min-h-screen flex-col items-center justify-center p-6">
-      <a
-        href="https://cuzoo.com"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="absolute left-4 top-4 flex items-center gap-1.5 text-sm text-[var(--auth-text-muted)] transition-colors hover:text-[var(--auth-text-primary)]"
-      >
-        <ArrowLeft size={14} />
-        Back to Website
-      </a>
+    <main className="auth-portal flex min-h-screen flex-col items-center px-6 py-10 sm:py-12">
+      <div className="my-auto flex w-full max-w-[480px] flex-col gap-6 py-6">
+        <a
+          href={STATIC_SITE_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-1.5 text-sm text-[var(--auth-text-muted)] transition-colors hover:text-[var(--auth-text-primary)]"
+        >
+          <ArrowLeft size={14} />
+          Back to Website
+        </a>
 
-      <div className="w-full max-w-[480px] rounded-xl border border-[var(--auth-border)] bg-[var(--auth-bg-card)] p-8 shadow-2xl">
+        <div className="w-full rounded-xl border border-[var(--auth-border)] bg-[var(--auth-bg-card)] p-8 shadow-2xl">
         <div className="mb-8 flex flex-col items-center space-y-3 text-center">
           <Image
             source={logo1}
@@ -266,16 +268,17 @@ function App() {
         <p className="mt-6 text-center text-xs text-[var(--auth-text-muted)]">
           ©2025 Cuzoo. All Rights Reserved.
         </p>
-      </div>
+        </div>
 
-      <a
-        href="https://cuzoo.com"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="mt-6 text-xs text-[var(--auth-text-muted)] transition-colors hover:text-[var(--auth-text-primary)]"
-      >
-        ← Back to Cuzoo website
-      </a>
+        <a
+          href={STATIC_SITE_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-center text-xs text-[var(--auth-text-muted)] transition-colors hover:text-[var(--auth-text-primary)]"
+        >
+          ← Back to Cuzoo website
+        </a>
+      </div>
     </main>
   );
 }

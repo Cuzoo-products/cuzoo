@@ -13,6 +13,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { DatePicker } from "@/components/ui/date-picker";
 import { EditDriverFormSchema } from "@/lib/zodVaildation";
 import {
   Select,
@@ -191,10 +192,13 @@ function EditDriver() {
                 <FormItem>
                   <FormLabel>Date of Birth</FormLabel>
                   <FormControl>
-                    <Input
-                      type="date"
-                      className="h-11"
-                      {...field}
+                    <DatePicker
+                      value={field.value}
+                      onChange={field.onChange}
+                      valueType="string"
+                      buttonClassName="h-11"
+                      popoverContentClassName="fleet-select-menu"
+                      disableDate={(date) => date > new Date()}
                     />
                   </FormControl>
                   <FormMessage className="text-red-600" />

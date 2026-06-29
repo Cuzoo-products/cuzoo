@@ -4,10 +4,70 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
 } from "lucide-react"
-import { DayButton, DayPicker, getDefaultClassNames } from "react-day-picker"
+import {
+  DayButton,
+  DayPicker,
+  getDefaultClassNames,
+  type DropdownProps,
+} from "react-day-picker"
 
 import { cn } from "@/lib/utils"
 import { Button, buttonVariants } from "@/components/ui/button"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+
+function CalendarSelectDropdown({
+  options,
+  value,
+  onChange,
+  disabled,
+  className,
+}: DropdownProps) {
+  const stringValue = value === undefined ? undefined : String(value)
+
+  return (
+    <Select
+      modal={false}
+      value={stringValue}
+      onValueChange={(next) => {
+        onChange?.({
+          target: { value: next },
+        } as React.ChangeEvent<HTMLSelectElement>)
+      }}
+      disabled={disabled}
+    >
+      <SelectTrigger
+        size="sm"
+        className={cn(
+          "pointer-events-auto h-8 min-w-[7.5rem] bg-background text-foreground shadow-xs dark:bg-card dark:text-card-foreground dark:border-border",
+          className
+        )}
+      >
+        <SelectValue placeholder="Select" />
+      </SelectTrigger>
+      <SelectContent
+        position="popper"
+        className="calendar-select-menu z-[200] max-h-60 bg-background text-foreground dark:bg-card dark:text-card-foreground dark:border-border"
+      >
+        {options?.map((option) => (
+          <SelectItem
+            key={option.value}
+            value={String(option.value)}
+            disabled={option.disabled}
+            className="dark:text-card-foreground dark:focus:bg-accent dark:focus:text-accent-foreground"
+          >
+            {option.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  )
+}
 
 function Calendar({
   className,
@@ -27,7 +87,7 @@ function Calendar({
     <DayPicker
       showOutsideDays={showOutsideDays}
       className={cn(
-        "bg-background group/calendar p-3 [--cell-size:--spacing(8)] [[data-slot=card-content]_&]:bg-transparent [[data-slot=popover-content]_&]:bg-transparent",
+        "bg-background text-foreground group/calendar p-3 [--cell-size:--spacing(8)] [[data-slot=card-content]_&]:bg-transparent [[data-slot=popover-content]_&]:bg-transparent",
         String.raw`rtl:**:[.rdp-button\_next>svg]:rotate-180`,
         String.raw`rtl:**:[.rdp-button\_previous>svg]:rotate-180`,
         className
@@ -47,36 +107,49 @@ function Calendar({
         month: cn("flex flex-col w-full gap-4", defaultClassNames.month),
         nav: cn(
           "flex items-center gap-1 w-full absolute top-0 inset-x-0 justify-between",
+          captionLayout === "dropdown" &&
+            "pointer-events-none z-30 [&_button]:pointer-events-auto",
           defaultClassNames.nav
         ),
         button_previous: cn(
           buttonVariants({ variant: buttonVariant }),
           "size-(--cell-size) aria-disabled:opacity-50 p-0 select-none",
+          captionLayout === "dropdown" && "relative z-30",
           defaultClassNames.button_previous
         ),
         button_next: cn(
           buttonVariants({ variant: buttonVariant }),
           "size-(--cell-size) aria-disabled:opacity-50 p-0 select-none",
+          captionLayout === "dropdown" && "relative z-30",
           defaultClassNames.button_next
         ),
         month_caption: cn(
           "flex items-center justify-center h-(--cell-size) w-full px-(--cell-size)",
+          captionLayout === "dropdown" && "relative z-20",
           defaultClassNames.month_caption
         ),
         dropdowns: cn(
-          "w-full flex items-center text-sm font-medium justify-center h-(--cell-size) gap-1.5",
+          "relative z-20 mx-auto flex w-auto items-center justify-center gap-1.5 text-sm font-medium text-foreground",
           defaultClassNames.dropdowns
         ),
+        months_dropdown: cn(
+          "pointer-events-auto",
+          defaultClassNames.months_dropdown
+        ),
+        years_dropdown: cn(
+          "pointer-events-auto",
+          defaultClassNames.years_dropdown
+        ),
         dropdown_root: cn(
-          "relative has-focus:border-ring border border-input shadow-xs has-focus:ring-ring/50 has-focus:ring-[3px] rounded-md",
+          "relative bg-background text-foreground has-focus:border-ring border border-input shadow-xs has-focus:ring-ring/50 has-focus:ring-[3px] rounded-md dark:bg-card dark:text-card-foreground dark:border-border",
           defaultClassNames.dropdown_root
         ),
         dropdown: cn(
-          "absolute bg-popover inset-0 opacity-0",
+          "absolute inset-0 cursor-pointer opacity-0",
           defaultClassNames.dropdown
         ),
         caption_label: cn(
-          "select-none font-medium",
+          "select-none font-medium text-foreground",
           captionLayout === "label"
             ? "text-sm"
             : "rounded-md pl-2 pr-1 flex items-center gap-1 text-sm h-8 [&>svg]:text-muted-foreground [&>svg]:size-3.5",
@@ -164,6 +237,9 @@ function Calendar({
           )
         },
         ...components,
+        ...(captionLayout === "dropdown"
+          ? { Dropdown: CalendarSelectDropdown }
+          : {}),
       }}
       {...props}
     />
@@ -199,7 +275,7 @@ function CalendarDayButton({
       data-range-end={modifiers.range_end}
       data-range-middle={modifiers.range_middle}
       className={cn(
-        "data-[selected-single=true]:bg-primary data-[selected-single=true]:text-primary-foreground data-[range-middle=true]:bg-accent data-[range-middle=true]:text-accent-foreground data-[range-start=true]:bg-primary data-[range-start=true]:text-primary-foreground data-[range-end=true]:bg-primary data-[range-end=true]:text-primary-foreground group-data-[focused=true]/day:border-ring group-data-[focused=true]/day:ring-ring/50 dark:hover:text-accent-foreground flex aspect-square size-auto w-full min-w-(--cell-size) flex-col gap-1 leading-none font-normal group-data-[focused=true]/day:relative group-data-[focused=true]/day:z-10 group-data-[focused=true]/day:ring-[3px] data-[range-end=true]:rounded-md data-[range-end=true]:rounded-r-md data-[range-middle=true]:rounded-none data-[range-start=true]:rounded-md data-[range-start=true]:rounded-l-md [&>span]:text-xs [&>span]:opacity-70",
+        "data-[selected-single=true]:bg-primary data-[selected-single=true]:text-primary-foreground data-[selected-single=true]:dark:text-white data-[range-middle=true]:bg-accent data-[range-middle=true]:text-accent-foreground data-[range-start=true]:bg-primary data-[range-start=true]:text-primary-foreground data-[range-start=true]:dark:text-white data-[range-end=true]:bg-primary data-[range-end=true]:text-primary-foreground data-[range-end=true]:dark:text-white group-data-[focused=true]/day:border-ring group-data-[focused=true]/day:ring-ring/50 dark:hover:text-accent-foreground flex aspect-square size-auto w-full min-w-(--cell-size) flex-col gap-1 leading-none font-normal group-data-[focused=true]/day:relative group-data-[focused=true]/day:z-10 group-data-[focused=true]/day:ring-[3px] data-[range-end=true]:rounded-md data-[range-end=true]:rounded-r-md data-[range-middle=true]:rounded-none data-[range-start=true]:rounded-md data-[range-start=true]:rounded-l-md [&>span]:text-xs [&>span]:opacity-70",
         defaultClassNames.day,
         className
       )}

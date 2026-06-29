@@ -37,6 +37,9 @@
 
   --line-1: oklch(0.92 0 0);
   --line-2: oklch(0.3216 0.0072 274.75);
+
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.2 0 0);
 }
 
 .dark {
@@ -44,7 +47,7 @@
   --foreground: oklch(0.98 0.01 282);
 
   --primary: oklch(0.4416 0.1857 283.9);
-  --primary-foreground: oklch(0.15 0.01 282);
+  --primary-foreground: oklch(0.99 0.02 95);
 
   --secondary: oklch(0.21 0.04 265.77);
   --secondary-foreground: oklch(0.92 0.01 282);
@@ -73,6 +76,9 @@
 
   --line-1: oklch(0.34 0 0);
   --line-2: oklch(0.3216 0.0072 274.75);
+
+  --popover: oklch(0.18 0.01 282);
+  --popover-foreground: oklch(0.95 0.01 282);
 }
 
 @theme inline {
@@ -109,6 +115,9 @@
 
   --color-line-1: var(--line-1);
   --color-line-2: var(--line-2);
+
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
 }
 
 body {
@@ -133,6 +142,37 @@ h6 {
   border-radius: 1rem;
   padding: 1rem;
   border: 1px solid var(--border);
+}
+
+/* Date picker month/year lists — portaled outside portal theme wrappers */
+.dark .calendar-select-menu {
+  background-color: #161b22 !important;
+  border-color: #30363d !important;
+  color: #e6edf3 !important;
+}
+
+.dark .calendar-select-menu [data-slot="select-item"] {
+  color: #e6edf3 !important;
+}
+
+.dark .calendar-select-menu [data-slot="select-item"][data-highlighted] {
+  background-color: rgb(110 86 207 / 0.2) !important;
+  color: #e6edf3 !important;
+}
+
+/* Purple buttons — keep white label text in dark mode */
+.dark [data-slot="button"].bg-primary,
+.dark button.bg-primary,
+.dark [data-slot="button"][class*="admin-accent"],
+.dark [data-slot="button"][class*="auth-accent"],
+.dark [data-slot="button"][class*="vendor-sidebar-primary"] {
+  color: #ffffff !important;
+}
+
+.dark [data-slot="button"].bg-primary svg,
+.dark [data-slot="button"][class*="admin-accent"] svg,
+.dark [data-slot="button"][class*="auth-accent"] svg {
+  color: #ffffff !important;
 }
 
 /* Invoice PDF: show only the invoice when printing (Save as PDF) */

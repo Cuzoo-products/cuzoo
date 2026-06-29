@@ -3,8 +3,7 @@ import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, type FieldPath } from "react-hook-form";
 import * as z from "zod";
-import { format } from "date-fns";
-import { CalendarIcon, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -17,11 +16,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-} from "@/components/ui/popover";
+import { DatePicker } from "@/components/ui/date-picker";
 import {
   Select,
   SelectContent,
@@ -29,7 +24,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Calendar } from "@/components/ui/calendar";
 import { kycRequiredDocument } from "@/lib/zodVaildation";
 import { cn, fileToBase64, omitEmptyPayloadValues } from "@/lib/utils";
 import Header2 from "@/components/utilities/header2";
@@ -255,34 +249,14 @@ export function VendorKycForm() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Date of Incorporation</FormLabel>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <FormControl>
-                              <Button
-                                variant="outline"
-                                className={cn(
-                                  "w-full justify-start",
-                                  !field.value && "text-muted-foreground",
-                                )}
-                              >
-                                {field.value
-                                  ? format(field.value, "PPP")
-                                  : "Pick a date"}
-                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                              </Button>
-                            </FormControl>
-                          </PopoverTrigger>
-                          <PopoverContent
-                            align="start"
-                            className="vendor-select-menu p-0"
-                          >
-                            <Calendar
-                              mode="single"
-                              selected={field.value}
-                              onSelect={field.onChange}
-                            />
-                          </PopoverContent>
-                        </Popover>
+                        <FormControl>
+                          <DatePicker
+                            value={field.value}
+                            onChange={field.onChange}
+                            popoverContentClassName="vendor-select-menu"
+                            disableDate={(date) => date > new Date()}
+                          />
+                        </FormControl>
                         <FormMessage className="text-red-500" />
                       </FormItem>
                     )}

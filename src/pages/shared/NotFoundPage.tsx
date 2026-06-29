@@ -69,7 +69,7 @@ const NotFoundPage = () => {
       <footer className="relative z-10 py-6 text-center">
         <p className="text-white/30 text-xs">
           If this seems wrong,{" "}
-          <a href="mailto:support@cuzoo.com" className="text-white/50 hover:text-white/70 underline underline-offset-2">
+          <a href="mailto:support@cuzooapp.com" className="text-white/50 hover:text-white/70 underline underline-offset-2">
             contact support
           </a>
         </p>

@@ -22,6 +22,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { STATIC_SITE_URL } from "@/lib/siteUrls";
 
 interface NavItem {
   label: string;
@@ -179,7 +180,7 @@ export default function AdminSidebar({
           <Tooltip>
             <TooltipTrigger asChild>
               <a
-                href="https://cuzoo.com"
+                href={STATIC_SITE_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Back to Website"
@@ -199,7 +200,7 @@ export default function AdminSidebar({
         </div>
       ) : (
         <a
-          href="https://cuzoo.com"
+          href={STATIC_SITE_URL}
           target="_blank"
           rel="noopener noreferrer"
           className="mt-auto flex cursor-pointer items-center gap-2 border-t border-[var(--admin-sidebar-border)] px-4 py-3 text-xs text-[var(--admin-sidebar-muted)] transition-colors hover:text-[var(--admin-sidebar-fg)]"
