@@ -51,7 +51,7 @@ const vendorKycSchema = z.object({
   businessType: z.enum(BUSINESS_TYPES, {
     required_error: "Business type is required",
   }),
-  logo: z.union([z.string(), z.any()]).optional(),
+  logo: kycRequiredDocument("Logo is required"),
   addressPlaceId: z.string().min(1, "Business address is required"),
   typeOfGoodsSold: z.string().min(1, "Type of goods sold is required"),
   proprietor: z.object({
@@ -178,6 +178,7 @@ export function VendorKycForm() {
     "dateOfIncorporation",
     "placeOfIncorporation",
     "businessType",
+    "logo",
     "addressPlaceId",
     "typeOfGoodsSold",
   ] as const satisfies readonly FieldPath<VendorKycFormValues>[];
@@ -306,7 +307,7 @@ export function VendorKycForm() {
                     name="logo"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Logo (optional)</FormLabel>
+                        <FormLabel>Logo (required)</FormLabel>
                         <FormControl>
                           <VendorFileInput
                             accept="image/*"
