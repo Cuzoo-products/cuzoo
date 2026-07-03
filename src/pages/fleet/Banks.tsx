@@ -80,6 +80,26 @@ export default function Banks() {
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ): void => {
     const { name, value } = e.target;
+
+    if (name === "accountNumber") {
+      const accountNumber = value.replace(/\D/g, "").slice(0, 10);
+      setForm((prev) => ({
+        ...prev,
+        accountNumber,
+        accountName: /^\d{10}$/.test(accountNumber) ? prev.accountName : "",
+      }));
+      return;
+    }
+
+    if (name === "bankCode") {
+      setForm((prev) => ({
+        ...prev,
+        bankCode: value,
+        accountName: "",
+      }));
+      return;
+    }
+
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -159,6 +179,8 @@ export default function Banks() {
                 value={form.accountNumber}
                 onChange={handleChange}
                 placeholder="e.g. 0123456789"
+                inputMode="numeric"
+                maxLength={10}
                 className="h-10"
               />
             </div>

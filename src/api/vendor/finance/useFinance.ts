@@ -25,10 +25,12 @@ export const useGetVerifyAccount = (
   accountNumber: string,
   bankCode: string,
 ) => {
+  const canVerify = /^\d{10}$/.test(accountNumber) && !!bankCode;
+
   return useQuery({
     queryKey: ["getVerifyAccount", accountNumber, bankCode],
     queryFn: () => getVerifyAccount(accountNumber, bankCode),
-    enabled: !!accountNumber && !!bankCode,
+    enabled: canVerify,
   });
 };
 
