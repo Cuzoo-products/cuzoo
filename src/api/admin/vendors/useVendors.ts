@@ -5,13 +5,14 @@ import {
   approveVendor,
   vendorWalletAction,
   vendorAccountAction,
+  type GetVendorsParams,
 } from "./vendorsApi";
 import { toast } from "sonner";
 
-export const useVendors = () => {
+export const useVendors = (params?: GetVendorsParams) => {
   return useQuery({
-    queryKey: ["vendors"],
-    queryFn: () => getVendors(),
+    queryKey: ["vendors", params],
+    queryFn: () => getVendors(params),
   });
 };
 

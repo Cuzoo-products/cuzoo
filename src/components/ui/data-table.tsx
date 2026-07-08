@@ -18,7 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import SearchBar from "@/components/admin/SearchBar";
 import { DataTablePagination } from "./data-table-pagination";
 import { DataTableViewOptions } from "./data-table-view-options";
@@ -31,6 +31,10 @@ interface DataTableProps<TData, TValue> {
   /** Use admin portal search + table styling */
   adminVariant?: boolean;
   searchPlaceholder?: string;
+  /** Hide client-side pagination (use backend pagination instead) */
+  hidePagination?: boolean;
+  /** Extra controls rendered beside the search input */
+  toolbarExtra?: ReactNode;
 }
 
 export function DataTable<TData, TValue>({
@@ -38,6 +42,8 @@ export function DataTable<TData, TValue>({
   data,
   adminVariant = false,
   searchPlaceholder = "Search...",
+  hidePagination = false,
+  toolbarExtra,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -62,22 +68,25 @@ export function DataTable<TData, TValue>({
   return (
     <div>
       <div className="mb-5 flex items-center gap-3">
-        <div className="flex flex-1 items-center">
+        <div className="flex min-w-0 flex-1 items-center gap-3">
           {adminVariant ? (
             <SearchBar
               value={globalFilter}
               onChange={(v) => table.setGlobalFilter(v)}
               placeholder={searchPlaceholder}
-              className="max-w-md"
+              className="w-full max-w-md shrink"
             />
           ) : (
             <Input
               value={globalFilter}
               onChange={(e) => table.setGlobalFilter(String(e.target.value))}
               placeholder={searchPlaceholder}
-              className="max-w-md bg-secondary"
+              className="max-w-md shrink bg-secondary"
             />
           )}
+          {toolbarExtra ? (
+            <div className="shrink-0">{toolbarExtra}</div>
+          ) : null}
         </div>
         <DataTableViewOptions table={table} />
       </div>
@@ -154,9 +163,11 @@ export function DataTable<TData, TValue>({
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <DataTablePagination table={table} />
-      </div>
+      {!hidePagination && (
+        <div className="flex items-center justify-end space-x-2 py-4">
+          <DataTablePagination table={table} />
+        </div>
+      )}
     </div>
   );
 }

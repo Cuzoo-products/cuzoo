@@ -6,13 +6,14 @@ import {
   riderWalletAction,
   riderAccountAction,
   getRidersByFleetId,
+  type GetRidersParams,
 } from "./riders";
 import { toast } from "sonner";
 
-export const useGetRiders = () => {
+export const useGetRiders = (params?: GetRidersParams) => {
   return useQuery({
-    queryKey: ["riders"],
-    queryFn: () => getRiders(),
+    queryKey: ["riders", params],
+    queryFn: () => getRiders(params),
   });
 };
 

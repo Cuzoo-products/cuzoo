@@ -1,11 +1,18 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { confirmPickup, getOrder, getOrders, processOrder, requestOtp } from "./order";
+import {
+  confirmPickup,
+  getOrder,
+  getOrders,
+  processOrder,
+  requestOtp,
+  type GetVendorOrdersParams,
+} from "./order";
 import { toast } from "sonner";
 
-export const useGetOrders = () => {
+export const useGetOrders = (params?: GetVendorOrdersParams) => {
   return useQuery({
-    queryKey: ["getOrders"],
-    queryFn: getOrders,
+    queryKey: ["getOrders", params],
+    queryFn: () => getOrders(params),
   });
 };
 

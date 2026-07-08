@@ -1,8 +1,10 @@
 import DashboardCards from "@/components/utilities/Admins/DashboardCards";
 import PageHeader from "@/components/admin/PageHeader";
+import AdminActionItems from "@/components/admin/AdminActionItems";
 import AdminRevenueChart from "@/components/admin/AdminRevenueChart";
 import AdminTopPerformersCard from "@/components/admin/AdminTopPerformersCard";
 import { useAdminDashboard } from "@/api/admin/dashboard/useDashboard";
+import { useAdminActionItems } from "@/hooks/useAdminActionItems";
 import Loader from "@/components/utilities/Loader";
 
 type PassportAsset = { url?: string; path?: string; type?: string };
@@ -31,6 +33,7 @@ type AdminDashboardData = {
 
 function AdminDashboard() {
   const { data, isLoading, error } = useAdminDashboard();
+  const actionItems = useAdminActionItems();
 
   if (error) {
     return (
@@ -87,6 +90,8 @@ function AdminDashboard() {
         drivers={drivers}
         fleets={fleets}
       />
+
+      <AdminActionItems items={actionItems} />
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-10">
         <div className="lg:col-span-7">

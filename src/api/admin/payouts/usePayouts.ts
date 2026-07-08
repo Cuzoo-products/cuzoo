@@ -13,12 +13,15 @@ import {
   rejectFleetPayout,
   rejectRiderPayout,
   rejectVendorPayout,
+  type GetFleetPayoutsParams,
+  type GetRiderPayoutsParams,
+  type GetVendorPayoutsParams,
 } from "./payoutsApi";
 
-export const useVendorsPayouts = () =>
+export const useVendorsPayouts = (params?: GetVendorPayoutsParams) =>
   useQuery({
-    queryKey: ["vendors-payouts"],
-    queryFn: getVendorsPayouts,
+    queryKey: ["vendors-payouts", params],
+    queryFn: () => getVendorsPayouts(params),
   });
 
 export const useVendorPayout = (id: string, enabled = true) =>
@@ -59,10 +62,10 @@ export const useRejectVendorPayout = (
   });
 };
 
-export const useFleetsPayouts = () =>
+export const useFleetsPayouts = (params?: GetFleetPayoutsParams) =>
   useQuery({
-    queryKey: ["fleets-payouts"],
-    queryFn: getFleetsPayouts,
+    queryKey: ["fleets-payouts", params],
+    queryFn: () => getFleetsPayouts(params),
   });
 
 export const useFleetPayout = (id: string, enabled = true) =>
@@ -103,10 +106,10 @@ export const useRejectFleetPayout = (
   });
 };
 
-export const useRidersPayouts = () =>
+export const useRidersPayouts = (params?: GetRiderPayoutsParams) =>
   useQuery({
-    queryKey: ["riders-payouts"],
-    queryFn: getRidersPayouts,
+    queryKey: ["riders-payouts", params],
+    queryFn: () => getRidersPayouts(params),
   });
 
 export const useRiderPayout = (id: string, enabled = true) =>

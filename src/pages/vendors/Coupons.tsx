@@ -1,4 +1,5 @@
 import PageHeader from "@/components/admin/PageHeader";
+import BackendCursorPagination from "@/components/admin/BackendCursorPagination";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -26,12 +27,16 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useCreateCoupon, useGetCoupons } from "@/api/vendor/coupon/useCoupon";
 import {
+  parseVendorCouponsListMeta,
   parseVendorCouponsResponse,
   type FirestoreTimestampLike,
+  type GetVendorCouponsParams,
   type VendorCouponRow,
 } from "@/api/vendor/coupon/coupon";
 import { payoutRecordId } from "@/lib/payoutId";
 import Loader from "@/components/utilities/Loader";
+
+const DEFAULT_LIMIT = 20;
 
 const couponFormSchema = z.object({
   code: z
@@ -126,13 +131,63 @@ function usageLabel(c: VendorCouponRow): string {
 }
 
 export default function Coupons() {
-  const { data: couponsPayload, isLoading, isError } = useGetCoupons();
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [limit, setLimit] = useState(DEFAULT_LIMIT);
+  const [cursorStack, setCursorStack] = useState<
+    (number | string | undefined)[]
+  >([undefined]);
+
+  const currentCursor = cursorStack[cursorStack.length - 1];
+
+  const queryParams = useMemo<GetVendorCouponsParams>(() => {
+    const params: GetVendorCouponsParams = { limit };
+    if (currentCursor != null && currentCursor !== "") {
+      params.cursor = currentCursor;
+    }
+    return params;
+  }, [currentCursor, limit]);
+
+  const {
+    data: couponsPayload,
+    isLoading,
+    isFetching,
+    isError,
+  } = useGetCoupons(queryParams);
 
   const coupons = useMemo(
     () => parseVendorCouponsResponse(couponsPayload),
     [couponsPayload],
   );
+  const meta = useMemo(
+    () => parseVendorCouponsListMeta(couponsPayload),
+    [couponsPayload],
+  );
+
+  const pageIndex = cursorStack.length - 1;
+  const hasPrevious = pageIndex > 0;
+  const hasNext =
+    meta?.lastCursor != null &&
+    meta.lastCursor !== "" &&
+    coupons.length >= limit;
+
+  const resetPagination = () => {
+    setCursorStack([undefined]);
+  };
+
+  const handleLimitChange = (nextLimit: number) => {
+    setLimit(nextLimit);
+    resetPagination();
+  };
+
+  const handlePrevious = () => {
+    if (!hasPrevious) return;
+    setCursorStack((prev) => prev.slice(0, -1));
+  };
+
+  const handleNext = () => {
+    if (!hasNext || meta?.lastCursor == null) return;
+    setCursorStack((prev) => [...prev, meta.lastCursor as number | string]);
+  };
 
   const { mutate: createCoupon, isPending } = useCreateCoupon();
 
@@ -168,6 +223,7 @@ export default function Coupons() {
 
     createCoupon(newCoupon, {
       onSuccess: () => {
+        resetPagination();
         form.reset({
           code: "",
           value: 10,
@@ -332,7 +388,9 @@ export default function Coupons() {
           <p className="text-sm text-muted-foreground">
             {isLoading
               ? "Loading…"
-              : `${coupons.length} coupon${coupons.length !== 1 ? "s" : ""} total`}
+              : meta?.count != null
+                ? `${meta.count.toLocaleString("en-NG")} coupon${meta.count !== 1 ? "s" : ""} total`
+                : `${coupons.length} on this page`}
           </p>
         </div>
         <div className="overflow-x-auto">
@@ -413,6 +471,20 @@ export default function Coupons() {
           )}
         </div>
       </div>
+
+      {!isLoading && !isError && (
+        <BackendCursorPagination
+          count={meta?.count}
+          limit={limit}
+          pageIndex={pageIndex}
+          hasPrevious={hasPrevious}
+          hasNext={hasNext}
+          isLoading={isFetching}
+          onPrevious={handlePrevious}
+          onNext={handleNext}
+          onLimitChange={handleLimitChange}
+        />
+      )}
     </div>
   );
 }

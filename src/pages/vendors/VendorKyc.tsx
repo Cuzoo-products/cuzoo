@@ -25,7 +25,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { kycRequiredDocument } from "@/lib/zodVaildation";
-import { fileToBase64, omitEmptyPayloadValues } from "@/lib/utils";
+import { isGooglePlaceId } from "@/lib/placeId";
+import { omitEmptyPayloadValues } from "@/lib/utils";
+import {
+  fileToCompressedBase64,
+  KYC_SLOW_UPLOAD_MESSAGE,
+  valueToCompressedBase64,
+} from "@/lib/imageUpload";
 import Header2 from "@/components/utilities/header2";
 import { GogglePlace } from "@/components/utilities/GogglePlace";
 import { useUpdateVendorProfile } from "@/api/vendor/auth/useAuth";
@@ -52,7 +58,13 @@ const vendorKycSchema = z.object({
     required_error: "Business type is required",
   }),
   logo: kycRequiredDocument("Logo is required"),
-  addressPlaceId: z.string().min(1, "Business address is required"),
+  addressPlaceId: z
+    .string()
+    .min(1, "Business address is required")
+    .refine(
+      (val) => isGooglePlaceId(val),
+      "Please select a valid address from the dropdown.",
+    ),
   typeOfGoodsSold: z.string().min(1, "Type of goods sold is required"),
   proprietor: z.object({
     name: z.string().min(1, "Proprietor name is required"),
@@ -79,11 +91,7 @@ type VendorKycFormValues = z.infer<typeof vendorKycSchema>;
 async function toBase64(
   value: FileList | File | string | undefined,
 ): Promise<string | undefined> {
-  if (value == null) return undefined;
-  if (typeof value === "string") return value;
-  const file = value instanceof FileList ? value[0] : value;
-  if (!file) return undefined;
-  return fileToBase64(file);
+  return valueToCompressedBase64(value);
 }
 
 export function VendorKycForm() {
@@ -119,6 +127,7 @@ export function VendorKycForm() {
   });
 
   const [step, setStep] = useState(1);
+  const [addressLabel, setAddressLabel] = useState("");
 
   async function onSubmit(values: VendorKycFormValues) {
     const logo =
@@ -216,6 +225,9 @@ export function VendorKycForm() {
           <div className="vendor-form-header">
             <h1>Vendor Registration KYC</h1>
             <p>Step {step} of 3 - Fill all details carefully</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Document images must be under 1 MB each.
+            </p>
           </div>
           <div className="vendor-form-card">
           <Form {...form}>
@@ -313,7 +325,7 @@ export function VendorKycForm() {
                             accept="image/*"
                             onFileSelect={async (file) => {
                               if (!file) return;
-                              const base64 = await fileToBase64(file);
+                              const base64 = await fileToCompressedBase64(file);
                               field.onChange(base64);
                             }}
                           />
@@ -331,7 +343,11 @@ export function VendorKycForm() {
                         <FormControl>
                           <GogglePlace
                             value={field.value}
-                            onChange={field.onChange}
+                            label={addressLabel}
+                            onChange={(placeId, address) => {
+                              field.onChange(placeId);
+                              setAddressLabel(address);
+                            }}
                             placeholder="Enter business address"
                           />
                         </FormControl>
@@ -573,11 +589,18 @@ export function VendorKycForm() {
                 </div>
               )}
 
+              {isUpdatingProfile && (
+                <p className="text-sm text-muted-foreground">
+                  {KYC_SLOW_UPLOAD_MESSAGE}
+                </p>
+              )}
+
               <div className="flex justify-between pt-6">
                 {step > 1 && (
                   <Button
                     type="button"
                     variant="outline"
+                    disabled={isUpdatingProfile}
                     onClick={(e) => {
                       e.preventDefault();
                       prevStep();

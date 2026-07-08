@@ -1,13 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { CheckCircle, ArrowLeft } from "lucide-react";
-import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router";
-import { logout } from "@/redux/slices/authSlice";
-import { signOut } from "firebase/auth";
-import { auth } from "@/firebase";
+import { logoutUser } from "@/lib/logout";
 
 export default function KycSubmitted() {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
   return (
     <main className="auth-portal flex min-h-screen items-center justify-center px-4">
@@ -31,8 +27,7 @@ export default function KycSubmitted() {
           <Button
             className="h-12 w-full rounded-lg bg-[var(--auth-accent)] font-semibold text-white hover:bg-[var(--auth-accent-hover)]"
             onClick={async () => {
-              await signOut(auth);
-              dispatch(logout());
+              await logoutUser();
               navigate("/");
             }}
           >

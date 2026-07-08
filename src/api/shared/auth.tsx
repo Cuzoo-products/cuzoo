@@ -36,7 +36,7 @@ export const resetPassword = async (
   },
 ) => {
   const response = await axiosInstance.post(
-    `auth/reset-password?token=${token}`,
+    `auth/reset-password?token=${encodeURIComponent(token)}`,
     data,
   );
   return response.data;

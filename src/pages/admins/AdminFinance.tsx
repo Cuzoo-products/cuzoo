@@ -1,33 +1,24 @@
-import type { ColumnDef } from "@tanstack/react-table";
-import { CreditCard, DollarSign, TrendingUp, Users } from "lucide-react";
+import { CreditCard, DollarSign, TrendingUp, Users, Wallet } from "lucide-react";
 import PageHeader from "@/components/admin/PageHeader";
 import KpiCard from "@/components/admin/KpiCard";
-import StatusBadge from "@/components/admin/StatusBadge";
-import { Section } from "@/components/admin/DetailShell";
-import { DataTable } from "@/components/ui/data-table";
-
-type FinancialRecord = {
-  date: string;
-  type: "InFlow" | "OutFlow";
-  amount: string;
-};
-
-const financialRecordsData: FinancialRecord[] = [
-  { date: "24th, May 2025", type: "InFlow", amount: "₦250.00" },
-  { date: "24th, May 2025", type: "OutFlow", amount: "₦250.00" },
-];
-
-const columns: ColumnDef<FinancialRecord>[] = [
-  { accessorKey: "date", header: "Date" },
-  { accessorKey: "amount", header: "Amount" },
-  {
-    accessorKey: "type",
-    header: "Type",
-    cell: ({ row }) => <StatusBadge status={row.original.type} />,
-  },
-];
+import Loader from "@/components/utilities/Loader";
+import { useAdminEarnings } from "@/api/admin/finance/useEarnings";
+import { parseAdminEarnings } from "@/api/admin/finance/earnings";
 
 export default function AdminFinance() {
+  const { data, isLoading, error } = useAdminEarnings();
+  const earnings = parseAdminEarnings(data);
+
+  if (isLoading) return <Loader />;
+
+  if (error || !earnings) {
+    return (
+      <div className="space-y-6">
+        <PageHeader title="Finance" subtitle="Failed to load earnings." />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -35,53 +26,43 @@ export default function AdminFinance() {
         subtitle="Overview of platform financials"
       />
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
         <KpiCard
           icon={<DollarSign className="h-5 w-5 text-[var(--admin-accent)]" />}
           label="Total Revenue"
-          value={455231.89}
+          value={earnings.totalRevenue}
           prefix="₦"
           decimals={2}
-          trend="+20.1% from last month"
-          trendColor="success"
+        />
+        <KpiCard
+          icon={<Wallet className="h-5 w-5 text-[var(--admin-accent)]" />}
+          label="Platform Earnings"
+          value={earnings.platformEarnings}
+          prefix="₦"
+          decimals={2}
         />
         <KpiCard
           icon={<Users className="h-5 w-5 text-[var(--admin-accent)]" />}
-          label="From Riders"
-          value={9235}
+          label="Rider Earnings"
+          value={earnings.riderEarnings}
           prefix="₦"
-          trend="+180.1% from last month"
-          trendColor="success"
+          decimals={2}
         />
         <KpiCard
           icon={<CreditCard className="h-5 w-5 text-[var(--admin-accent)]" />}
-          label="From Vendors"
-          value={12234}
+          label="Vendor Earnings"
+          value={earnings.vendorEarnings}
           prefix="₦"
-          trend="+19% from last month"
-          trendColor="success"
+          decimals={2}
         />
         <KpiCard
           icon={<TrendingUp className="h-5 w-5 text-[var(--admin-accent)]" />}
-          label="From Fleets"
-          value={573}
+          label="Fleet Earnings"
+          value={earnings.fleetEarnings}
           prefix="₦"
-          trend="+201 since last hour"
-          trendColor="success"
+          decimals={2}
         />
       </div>
-
-      <Section
-        title="Financial Records"
-        subtitle="A list of recent financial transactions."
-      >
-        <DataTable
-          adminVariant
-          searchPlaceholder="Search transactions..."
-          columns={columns}
-          data={financialRecordsData}
-        />
-      </Section>
     </div>
   );
 }

@@ -144,18 +144,18 @@ export default function VendorBanks() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 px-1 pb-4 sm:px-2">
       <PageHeader
         title="Banks"
         subtitle="Manage payout bank accounts for your vendor account."
       />
 
-      <div className="grid gap-4 lg:grid-cols-3">
-        <Card className="lg:col-span-1">
-          <CardHeader>
+      <div className="grid gap-6 lg:grid-cols-3">
+        <Card className="lg:col-span-1 border-[var(--admin-border)] bg-[var(--admin-bg-card)] shadow-none">
+          <CardHeader className="px-6 pt-6 pb-4">
             <CardTitle className="text-base md:text-lg">Add New Bank</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 px-6 pb-6">
             <div className="space-y-2">
               <label className="text-sm font-medium">Bank Name</label>
               <select
@@ -198,7 +198,7 @@ export default function VendorBanks() {
 
             <Button
               type="button"
-              className="w-full mt-2"
+              className="mt-2 w-full"
               onClick={handleAddBank}
               disabled={isAddingBankAccount}
             >
@@ -207,13 +207,13 @@ export default function VendorBanks() {
           </CardContent>
         </Card>
 
-        <Card className="lg:col-span-2">
-          <CardHeader>
+        <Card className="lg:col-span-2 border-[var(--admin-border)] bg-[var(--admin-bg-card)] shadow-none">
+          <CardHeader className="px-6 pt-6 pb-4">
             <CardTitle className="text-base md:text-lg">
               Saved Bank Accounts
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-6 pb-6">
             {isLoadingWallet ? (
               <p className="text-sm text-muted-foreground">Loading accounts…</p>
             ) : banks.length === 0 ? (
@@ -226,10 +226,10 @@ export default function VendorBanks() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-line-1 text-left">
-                      <th className="py-2 pr-4">Bank</th>
-                      <th className="py-2 pr-4">Account Name</th>
-                      <th className="py-2 pr-4">Account Number</th>
-                      <th className="py-2 text-right">Actions</th>
+                      <th className="py-3 pr-4">Bank</th>
+                      <th className="py-3 pr-4">Account Name</th>
+                      <th className="py-3 pr-4">Account Number</th>
+                      <th className="py-3 text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -238,10 +238,10 @@ export default function VendorBanks() {
                         key={`${bank.bankName}-${bank.accountNumber}-${index}`}
                         className="border-b border-line-1 last:border-0"
                       >
-                        <td className="py-2 pr-4">{bank.bankName}</td>
-                        <td className="py-2 pr-4">{bank.accountName}</td>
-                        <td className="py-2 pr-4">{bank.accountNumber}</td>
-                        <td className="py-2 text-right">
+                        <td className="py-3 pr-4">{bank.bankName}</td>
+                        <td className="py-3 pr-4">{bank.accountName}</td>
+                        <td className="py-3 pr-4">{bank.accountNumber}</td>
+                        <td className="py-3 text-right">
                           <Button
                             variant="ghost"
                             size="icon"
@@ -249,7 +249,7 @@ export default function VendorBanks() {
                             aria-label="Delete bank"
                             disabled={isDeletingBankAccount}
                           >
-                            <Trash2 className="w-4 h-4 text-destructive" />
+                            <Trash2 className="h-4 w-4 text-destructive" />
                           </Button>
                         </td>
                       </tr>

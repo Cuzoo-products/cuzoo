@@ -5,12 +5,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Link, useNavigate } from "react-router";
-import { useDispatch, useSelector } from "react-redux";
-import { logout } from "@/redux/slices/authSlice";
-import { signOut } from "firebase/auth";
+import { useSelector } from "react-redux";
 import { auth } from "@/firebase";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { logoutUser } from "@/lib/logout";
+import { useGetVendorProfile } from "@/api/vendor/auth/useAuth";
 
 function initialsFromName(name?: string | null): string {
   if (!name?.trim()) return "U";
@@ -28,21 +28,33 @@ type AuthUser = {
   email?: string;
 };
 
+type VendorProfileResponse = {
+  data?: {
+    businessName?: string;
+  };
+};
+
 export function VendorAccount() {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user } = useSelector(
     (state: { auth: { user?: AuthUser | null } }) => state.auth,
   );
+  const { data: profile } = useGetVendorProfile() as {
+    data?: VendorProfileResponse;
+  };
 
-  const displayName = user?.displayName ?? auth.currentUser?.displayName ?? "User";
+  const companyName = profile?.data?.businessName?.trim();
+  const displayName =
+    companyName ||
+    user?.displayName ||
+    auth.currentUser?.displayName ||
+    "User";
   const email = user?.email ?? auth.currentUser?.email ?? "";
   const initials = initialsFromName(displayName);
 
   const handleLogout = async () => {
     try {
-      await signOut(auth);
-      dispatch(logout());
+      await logoutUser();
       navigate("/");
       toast.success("Logged out successfully!");
     } catch {

@@ -1,6 +1,10 @@
 import { toast } from "sonner";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createCoupon, getCoupons } from "./coupon";
+import {
+  createCoupon,
+  getCoupons,
+  type GetVendorCouponsParams,
+} from "./coupon";
 
 export const useCreateCoupon = () => {
   const queryClient = useQueryClient();
@@ -16,9 +20,9 @@ export const useCreateCoupon = () => {
   });
 };
 
-export const useGetCoupons = () => {
+export const useGetCoupons = (params?: GetVendorCouponsParams) => {
   return useQuery({
-    queryKey: ["coupons"],
-    queryFn: getCoupons,
+    queryKey: ["coupons", params],
+    queryFn: () => getCoupons(params),
   });
 };

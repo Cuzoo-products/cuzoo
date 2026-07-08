@@ -67,6 +67,7 @@ export const columns: ColumnDef<VendorData>[] = [
     },
   },
   createViewActionsColumn<VendorData>({
-    getHref: (vendor) => vendor.id,
+    getHref: (vendor) =>
+      vendor.id ? `/admins/vendors/${vendor.id}` : undefined,
   }),
 ];

@@ -1,4 +1,9 @@
-import axiosInstance from "@/api/axiosInstances";
+import {
+  getOrdersForAdmin,
+  type GetAdminOrdersParams,
+} from "@/api/admin/orders/orders";
+
+export type GetAdminTripsParams = Omit<GetAdminOrdersParams, "orderType">;
 
 /** Row from admin trip/order list APIs — `orderType` may be `Package` or `Shopping`. */
 export type AdminTripListItem = {
@@ -86,7 +91,9 @@ export function parseAdminTripsPayload(
   return list.map(normalizeTripRow).filter((row) => row.id !== "");
 }
 
-export const getAdminTrips = async () => {
-  const response = await axiosInstance.get("/admins/trips");
-  return response.data;
+export const getAdminTrips = async (params?: GetAdminTripsParams) => {
+  return getOrdersForAdmin({
+    ...params,
+    orderType: "Package",
+  });
 };

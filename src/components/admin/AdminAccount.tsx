@@ -5,12 +5,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Link, useNavigate } from "react-router";
-import { useDispatch, useSelector } from "react-redux";
-import { logout } from "@/redux/slices/authSlice";
-import { signOut } from "firebase/auth";
+import { useSelector } from "react-redux";
 import { auth } from "@/firebase";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { logoutUser } from "@/lib/logout";
 
 function initialsFromName(name?: string | null): string {
   if (!name?.trim()) return "U";
@@ -29,7 +28,6 @@ type AuthUser = {
 };
 
 export function AdminAccount() {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user } = useSelector(
     (state: { auth: { user?: AuthUser | null } }) => state.auth,
@@ -41,8 +39,7 @@ export function AdminAccount() {
 
   const handleLogout = async () => {
     try {
-      await signOut(auth);
-      dispatch(logout());
+      await logoutUser();
       navigate("/");
       toast.success("Logged out successfully!");
     } catch {

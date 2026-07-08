@@ -1,6 +1,7 @@
 import PageHeader from "@/components/admin/PageHeader";
+import BackendCursorPagination from "@/components/admin/BackendCursorPagination";
 import { Link } from "react-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { ArrowDownRight, ArrowUpRight, Wallet } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -17,7 +18,13 @@ import {
   useInflow,
   useOutflow,
   useRequestWithdrawal,
+  useFinanceOverview,
 } from "@/api/fleet/finance/useFinance";
+import {
+  parseFleetFinanceHistoryMeta,
+  parseFleetFinanceHistoryPayload,
+  type GetFleetFinanceHistoryParams,
+} from "@/api/fleet/finance/finance";
 
 type WalletDetailsResponse = {
   success: boolean;
@@ -34,28 +41,58 @@ type WalletDetailsResponse = {
   };
 };
 
-type HistoryResponse = {
-  success: boolean;
-  statusCode: number;
-  data: {
-    count: number;
-    lastCursor: number;
-    limit: number;
-    data: {
-      amount: number;
-      date: string;
-    }[];
-  };
-};
+const DEFAULT_LIMIT = 20;
 
 const amountOrZero = (amount?: number) =>
   typeof amount === "number" ? amount : 0;
 
-const TIME_FILTERS = ["7D", "30D", "3M", "1Y"] as const;
+function useHistoryPagination() {
+  const [limit, setLimit] = useState(DEFAULT_LIMIT);
+  const [cursorStack, setCursorStack] = useState<
+    (number | string | undefined)[]
+  >([undefined]);
+
+  const currentCursor = cursorStack[cursorStack.length - 1];
+  const pageIndex = cursorStack.length - 1;
+  const hasPrevious = pageIndex > 0;
+
+  const params = useMemo<GetFleetFinanceHistoryParams>(() => {
+    const next: GetFleetFinanceHistoryParams = { limit };
+    if (currentCursor != null && currentCursor !== "") {
+      next.cursor = currentCursor;
+    }
+    return next;
+  }, [currentCursor, limit]);
+
+  const handleLimitChange = (nextLimit: number) => {
+    setLimit(nextLimit);
+    setCursorStack([undefined]);
+  };
+
+  const handlePrevious = () => {
+    if (!hasPrevious) return;
+    setCursorStack((prev) => prev.slice(0, -1));
+  };
+
+  const goNext = (lastCursor: number | string | null | undefined) => {
+    if (lastCursor == null || lastCursor === "") return;
+    setCursorStack((prev) => [...prev, lastCursor]);
+  };
+
+  return {
+    limit,
+    params,
+    pageIndex,
+    hasPrevious,
+    handleLimitChange,
+    handlePrevious,
+    goNext,
+  };
+}
 
 export default function FleetFinance() {
-  const [timeFilter, setTimeFilter] =
-    useState<(typeof TIME_FILTERS)[number]>("30D");
+  const inflowPager = useHistoryPagination();
+  const outflowPager = useHistoryPagination();
 
   const { mutateAsync: requestWithdrawal, isPending: isWithdrawing } =
     useRequestWithdrawal();
@@ -65,40 +102,101 @@ export default function FleetFinance() {
     error: unknown;
   };
 
-  const { data: inflow } = useInflow() as { data?: HistoryResponse };
-  const { data: outflow } = useOutflow() as { data?: HistoryResponse };
+  const { data: overviewPayload } = useFinanceOverview();
+  const {
+    data: inflowPayload,
+    isFetching: isInflowFetching,
+  } = useInflow(inflowPager.params);
+  const {
+    data: outflowPayload,
+    isFetching: isOutflowFetching,
+  } = useOutflow(outflowPager.params);
 
-  const inflowRows = inflow?.data?.data ?? [];
-  const outflowRows = outflow?.data?.data ?? [];
-
-  const chartMap = new Map<
-    string,
-    { name: string; inflow: number; outflow: number }
-  >();
-
-  inflowRows.forEach((row) => {
-    const existing = chartMap.get(row.date) ?? {
-      name: row.date,
-      inflow: 0,
-      outflow: 0,
-    };
-    existing.inflow += amountOrZero(row.amount);
-    chartMap.set(row.date, existing);
-  });
-
-  outflowRows.forEach((row) => {
-    const existing = chartMap.get(row.date) ?? {
-      name: row.date,
-      inflow: 0,
-      outflow: 0,
-    };
-    existing.outflow += amountOrZero(row.amount);
-    chartMap.set(row.date, existing);
-  });
-
-  const chartData = Array.from(chartMap.values()).sort((a, b) =>
-    a.name.localeCompare(b.name),
+  const inflowRows = useMemo(
+    () => parseFleetFinanceHistoryPayload(inflowPayload),
+    [inflowPayload],
   );
+  const outflowRows = useMemo(
+    () => parseFleetFinanceHistoryPayload(outflowPayload),
+    [outflowPayload],
+  );
+  const inflowMeta = useMemo(
+    () => parseFleetFinanceHistoryMeta(inflowPayload),
+    [inflowPayload],
+  );
+  const outflowMeta = useMemo(
+    () => parseFleetFinanceHistoryMeta(outflowPayload),
+    [outflowPayload],
+  );
+
+  const inflowHasNext =
+    inflowMeta?.lastCursor != null &&
+    inflowMeta.lastCursor !== "" &&
+    inflowRows.length >= inflowPager.limit;
+  const outflowHasNext =
+    outflowMeta?.lastCursor != null &&
+    outflowMeta.lastCursor !== "" &&
+    outflowRows.length >= outflowPager.limit;
+
+  const chartData = useMemo(() => {
+    const overview = (overviewPayload as { data?: unknown } | undefined)?.data;
+    if (overview && typeof overview === "object" && !Array.isArray(overview)) {
+      const series =
+        (overview as { series?: unknown; chart?: unknown }).series ??
+        (overview as { chart?: unknown }).chart;
+      if (Array.isArray(series)) {
+        return series
+          .map((point) => {
+            const p = point as Record<string, unknown>;
+            const name = String(p.name ?? p.date ?? "");
+            if (!name) return null;
+            return {
+              name,
+              inflow: amountOrZero(
+                typeof p.inflow === "number" ? p.inflow : Number(p.inflow),
+              ),
+              outflow: amountOrZero(
+                typeof p.outflow === "number" ? p.outflow : Number(p.outflow),
+              ),
+            };
+          })
+          .filter(Boolean) as Array<{
+          name: string;
+          inflow: number;
+          outflow: number;
+        }>;
+      }
+    }
+
+    const chartMap = new Map<
+      string,
+      { name: string; inflow: number; outflow: number }
+    >();
+
+    inflowRows.forEach((row) => {
+      const existing = chartMap.get(row.date) ?? {
+        name: row.date,
+        inflow: 0,
+        outflow: 0,
+      };
+      existing.inflow += amountOrZero(row.amount);
+      chartMap.set(row.date, existing);
+    });
+
+    outflowRows.forEach((row) => {
+      const existing = chartMap.get(row.date) ?? {
+        name: row.date,
+        inflow: 0,
+        outflow: 0,
+      };
+      existing.outflow += amountOrZero(row.amount);
+      chartMap.set(row.date, existing);
+    });
+
+    return Array.from(chartMap.values()).sort((a, b) =>
+      a.name.localeCompare(b.name),
+    );
+  }, [inflowRows, outflowRows, overviewPayload]);
 
   const wallet = data?.data;
   const walletBalance = amountOrZero(wallet?.amount);
@@ -173,27 +271,13 @@ export default function FleetFinance() {
       </div>
 
       <div className="fleet-finance-card">
-        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <h2 className="text-lg font-semibold text-[var(--admin-text-primary)]">
-              Finance Overview
-            </h2>
-            <p className="text-sm text-[var(--admin-text-muted)]">
-              Track your cash inflow and outflow
-            </p>
-          </div>
-          <div className="fleet-finance-filter">
-            {TIME_FILTERS.map((filter) => (
-              <button
-                key={filter}
-                type="button"
-                data-active={timeFilter === filter}
-                onClick={() => setTimeFilter(filter)}
-              >
-                {filter}
-              </button>
-            ))}
-          </div>
+        <div className="mb-4">
+          <h2 className="text-lg font-semibold text-[var(--admin-text-primary)]">
+            Finance Overview
+          </h2>
+          <p className="text-sm text-[var(--admin-text-muted)]">
+            Track your cash inflow and outflow
+          </p>
         </div>
 
         <div className="h-[320px]">
@@ -264,7 +348,7 @@ export default function FleetFinance() {
               </p>
             ) : (
               inflowRows.map((row, index) => (
-                <div key={index} className="fleet-flow-item">
+                <div key={`${row.date}-${index}`} className="fleet-flow-item">
                   <div>
                     <p className="text-sm text-[var(--admin-text-primary)]">
                       {row.date}
@@ -280,6 +364,17 @@ export default function FleetFinance() {
               ))
             )}
           </div>
+          <BackendCursorPagination
+            count={inflowMeta?.count}
+            limit={inflowPager.limit}
+            pageIndex={inflowPager.pageIndex}
+            hasPrevious={inflowPager.hasPrevious}
+            hasNext={inflowHasNext}
+            isLoading={isInflowFetching}
+            onPrevious={inflowPager.handlePrevious}
+            onNext={() => inflowPager.goNext(inflowMeta?.lastCursor)}
+            onLimitChange={inflowPager.handleLimitChange}
+          />
         </div>
 
         <div className="fleet-flow-card">
@@ -298,7 +393,7 @@ export default function FleetFinance() {
               </p>
             ) : (
               outflowRows.map((row, index) => (
-                <div key={index} className="fleet-flow-item">
+                <div key={`${row.date}-${index}`} className="fleet-flow-item">
                   <div>
                     <p className="text-sm text-[var(--admin-text-primary)]">
                       {row.date}
@@ -314,6 +409,17 @@ export default function FleetFinance() {
               ))
             )}
           </div>
+          <BackendCursorPagination
+            count={outflowMeta?.count}
+            limit={outflowPager.limit}
+            pageIndex={outflowPager.pageIndex}
+            hasPrevious={outflowPager.hasPrevious}
+            hasNext={outflowHasNext}
+            isLoading={isOutflowFetching}
+            onPrevious={outflowPager.handlePrevious}
+            onNext={() => outflowPager.goNext(outflowMeta?.lastCursor)}
+            onLimitChange={outflowPager.handleLimitChange}
+          />
         </div>
       </div>
     </div>

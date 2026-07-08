@@ -2,31 +2,23 @@ import Image from "../ui/image";
 import { ModeToggle } from "./modeToggle";
 import logo from "../../assets/logo1.jpeg";
 import { Button } from "../ui/button";
-import { signOut } from "firebase/auth";
-import { logout } from "@/redux/slices/authSlice";
-import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
-import { auth } from "@/firebase";
+import { logoutUser } from "@/lib/logout";
 
 interface Header2Props {
   showLogout: boolean;
 }
 
 function Header2({ showLogout }: Header2Props) {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
     try {
-      // Sign out from Firebase
-      await signOut(auth);
-      // Clear Redux state
-      dispatch(logout());
-      // Navigate to login page
+      await logoutUser();
       navigate("/");
       toast.success("Logged out successfully!");
-    } catch (error) {
+    } catch {
       toast.error("Failed to logout");
     }
   };

@@ -4,6 +4,7 @@ import {
   addBankAccount,
   deleteBankAccount,
   getBankList,
+  getFinanceOverview,
   getPayout,
   getPayouts,
   getVerifyAccount,
@@ -11,6 +12,8 @@ import {
   inflowHistory,
   outflowHistory,
   requestWithdrawal,
+  type GetVendorFinanceHistoryParams,
+  type GetVendorPayoutsParams,
 } from "./finance";
 import { toast } from "sonner";
 
@@ -76,17 +79,24 @@ export const useWalletDetails = () => {
   });
 };
 
-export const useInflow = () => {
+export const useFinanceOverview = () => {
   return useQuery({
-    queryKey: ["inflow"],
-    queryFn: inflowHistory,
+    queryKey: ["vendor-finance-overview"],
+    queryFn: getFinanceOverview,
   });
 };
 
-export const useOutflow = () => {
+export const useInflow = (params?: GetVendorFinanceHistoryParams) => {
   return useQuery({
-    queryKey: ["outflow"],
-    queryFn: outflowHistory,
+    queryKey: ["inflow", params],
+    queryFn: () => inflowHistory(params),
+  });
+};
+
+export const useOutflow = (params?: GetVendorFinanceHistoryParams) => {
+  return useQuery({
+    queryKey: ["outflow", params],
+    queryFn: () => outflowHistory(params),
   });
 };
 
@@ -102,10 +112,10 @@ export const useRequestWithdrawal = () => {
   });
 };
 
-export const useGetPayouts = () => {
+export const useGetPayouts = (params?: GetVendorPayoutsParams) => {
   return useQuery({
-    queryKey: ["payouts"],
-    queryFn: getPayouts,
+    queryKey: ["payouts", params],
+    queryFn: () => getPayouts(params),
   });
 };
 

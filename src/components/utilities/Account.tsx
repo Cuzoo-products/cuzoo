@@ -7,27 +7,20 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Link, useNavigate } from "react-router";
-import { useDispatch, useSelector } from "react-redux";
-import { logout } from "@/redux/slices/authSlice";
-import { signOut } from "firebase/auth";
-import { auth } from "@/firebase";
+import { useSelector } from "react-redux";
 import { toast } from "sonner";
+import { logoutUser } from "@/lib/logout";
 
 export function Account() {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user } = useSelector((state: any) => state.auth);
 
   const handleLogout = async () => {
     try {
-      // Sign out from Firebase
-      await signOut(auth);
-      // Clear Redux state
-      dispatch(logout());
-      // Navigate to login page
+      await logoutUser();
       navigate("/");
       toast.success("Logged out successfully!");
-    } catch (error) {
+    } catch {
       toast.error("Failed to logout");
     }
   };

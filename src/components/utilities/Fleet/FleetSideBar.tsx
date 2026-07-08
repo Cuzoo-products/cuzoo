@@ -64,11 +64,6 @@ const items = [
     url: "payouts",
     icon: Banknote,
   },
-  // {
-  //   title: "Map",
-  //   url: "maps",
-  //   icon: Map,
-  // },
 ];
 
 export default function FleetSideBar() {

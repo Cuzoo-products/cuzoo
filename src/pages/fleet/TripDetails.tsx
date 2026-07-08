@@ -6,7 +6,7 @@ import {
   User,
   AlertTriangle,
 } from "lucide-react";
-import { Link, useParams } from "react-router";
+import { useParams } from "react-router";
 import PageHeader from "@/components/admin/PageHeader";
 import StatusBadge from "@/components/admin/StatusBadge";
 import { DetailShell } from "@/components/admin/DetailShell";
@@ -464,37 +464,25 @@ export default function TripDetails() {
           </Card>
         </div>
 
-        {/* Chats & actions */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
-          <Card className="border border-line-1 bg-background rounded-lg lg:col-span-2">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2 text-base md:text-lg">
-                <AlertTriangle className="w-4 h-4" />
-                Notes & Messages
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2 text-sm text-muted-foreground">
-              {trip.chats.length === 0 && <p>No messages for this trip yet.</p>}
-              {trip.chats.map((chat, index) => (
-                <div
-                  key={index}
-                  className="border border-line-1 rounded-md p-2 bg-muted/40"
-                >
-                  {chat.message}
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-
-          <div className="flex flex-col gap-3 lg:items-end">
-            <Link
-              className="text-primary flex justify-center items-center border rounded-md px-4 py-2 hover:text-accent bg-background text-sm md:text-base"
-              to="/fleet/maps"
-            >
-              Track Trip
-            </Link>
-          </div>
-        </div>
+        <Card className="border border-line-1 bg-background rounded-lg">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+              <AlertTriangle className="w-4 h-4" />
+              Notes & Messages
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2 text-sm text-muted-foreground">
+            {trip.chats.length === 0 && <p>No messages for this trip yet.</p>}
+            {trip.chats.map((chat, index) => (
+              <div
+                key={index}
+                className="border border-line-1 rounded-md p-2 bg-muted/40"
+              >
+                {chat.message}
+              </div>
+            ))}
+          </CardContent>
+        </Card>
       </div>
     </DetailShell>
   );

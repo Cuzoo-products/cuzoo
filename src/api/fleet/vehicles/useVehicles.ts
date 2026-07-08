@@ -4,20 +4,22 @@ import {
   getVehicle,
   getVehicles,
   updateVehicle,
+  type GetFleetVehiclesParams,
 } from "./vehiclesApi";
 import { toast } from "sonner";
 
-export const useGetVehicles = () => {
+export const useGetVehicles = (params?: GetFleetVehiclesParams) => {
   return useQuery({
-    queryKey: ["getVehicles"],
-    queryFn: () => getVehicles(),
+    queryKey: ["getVehicles", params],
+    queryFn: () => getVehicles(params),
   });
 };
 
 export const useGetVehicle = (id: string) => {
   return useQuery({
-    queryKey: ["getVehicle"],
+    queryKey: ["getVehicle", id],
     queryFn: () => getVehicle(id),
+    enabled: Boolean(id),
   });
 };
 

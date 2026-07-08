@@ -6,13 +6,14 @@ import {
   releaseRider,
   suspendRider,
   updateRider,
+  type GetFleetRidersParams,
 } from "./riderApi";
 import { toast } from "sonner";
 
-export const useGetRiders = () => {
+export const useGetRiders = (params?: GetFleetRidersParams) => {
   return useQuery({
-    queryKey: ["getRiders"],
-    queryFn: () => getRiders(),
+    queryKey: ["getRiders", params],
+    queryFn: () => getRiders(params),
   });
 };
 

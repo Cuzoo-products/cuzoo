@@ -1,16 +1,29 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router";
 import PageHeader from "@/components/admin/PageHeader";
+import BackendCursorPagination from "@/components/admin/BackendCursorPagination";
 import { DataTable } from "@/components/ui/data-table";
 import {
-  columns,
+  adminTripsListColumns,
   type AdminTripData,
 } from "@/components/utilities/Admins/AdminTripsDataTable";
+import AdminOrdersFilters, {
+  adminOrdersParamsToSearchParams,
+  adminOrdersSearchParamsToForm,
+  adminOrdersSearchParamsToParams,
+} from "@/components/utilities/Admins/AdminOrdersFilters";
 import { useGetAdminTrips } from "@/api/admin/trips/useTrips";
 import {
   parseAdminTripsPayload,
   type AdminTripListItem,
 } from "@/api/admin/trips/trips";
+import {
+  parseAdminOrdersListMeta,
+  type GetAdminOrdersParams,
+} from "@/api/admin/orders/orders";
 import Loader from "@/components/utilities/Loader";
+
+const DEFAULT_LIMIT = 20;
 
 function formatWhen(iso?: string): string {
   if (!iso) return "—";
@@ -29,43 +42,6 @@ function naira(n: number): string {
   return `₦${n.toLocaleString("en-NG", { maximumFractionDigits: 2 })}`;
 }
 
-function buildDetails(row: AdminTripListItem): string {
-  const t = row.orderType?.toLowerCase() ?? "";
-
-  if (t === "package") {
-    const from = row.from?.trim() || "—";
-    const dest =
-      row.destinations?.filter(Boolean).length ?? 0
-        ? row.destinations!.join(", ")
-        : "—";
-    return `From: ${from}\nDestinations: ${dest}`;
-  }
-
-  if (t === "shopping") {
-    const lines: string[] = [];
-    if (row.customer) lines.push(`Customer: ${row.customer}`);
-    if (row.vendor) lines.push(`Vendor: ${row.vendor}`);
-    if (row.paymentMethod) lines.push(`Payment: ${row.paymentMethod}`);
-    if (row.items?.length) {
-      const itemsLines = row.items.map((i) => {
-        const q = i.quantity != null ? String(i.quantity) : "";
-        const n = i.name ?? "";
-        return q ? `${q}× ${n}` : n;
-      });
-      lines.push(`Items:\n${itemsLines.join("\n")}`);
-    }
-    return lines.length ? lines.join("\n") : "—";
-  }
-
-  const generic = [
-    row.from ? `From: ${row.from}` : "",
-    row.destinations?.length ? `To: ${row.destinations.join(", ")}` : "",
-    row.customer ? `Customer: ${row.customer}` : "",
-    row.vendor ? `Vendor: ${row.vendor}` : "",
-  ].filter(Boolean);
-  return generic.length ? generic.join("\n") : "—";
-}
-
 function buildSchedule(row: AdminTripListItem): string {
   const s = row.startTime ? formatWhen(row.startTime) : "—";
   const e = row.endTime ? formatWhen(row.endTime) : "—";
@@ -76,45 +52,103 @@ function buildSchedule(row: AdminTripListItem): string {
 function mapRow(row: AdminTripListItem): AdminTripData {
   return {
     id: row.id,
-    orderType: row.orderType ?? "—",
+    orderType: row.orderType ?? "Package",
     status: row.status ?? "—",
     createdAt: formatWhen(row.createdAt ?? row.date),
-    details: buildDetails(row),
-    driver: row.driver?.trim() || "—",
     amount: naira(row.amount),
     schedule: buildSchedule(row),
   };
 }
 
 export default function AdminTrips() {
-  const { data: payload, isLoading, isError } = useGetAdminTrips();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const urlFilters = useMemo(
+    () => adminOrdersSearchParamsToParams(searchParams),
+    [searchParams],
+  );
+  const filterFormFromUrl = useMemo(
+    () => adminOrdersSearchParamsToForm(searchParams),
+    [searchParams],
+  );
 
-  const trips = useMemo(() => parseAdminTripsPayload(payload), [payload]);
+  const [appliedFilters, setAppliedFilters] =
+    useState<GetAdminOrdersParams>(urlFilters);
+  const [limit, setLimit] = useState(DEFAULT_LIMIT);
+  const [cursorStack, setCursorStack] = useState<
+    (number | string | undefined)[]
+  >([undefined]);
 
-  const meta = useMemo(() => {
-    const root = payload as
-      | { data?: { count?: number; limit?: number; lastCursor?: number } }
-      | undefined;
-    return {
-      count: root?.data?.count,
-      limit: root?.data?.limit,
+  useEffect(() => {
+    setAppliedFilters(urlFilters);
+    setCursorStack([undefined]);
+  }, [urlFilters]);
+
+  const currentCursor = cursorStack[cursorStack.length - 1];
+
+  const queryParams = useMemo<GetAdminOrdersParams>(() => {
+    const params: GetAdminOrdersParams = {
+      ...appliedFilters,
+      orderType: "Package",
+      limit,
     };
-  }, [payload]);
+
+    if (currentCursor != null && currentCursor !== "") {
+      params.cursor = currentCursor;
+    }
+
+    return params;
+  }, [appliedFilters, currentCursor, limit]);
+
+  const { data, isLoading, isFetching, error } = useGetAdminTrips(queryParams);
+
+  const trips = useMemo(() => parseAdminTripsPayload(data), [data]);
+  const meta = useMemo(() => parseAdminOrdersListMeta(data), [data]);
 
   const tableData: AdminTripData[] = useMemo(
-    () => trips.map(mapRow),
+    () => trips.map(mapRow).filter((row) => row.id !== ""),
     [trips],
   );
 
+  const pageIndex = cursorStack.length - 1;
+  const hasPrevious = pageIndex > 0;
+  const hasNext =
+    meta?.lastCursor != null &&
+    meta.lastCursor !== "" &&
+    trips.length >= limit;
+
+  const resetPagination = () => {
+    setCursorStack([undefined]);
+  };
+
+  const handleApplyFilters = (filters: GetAdminOrdersParams) => {
+    setAppliedFilters(filters);
+    resetPagination();
+    setSearchParams(adminOrdersParamsToSearchParams(filters), {
+      replace: true,
+    });
+  };
+
+  const handleLimitChange = (nextLimit: number) => {
+    setLimit(nextLimit);
+    resetPagination();
+  };
+
+  const handlePrevious = () => {
+    if (!hasPrevious) return;
+    setCursorStack((prev) => prev.slice(0, -1));
+  };
+
+  const handleNext = () => {
+    if (!hasNext || meta?.lastCursor == null) return;
+    setCursorStack((prev) => [...prev, meta.lastCursor as number | string]);
+  };
+
   if (isLoading) return <Loader />;
 
-  if (isError) {
+  if (error) {
     return (
       <div className="space-y-5">
-        <PageHeader
-          title="Trips"
-          subtitle="Failed to load trips. Check that GET /admins/trips is available."
-        />
+        <PageHeader title="Trips" subtitle="Failed to load trips." />
       </div>
     );
   }
@@ -122,11 +156,39 @@ export default function AdminTrips() {
   return (
     <div className="space-y-5">
       <PageHeader
-        title="trips"
-        subtitle={`Fleet and delivery trips${meta.count != null ? ` · ${meta.count} total` : ""}${meta.limit != null ? ` (limit ${meta.limit})` : ""}`}
+        title="Trips"
+        subtitle={
+          meta?.count != null
+            ? `Package delivery trips · ${meta.count.toLocaleString("en-NG")} total`
+            : "Manage package delivery trips"
+        }
       />
 
-      <DataTable adminVariant searchPlaceholder="Search..." columns={columns} data={tableData} />
+      <AdminOrdersFilters
+        key={searchParams.toString()}
+        initialValues={filterFormFromUrl}
+        onApply={handleApplyFilters}
+      />
+
+      <DataTable
+        adminVariant
+        hidePagination
+        searchPlaceholder="Search this page..."
+        columns={adminTripsListColumns}
+        data={tableData}
+      />
+
+      <BackendCursorPagination
+        count={meta?.count}
+        limit={limit}
+        pageIndex={pageIndex}
+        hasPrevious={hasPrevious}
+        hasNext={hasNext}
+        isLoading={isFetching}
+        onPrevious={handlePrevious}
+        onNext={handleNext}
+        onLimitChange={handleLimitChange}
+      />
     </div>
   );
 }

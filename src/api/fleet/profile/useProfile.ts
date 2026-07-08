@@ -1,6 +1,10 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { fleetKyc, getFleetProfile } from "./profileApi";
 import { toast } from "sonner";
+import {
+  isTimeoutLikeError,
+  KYC_TIMEOUT_SOFT_MESSAGE,
+} from "@/lib/imageUpload";
 
 export const useGetFleetProfile = () => {
   return useQuery({
@@ -12,13 +16,20 @@ export const useGetFleetProfile = () => {
 export const useFleetKyc = () => {
   return useMutation({
     mutationFn: fleetKyc,
-    onSuccess: (data) => {
-      console.log(data);
+    onSuccess: () => {
       toast.success("KYC submitted successfully");
     },
     onError: (error) => {
+      if (isTimeoutLikeError(error)) {
+        toast.message("Still processing…", {
+          description: KYC_TIMEOUT_SOFT_MESSAGE,
+          duration: 12_000,
+        });
+        return;
+      }
       const message =
-        error.message || "unable to submit kyc, please try again.";
+        (error as { message?: string })?.message ||
+        "Unable to submit KYC, please try again.";
       toast.error(message);
     },
   });

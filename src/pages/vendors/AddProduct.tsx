@@ -228,7 +228,7 @@ function AddProduct() {
               name="image2"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Image 2 (optional)</FormLabel>
+                  <FormLabel>Image 2 (required)</FormLabel>
                   <FormControl>
                     <VendorFileInput
                       onFileSelect={async (file) => {
@@ -253,7 +253,7 @@ function AddProduct() {
               name="image3"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Image 3 (optional)</FormLabel>
+                  <FormLabel>Image 3 (required)</FormLabel>
                   <FormControl>
                     <VendorFileInput
                       onFileSelect={async (file) => {
@@ -278,7 +278,7 @@ function AddProduct() {
               name="image4"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Image 4 (optional)</FormLabel>
+                  <FormLabel>Image 4 (required)</FormLabel>
                   <FormControl>
                     <VendorFileInput
                       onFileSelect={async (file) => {

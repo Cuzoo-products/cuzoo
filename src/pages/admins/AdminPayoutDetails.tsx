@@ -23,7 +23,9 @@ import { sanitizePayoutRouteId } from "@/lib/payoutId";
 import { displayRecipientLine } from "@/lib/payoutDetailsHelpers";
 
 const normalizeType = (value?: string) =>
-  value === "riders" || value === "vendors" || value === "fleets" ? value : null;
+  value === "riders" || value === "vendors" || value === "fleets"
+    ? value
+    : null;
 
 const formatDate = (value?: string) => {
   if (!value) return "—";
@@ -143,7 +145,9 @@ export default function AdminPayoutDetails() {
     return <div className="text-red-500">Failed to load payout details.</div>;
   }
 
-  const canResolve = payout.resolved === false;
+  const status = String(payout.status ?? "").toLowerCase();
+  const isSuccess = status === "success";
+  const canResolve = payout.resolved === false && !isSuccess;
   const details = payout.details;
   const recipientLine = displayRecipientLine(
     payout.recipient,
@@ -233,10 +237,9 @@ export default function AdminPayoutDetails() {
               <GridItem label="Rider ID" value={payout.riderId} />
             ) : null}
             <GridItem label="Recipient" value={recipientLine || "—"} />
-            <GridItem
-              label="Resolved"
-              value={payout.resolved ? "Yes" : "No"}
-            />
+            {!isSuccess ? (
+              <GridItem label="Resolved" value={payout.resolved ? "Yes" : "No"} />
+            ) : null}
             <GridItem label="Created at" value={formatDate(payout.createdAt)} />
             <GridItem label="Updated at" value={formatDate(payout.updatedAt)} />
           </div>

@@ -5,6 +5,7 @@ import {
   getProducts,
   updateProduct,
   getOneProduct,
+  type GetVendorProductsParams,
 } from "./productApi";
 
 export const useCreateProduct = () => {
@@ -19,10 +20,10 @@ export const useCreateProduct = () => {
   });
 };
 
-export const useGetProducts = () => {
+export const useGetProducts = (params?: GetVendorProductsParams) => {
   return useQuery({
-    queryKey: ["products"],
-    queryFn: getProducts,
+    queryKey: ["products", params],
+    queryFn: () => getProducts(params),
   });
 };
 

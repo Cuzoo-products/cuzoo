@@ -1,6 +1,23 @@
+import { useEffect, useMemo, useState } from "react";
 import { useGetPayouts } from "@/api/vendor/finance/useFinance";
+import {
+  parseVendorPayoutsListMeta,
+  parseVendorPayoutsListPayload,
+  type GetVendorPayoutsParams,
+  type VendorPayoutStatus,
+} from "@/api/vendor/finance/finance";
 import PageHeader from "@/components/admin/PageHeader";
+import BackendCursorPagination from "@/components/admin/BackendCursorPagination";
+import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   columns,
   type PayoutData,
@@ -8,48 +25,20 @@ import {
 import Loader from "@/components/utilities/Loader";
 import { payoutRecordId } from "@/lib/payoutId";
 
-export type PayoutsListResponse = {
-  success: boolean;
-  statusCode: number;
-  data: {
-    count: number;
-    lastCursor: number;
-    limit: number;
-    data: {
-      Id?: string;
-      id?: string;
-      amount: number;
-      recipient: string;
-      reference: string;
-      resolved: boolean;
-      ownerId: string;
-      transactionId: string;
-      details: {
-        accountName: string;
-        accountNumber: string;
-        bankName: string;
-      };
-      reason: string;
-      status: string;
-      attendedBy?: {
-        id: string;
-        email: string;
-        firstName: string;
-        lastName: string;
-      };
-      createdAt: string;
-      updatedAt: string;
-      type: string;
-      vendorId?: string;
-      companyId?: string;
-      riderId?: string;
-    }[];
-  };
-};
+const DEFAULT_LIMIT = 20;
 
-const formatRequestedAt = (value: string) => {
+const PAYOUT_STATUSES: VendorPayoutStatus[] = [
+  "pending",
+  "approved",
+  "rejected",
+  "failed",
+  "success",
+];
+
+const formatRequestedAt = (value: unknown) => {
+  if (value == null || value === "") return "—";
   try {
-    return new Date(value).toLocaleString("en-NG", {
+    return new Date(String(value)).toLocaleString("en-NG", {
       day: "2-digit",
       month: "short",
       year: "numeric",
@@ -57,45 +46,108 @@ const formatRequestedAt = (value: string) => {
       minute: "2-digit",
     });
   } catch {
-    return value;
+    return String(value);
   }
 };
 
-const formatBankAccount = (
-  details: { bankName: string; accountNumber: string } | undefined,
-) => {
-  if (!details) return "—";
-  const last4 = details.accountNumber?.slice(-4) ?? "****";
-  return `${details.bankName} ****${last4}`;
+const formatBankAccount = (details: unknown) => {
+  if (!details || typeof details !== "object") return "—";
+  const d = details as { bankName?: string; accountNumber?: string };
+  if (!d.bankName && !d.accountNumber) return "—";
+  const last4 = d.accountNumber?.slice(-4) ?? "****";
+  return `${d.bankName ?? "—"} ****${last4}`;
 };
 
-function VendorPayouts() {
-  const { data, isLoading, error } = useGetPayouts() as {
-    data?: PayoutsListResponse;
-    isLoading: boolean;
-    error: unknown;
-  };
+function mapPayoutToRow(p: Record<string, unknown>): PayoutData {
+  const amount =
+    typeof p.amount === "number" ? p.amount : Number(p.amount) || 0;
 
-  const apiPayouts = data?.data?.data ?? [];
-  const tableData: PayoutData[] = apiPayouts.map((p) => ({
+  return {
     id: payoutRecordId(p),
-    amount: `₦${p.amount.toLocaleString("en-NG", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-    status: p.status,
+    amount: `₦${amount.toLocaleString("en-NG", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`,
+    status: p.status != null ? String(p.status) : "—",
     requestedAt: formatRequestedAt(p.createdAt),
     bankAccount: formatBankAccount(p.details),
-  }));
+  };
+}
 
-  if (isLoading) {
-    return <Loader />;
-  }
+function VendorPayouts() {
+  const [status, setStatus] = useState<"" | VendorPayoutStatus>("");
+  const [referenceInput, setReferenceInput] = useState("");
+  const [appliedReference, setAppliedReference] = useState("");
+  const [limit, setLimit] = useState(DEFAULT_LIMIT);
+  const [cursorStack, setCursorStack] = useState<
+    (number | string | undefined)[]
+  >([undefined]);
+
+  useEffect(() => {
+    setCursorStack([undefined]);
+  }, [status, appliedReference]);
+
+  const currentCursor = cursorStack[cursorStack.length - 1];
+
+  const queryParams = useMemo<GetVendorPayoutsParams>(() => {
+    const params: GetVendorPayoutsParams = { limit };
+    if (status) params.status = status;
+    if (appliedReference.trim()) params.reference = appliedReference.trim();
+    if (currentCursor != null && currentCursor !== "") {
+      params.cursor = currentCursor;
+    }
+    return params;
+  }, [appliedReference, currentCursor, limit, status]);
+
+  const { data, isLoading, isFetching, error } = useGetPayouts(queryParams);
+
+  const payouts = useMemo(() => parseVendorPayoutsListPayload(data), [data]);
+  const meta = useMemo(() => parseVendorPayoutsListMeta(data), [data]);
+
+  const tableData: PayoutData[] = useMemo(
+    () => payouts.map(mapPayoutToRow).filter((row) => row.id !== ""),
+    [payouts],
+  );
+
+  const pageIndex = cursorStack.length - 1;
+  const hasPrevious = pageIndex > 0;
+  const hasNext =
+    meta?.lastCursor != null &&
+    meta.lastCursor !== "" &&
+    payouts.length >= limit;
+
+  const handleApplyReference = () => {
+    setAppliedReference(referenceInput.trim());
+  };
+
+  const handleClearFilters = () => {
+    setStatus("");
+    setReferenceInput("");
+    setAppliedReference("");
+    setCursorStack([undefined]);
+  };
+
+  const handleLimitChange = (nextLimit: number) => {
+    setLimit(nextLimit);
+    setCursorStack([undefined]);
+  };
+
+  const handlePrevious = () => {
+    if (!hasPrevious) return;
+    setCursorStack((prev) => prev.slice(0, -1));
+  };
+
+  const handleNext = () => {
+    if (!hasNext || meta?.lastCursor == null) return;
+    setCursorStack((prev) => [...prev, meta.lastCursor as number | string]);
+  };
+
+  if (isLoading) return <Loader />;
 
   if (error) {
     return (
       <div className="space-y-6">
-        <PageHeader
-          title="Payouts"
-          subtitle="Failed to load payouts."
-        />
+        <PageHeader title="Payouts" subtitle="Failed to load payouts." />
       </div>
     );
   }
@@ -104,14 +156,77 @@ function VendorPayouts() {
     <div className="space-y-6">
       <PageHeader
         title="Payouts"
-        subtitle="Track your payout requests"
+        subtitle={
+          meta?.count != null
+            ? `Track payout requests · ${meta.count.toLocaleString("en-NG")} total`
+            : "Track your payout requests"
+        }
       />
+
+      <div className="flex flex-col gap-3 rounded-xl border border-line-1 bg-background p-4 sm:flex-row sm:flex-wrap sm:items-end">
+        <div className="space-y-2 min-w-[160px]">
+          <label className="text-sm font-medium">Status</label>
+          <Select
+            value={status || "all"}
+            onValueChange={(next) =>
+              setStatus(next === "all" ? "" : (next as VendorPayoutStatus))
+            }
+          >
+            <SelectTrigger className="h-10 w-full sm:w-[180px]">
+              <SelectValue placeholder="All" />
+            </SelectTrigger>
+            <SelectContent className="vendor-select-menu">
+              <SelectItem value="all">All</SelectItem>
+              {PAYOUT_STATUSES.map((item) => (
+                <SelectItem key={item} value={item}>
+                  {item}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2 min-w-[200px] flex-1">
+          <label className="text-sm font-medium">Reference</label>
+          <Input
+            value={referenceInput}
+            onChange={(e) => setReferenceInput(e.target.value)}
+            placeholder="Reference"
+            className="h-10"
+            onKeyDown={(e) => {
+              if (e.key === "Enter") handleApplyReference();
+            }}
+          />
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          <Button type="button" onClick={handleApplyReference}>
+            Apply
+          </Button>
+          <Button type="button" variant="outline" onClick={handleClearFilters}>
+            Clear
+          </Button>
+        </div>
+      </div>
 
       <DataTable
         adminVariant
-        searchPlaceholder="Search payouts..."
+        hidePagination
+        searchPlaceholder="Search this page..."
         columns={columns}
         data={tableData}
+      />
+
+      <BackendCursorPagination
+        count={meta?.count}
+        limit={limit}
+        pageIndex={pageIndex}
+        hasPrevious={hasPrevious}
+        hasNext={hasNext}
+        isLoading={isFetching}
+        onPrevious={handlePrevious}
+        onNext={handleNext}
+        onLimitChange={handleLimitChange}
       />
     </div>
   );

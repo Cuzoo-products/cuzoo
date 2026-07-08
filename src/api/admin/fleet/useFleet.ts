@@ -5,6 +5,7 @@ import {
   getOneFleet,
   fleetWalletAction,
   fleetAccountAction,
+  type GetFleetManagersParams,
 } from "./fleetApi";
 import { toast } from "sonner";
 
@@ -17,10 +18,10 @@ export const useGetOneFleet = (id: string | undefined) => {
   });
 };
 
-export const useGetAllFleets = () => {
+export const useGetAllFleets = (params?: GetFleetManagersParams) => {
   return useQuery({
-    queryKey: ["fleets"],
-    queryFn: () => getFleets(),
+    queryKey: ["fleets", params],
+    queryFn: () => getFleets(params),
   });
 };
 

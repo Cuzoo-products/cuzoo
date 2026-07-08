@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { useGetVendorProfile } from "@/api/vendor/auth/useAuth";
 import { useGetDashboard } from "@/api/vendor/dashboard/useDashBoard";
+import AdminActionItems from "@/components/admin/AdminActionItems";
 import HighestSellingProducts from "@/components/utilities/Vendors/HighestSellingProducts";
 import VendorChart from "@/components/utilities/Vendors/VendorChart";
 import VendorSectionCard from "@/components/utilities/Vendors/VendorSectionCard";
 import Loader from "@/components/utilities/Loader";
+import { useVendorActionItems } from "@/hooks/useVendorActionItems";
 
 export type HighestSellingProductsT = {
   id: number;
@@ -56,6 +58,7 @@ function VendorDashboard() {
   };
 
   const { data: vendorProfile } = useGetVendorProfile();
+  const actionItems = useVendorActionItems();
 
   const dashboard = data?.data;
   const chartData = dashboard?.revenueSalesGraph ?? [];
@@ -107,6 +110,8 @@ function VendorDashboard() {
         salesThisMonth={dashboard?.salesThisMonth}
         products={dashboard?.products}
       />
+
+      <AdminActionItems items={actionItems} title="Action needed" />
 
       <div className="vendor-dashboard-panels">
         <div className="vendor-dashboard-chart-card">

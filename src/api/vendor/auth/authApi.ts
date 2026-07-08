@@ -1,4 +1,6 @@
-import axiosInstance from "@/api/axiosInstances";
+import axiosInstance, {
+  KYC_REQUEST_TIMEOUT_MS,
+} from "@/api/axiosInstances";
 
 export const registerVendor = async (userData: unknown) => {
   const response = await axiosInstance.post("auth/vendor", userData);
@@ -6,7 +8,9 @@ export const registerVendor = async (userData: unknown) => {
 };
 
 export const updateVendorProfile = async (userData: unknown) => {
-  const response = await axiosInstance.patch("vendors/auth", userData);
+  const response = await axiosInstance.patch("vendors/auth", userData, {
+    timeout: KYC_REQUEST_TIMEOUT_MS,
+  });
   return response.data;
 };
 

@@ -32,6 +32,7 @@ export const columns: ColumnDef<FleetManagerData>[] = [
     },
   },
   createViewActionsColumn<FleetManagerData>({
-    getHref: (manager) => manager.id,
+    getHref: (manager) =>
+      manager.id ? `/admins/fleet_managers/${manager.id}` : undefined,
   }),
 ];

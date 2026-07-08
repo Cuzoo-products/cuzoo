@@ -1,9 +1,8 @@
 import PageHeader from "@/components/admin/PageHeader";
 import StatusBadge from "@/components/admin/StatusBadge";
 import { DetailShell, GridItem, Section } from "@/components/admin/DetailShell";
-import { Button } from "@/components/ui/button";
-import { MapPin, Truck, User, AlertTriangle } from "lucide-react";
-import { Link, useParams } from "react-router";
+import { AlertTriangle, Truck, User } from "lucide-react";
+import { useParams } from "react-router";
 
 export default function IndividualDriverTipDetails() {
   const { id: driverId } = useParams<{ id: string }>();
@@ -43,7 +42,7 @@ export default function IndividualDriverTipDetails() {
     >
       <PageHeader
         title="Trip Details"
-        subtitle="Manage and track trips here"
+        subtitle="Trip summary for this rider"
         actions={<StatusBadge status={trip.status} />}
       />
 
@@ -52,12 +51,7 @@ export default function IndividualDriverTipDetails() {
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <GridItem
               label="Route"
-              value={
-                <span className="inline-flex items-center gap-2">
-                  <MapPin className="h-4 w-4" />
-                  {trip.origin} → {trip.destination}
-                </span>
-              }
+              value={`${trip.origin} → ${trip.destination}`}
             />
             <GridItem
               label="Started"
@@ -98,15 +92,6 @@ export default function IndividualDriverTipDetails() {
             ))}
           </Section>
         )}
-
-        <div className="flex justify-end">
-          <Button
-            asChild
-            className="bg-[var(--admin-accent)] hover:bg-[var(--admin-accent-hover)]"
-          >
-            <Link to="/admins/map">Track Trip</Link>
-          </Button>
-        </div>
       </div>
     </DetailShell>
   );

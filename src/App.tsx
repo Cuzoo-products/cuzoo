@@ -103,17 +103,17 @@ function App() {
           }
 
           switch (accountType) {
-              case "fleet":
-                navigate("/fleet/dashboard");
-                break;
-              case "vendor":
-                navigate("/vendor/dashboard");
-                break;
-              case "admin":
-                navigate("/admins/dashboard");
-                break;
-              default:
-                toast.error("Unknown user type");
+            case "fleet":
+              navigate("/fleet/dashboard");
+              break;
+            case "vendor":
+              navigate("/vendor/dashboard");
+              break;
+            case "admin":
+              navigate("/admins/dashboard");
+              break;
+            default:
+              toast.error("Unknown user type");
           }
         } catch (err) {
           toast.error(
@@ -160,114 +160,114 @@ function App() {
         </a>
 
         <div className="w-full rounded-xl border border-[var(--auth-border)] bg-[var(--auth-bg-card)] p-8 shadow-2xl">
-        <div className="mb-8 flex flex-col items-center space-y-3 text-center">
-          <Image
-            source={logo1}
-            alt="Cuzoo"
-            className="h-16 w-16 rounded-2xl object-contain"
-          />
-          <h1 className="text-2xl font-bold text-[var(--auth-text-primary)]">
-            Login
-          </h1>
-          <p className="text-sm text-[var(--auth-text-muted)]">
-            Welcome back! 👋
-          </p>
-        </div>
-
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem className="space-y-2">
-                  <FormLabel className="text-sm font-medium text-[var(--auth-text-primary)]">
-                    Enter mail
-                  </FormLabel>
-                  <FormControl>
-                    <input
-                      type="email"
-                      autoComplete="email"
-                      placeholder="johndoe@example.com"
-                      className={AUTH_INPUT_CLASS}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage className="text-red-500" />
-                </FormItem>
-              )}
+          <div className="mb-8 flex flex-col items-center space-y-3 text-center">
+            <Image
+              source={logo1}
+              alt="Cuzoo"
+              className="h-16 w-16 rounded-2xl object-contain"
             />
+            <h1 className="text-2xl font-bold text-[var(--auth-text-primary)]">
+              Login
+            </h1>
+            <p className="text-sm text-[var(--auth-text-muted)]">
+              Welcome back! 👋
+            </p>
+          </div>
 
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem className="space-y-2">
-                  <FormLabel className="text-sm font-medium text-[var(--auth-text-primary)]">
-                    Password
-                  </FormLabel>
-                  <FormControl>
-                    <div className="relative">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem className="space-y-2">
+                    <FormLabel className="text-sm font-medium text-[var(--auth-text-primary)]">
+                      Enter mail
+                    </FormLabel>
+                    <FormControl>
                       <input
-                        type={showPassword ? "text" : "password"}
-                        autoComplete="current-password"
-                        placeholder="••••••••"
-                        className={`${AUTH_INPUT_CLASS} pr-11`}
+                        type="email"
+                        autoComplete="email"
+                        placeholder="johndoe@example.com"
+                        className={AUTH_INPUT_CLASS}
                         {...field}
                       />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword((s) => !s)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--auth-text-muted)] hover:text-[var(--auth-text-primary)]"
-                        aria-label={
-                          showPassword ? "Hide password" : "Show password"
-                        }
-                      >
-                        {showPassword ? (
-                          <EyeOff className="h-4 w-4" />
-                        ) : (
-                          <Eye className="h-4 w-4" />
-                        )}
-                      </button>
-                    </div>
-                  </FormControl>
-                  <FormMessage className="text-red-500" />
-                </FormItem>
-              )}
-            />
+                    </FormControl>
+                    <FormMessage className="text-red-500" />
+                  </FormItem>
+                )}
+              />
 
-            <div className="flex justify-end">
-              <Link
-                to="/forgot-password"
-                className="text-sm text-[var(--auth-accent)] hover:text-[var(--auth-accent-hover)]"
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem className="space-y-2">
+                    <FormLabel className="text-sm font-medium text-[var(--auth-text-primary)]">
+                      Password
+                    </FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <input
+                          type={showPassword ? "text" : "password"}
+                          autoComplete="current-password"
+                          placeholder="••••••••"
+                          className={`${AUTH_INPUT_CLASS} pr-11`}
+                          {...field}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword((s) => !s)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--auth-text-muted)] hover:text-[var(--auth-text-primary)]"
+                          aria-label={
+                            showPassword ? "Hide password" : "Show password"
+                          }
+                        >
+                          {showPassword ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                        </button>
+                      </div>
+                    </FormControl>
+                    <FormMessage className="text-red-500" />
+                  </FormItem>
+                )}
+              />
+
+              <div className="flex justify-end">
+                <Link
+                  to="/forgot-password"
+                  className="text-sm text-[var(--auth-accent)] hover:text-[var(--auth-accent-hover)]"
+                >
+                  Forgot password?
+                </Link>
+              </div>
+
+              <Button
+                type="submit"
+                disabled={isSubmitting || loading}
+                className="flex h-12 w-full items-center justify-center rounded-lg bg-[var(--auth-accent)] font-semibold text-white hover:bg-[var(--auth-accent-hover)] disabled:opacity-70"
               >
-                Forgot password?
-              </Link>
-            </div>
+                {isSubmitting ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  "Sign In"
+                )}
+              </Button>
 
-            <Button
-              type="submit"
-              disabled={isSubmitting || loading}
-              className="flex h-12 w-full items-center justify-center rounded-lg bg-[var(--auth-accent)] font-semibold text-white hover:bg-[var(--auth-accent-hover)] disabled:opacity-70"
-            >
-              {isSubmitting ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : (
-                "Sign In"
+              {error && (
+                <p className="text-center text-sm text-[var(--auth-danger)]">
+                  {error}
+                </p>
               )}
-            </Button>
+            </form>
+          </Form>
 
-            {error && (
-              <p className="text-center text-sm text-[var(--auth-danger)]">
-                {error}
-              </p>
-            )}
-          </form>
-        </Form>
-
-        <p className="mt-6 text-center text-xs text-[var(--auth-text-muted)]">
-          ©2025 Cuzoo. All Rights Reserved.
-        </p>
+          <p className="mt-6 text-center text-xs text-[var(--auth-text-muted)]">
+            ©2025 Cuzoo. All Rights Reserved.
+          </p>
         </div>
 
         <a

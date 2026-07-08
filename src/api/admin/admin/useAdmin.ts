@@ -4,6 +4,7 @@ import {
   getAdmin,
   getAllAdmins,
   toggleReleaseAdmin,
+  type GetAdminsParams,
 } from "./adminApi";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -40,9 +41,9 @@ export const useToggleReleaseAdmin = (id: string) => {
   });
 };
 
-export const useGetAllAdmins = () => {
+export const useGetAllAdmins = (params?: GetAdminsParams) => {
   return useQuery({
-    queryKey: ["admins"],
-    queryFn: () => getAllAdmins(),
+    queryKey: ["admins", params],
+    queryFn: () => getAllAdmins(params),
   });
 };

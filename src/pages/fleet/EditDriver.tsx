@@ -27,7 +27,7 @@ import { useNavigate, useParams } from "react-router";
 import { useGetRider, useUpdateRider } from "@/api/fleet/rider/useRiderQuery";
 import { GogglePlace } from "@/components/utilities/GogglePlace";
 import { toast } from "sonner";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { fileToBase64 } from "@/lib/utils";
 import Loader from "@/components/utilities/Loader";
@@ -39,6 +39,7 @@ const normalizeToE164 = (value?: string) =>
 function EditDriver() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [addressLabel, setAddressLabel] = useState("");
   const form = useForm<z.infer<typeof EditDriverFormSchema>>({
     resolver: zodResolver(EditDriverFormSchema),
     defaultValues: {
@@ -81,6 +82,7 @@ function EditDriver() {
             driverData.emergencyContact?.internationalFormat || "",
           ),
         });
+        setAddressLabel(driverData.address?.formatted_address || "");
       }
     }
   }, [rider, form]);
@@ -274,8 +276,10 @@ function EditDriver() {
                   <FormControl>
                     <GogglePlace
                       value={field.value}
-                      onChange={(placeId) => {
+                      label={addressLabel}
+                      onChange={(placeId, address) => {
                         field.onChange(placeId);
+                        setAddressLabel(address);
                       }}
                       placeholder="Enter address..."
                     />

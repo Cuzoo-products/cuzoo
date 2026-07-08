@@ -280,12 +280,14 @@
   align-items: center;
   gap: 1rem;
   width: 100%;
+  min-width: 0;
   min-height: 3rem;
   border-radius: 0.5rem;
   border: 1px solid var(--admin-border);
   background-color: var(--admin-bg-base);
   padding: 0.375rem 1rem 0.375rem 0.375rem;
   cursor: pointer;
+  overflow: hidden;
 }
 
 .vendor-portal .vendor-form-file-button {

@@ -25,7 +25,11 @@ import {
 } from "@/components/ui/select";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Checkbox } from "@/components/ui/checkbox";
-import { cn, fileToBase64, omitEmptyPayloadValues } from "@/lib/utils";
+import { cn, omitEmptyPayloadValues } from "@/lib/utils";
+import {
+  KYC_SLOW_UPLOAD_MESSAGE,
+  valueToCompressedBase64,
+} from "@/lib/imageUpload";
 import { fleetKycformSchema } from "@/lib/zodVaildation";
 import Header2 from "@/components/utilities/header2";
 import { useFleetKyc } from "@/api/fleet/profile/useProfile";
@@ -97,11 +101,7 @@ export function FleetKyc() {
   async function toBase64IfFile(
     value: FileList | File | string | undefined,
   ): Promise<string | undefined> {
-    if (value === undefined || value === null) return undefined;
-    if (typeof value === "string") return value;
-    const file = value instanceof FileList ? value[0] : value;
-    if (!file) return undefined;
-    return fileToBase64(file);
+    return valueToCompressedBase64(value);
   }
 
   async function onSubmit(values: z.infer<typeof fleetKycformSchema>) {
@@ -165,6 +165,9 @@ export function FleetKyc() {
           <div className="fleet-form-header">
             <h1>Fleet Company KYC Registration</h1>
             <p>Step {step} of 4 - Please complete all sections</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Document images must be under 1 MB each.
+            </p>
           </div>
           <div className="fleet-form-card">
           <Form {...form}>
@@ -468,7 +471,7 @@ export function FleetKyc() {
                             />
                           </FormControl>
                           <FormDescription>
-                            PDF, JPG, or PNG. Max 5MB.
+                            PDF, JPG, or PNG.
                           </FormDescription>
                           <FormMessage />
                         </FormItem>
@@ -489,7 +492,7 @@ export function FleetKyc() {
                             />
                           </FormControl>
                           <FormDescription>
-                            JPG or PNG. Max 5MB.
+                            JPG or PNG.
                           </FormDescription>
                           <FormMessage />
                         </FormItem>
@@ -552,7 +555,7 @@ export function FleetKyc() {
                             />
                           </FormControl>
                           <FormDescription>
-                            PDF, JPG, PNG. Max 5MB.
+                            PDF, JPG, PNG.
                           </FormDescription>
                           <FormMessage />
                         </FormItem>
@@ -573,7 +576,7 @@ export function FleetKyc() {
                             />
                           </FormControl>
                           <FormDescription>
-                            PDF, JPG, PNG. Max 5MB.
+                            PDF, JPG, PNG.
                           </FormDescription>
                           <FormMessage />
                         </FormItem>
@@ -583,10 +586,21 @@ export function FleetKyc() {
                 </div>
               )}
 
+              {isPending && (
+                <p className="text-sm text-muted-foreground">
+                  {KYC_SLOW_UPLOAD_MESSAGE}
+                </p>
+              )}
+
               {/* ---- Navigation Buttons ---- */}
               <div className="flex justify-between pt-6">
                 {step > 1 && (
-                  <Button type="button" variant="outline" onClick={prevStep}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={isPending}
+                    onClick={prevStep}
+                  >
                     Previous
                   </Button>
                 )}

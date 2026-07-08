@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { FleetFileInput } from "@/components/fleet/FleetFileInput";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -70,6 +71,7 @@ type FleetProfileResponse = {
 
 function AddDriver() {
   const navigate = useNavigate();
+  const [addressLabel, setAddressLabel] = useState("");
   const { data: profileResponse } = useGetFleetProfile() as {
     data?: FleetProfileResponse;
   };
@@ -277,8 +279,10 @@ function AddDriver() {
                     <FormControl>
                       <GogglePlace
                         value={field.value}
-                        onChange={(placeId) => {
+                        label={addressLabel}
+                        onChange={(placeId, address) => {
                           field.onChange(placeId);
+                          setAddressLabel(address);
                         }}
                       />
                     </FormControl>
@@ -313,7 +317,7 @@ function AddDriver() {
                         />
                       </FormControl>
                       <FormDescription>
-                        Upload passport image. JPG, PNG. Max 5MB.
+                        Upload passport image. JPG or PNG.
                       </FormDescription>
                       <FormMessage className="text-red-600" />
                     </FormItem>
@@ -344,7 +348,7 @@ function AddDriver() {
                         />
                       </FormControl>
                       <FormDescription>
-                        Upload driver's license image. JPG, PNG. Max 5MB.
+                        Upload driver's license image. JPG or PNG.
                       </FormDescription>
                       <FormMessage className="text-red-600" />
                     </FormItem>

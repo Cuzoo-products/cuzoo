@@ -102,11 +102,6 @@ const items = [
     url: "settings",
     icon: Settings,
   },
-  // {
-  //   title: "Map",
-  //   url: "map",
-  //   icon: Map,
-  // },
 ];
 
 export default function AdminSideBar() {

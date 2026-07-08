@@ -3,9 +3,9 @@ import App from "@/App";
 import NotFoundPage from "@/pages/shared/NotFoundPage";
 import VerifyEmailRoute from "@/pages/shared/VerifyEmailRoute";
 import ForgotPassword from "@/pages/shared/ForgotPassword";
+import PublicResetPassword from "@/pages/shared/ResetPassword";
 import KycSubmitted from "@/pages/shared/KycSubmitted";
 import { ProtectedRoute } from "@/routes/ProtectedRoute";
-import Maps from "@/pages/fleet/Maps";
 import Drivers from "@/pages/fleet/Drivers";
 import DriverDetails from "@/pages/fleet/DriverDetails";
 import AddDriver from "@/pages/fleet/AddDriver";
@@ -47,7 +47,6 @@ import UserDetails from "@/pages/admins/UserDetails";
 import AdminUserOrdersByUser from "@/pages/admins/AdminUserOrdersByUser";
 import AdminUserRidesByUser from "@/pages/admins/AdminUserRidesByUser";
 import DriversInAdmin from "@/pages/admins/Drivers";
-import Map from "@/pages/admins/Map";
 import AdminDriverDetails from "@/pages/admins/AdminDriverDetails";
 import AdminTrips from "@/pages/admins/AdminTrips";
 import AdminTripDetails from "@/pages/admins/AdminTripDetails";
@@ -99,6 +98,10 @@ export const routes = createBrowserRouter([
     element: <ForgotPassword />,
   },
   {
+    path: "/reset-password",
+    element: <PublicResetPassword />,
+  },
+  {
     path: "/kyc-submitted",
     element: <KycSubmitted />,
   },
@@ -142,10 +145,6 @@ export const routes = createBrowserRouter([
       {
         path: "dashboard",
         element: <FleetDashboard />,
-      },
-      {
-        path: "maps",
-        element: <Maps />,
       },
       {
         path: "drivers",
@@ -370,10 +369,6 @@ export const routes = createBrowserRouter([
       {
         path: "drivers",
         element: <DriversInAdmin />,
-      },
-      {
-        path: "map",
-        element: <Map />,
       },
       {
         path: "drivers/:id",

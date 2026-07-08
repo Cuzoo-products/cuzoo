@@ -8,12 +8,13 @@ import "./index.css";
 import "./styles/admin-portal.css";
 import "./styles/fleet-portal.css";
 import "./styles/auth-portal.css";
+import "./styles/google-places.css";
 import { Provider } from "react-redux";
 import store from "./redux/store/store";
 import "./firebase";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { queryClient } from "@/lib/queryClient";
 import { Toaster } from "sonner";
-const queryClient = new QueryClient();
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

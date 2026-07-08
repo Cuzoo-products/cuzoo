@@ -1,9 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
-import { getAdminTrips } from "./trips";
+import { getAdminTrips, type GetAdminTripsParams } from "./trips";
 
-export const useGetAdminTrips = () => {
+export const useGetAdminTrips = (params?: GetAdminTripsParams) => {
   return useQuery({
-    queryKey: ["admin-trips"],
-    queryFn: () => getAdminTrips(),
+    queryKey: ["admin-trips", params],
+    queryFn: () => getAdminTrips(params),
   });
 };

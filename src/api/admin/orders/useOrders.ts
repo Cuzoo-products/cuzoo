@@ -6,13 +6,13 @@ import {
   getOrdersForAdminByRiderId,
   getOrdersForAdminByUserId,
   getOrdersForAdminByVendorId,
+  type GetAdminOrdersParams,
 } from "./orders";
 
-
-export const useGetOrdersForAdmin = (orderType: string) => {
+export const useGetOrdersForAdmin = (params?: GetAdminOrdersParams) => {
   return useQuery({
-    queryKey: ["orders", orderType],
-    queryFn: () => getOrdersForAdmin(orderType),
+    queryKey: ["orders", params],
+    queryFn: () => getOrdersForAdmin(params),
   });
 };
 

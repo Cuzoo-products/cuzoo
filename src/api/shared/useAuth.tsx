@@ -2,6 +2,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   forgotPassword,
   getUserDetails,
+  resetPassword,
   sendVerificationMail,
   verifyEmail,
 } from "./auth";
@@ -63,5 +64,19 @@ export const useForgotPassword = () => {
     onError: (error) => {
       toast.error(error.message || "Failed to send password reset email");
     },
+  });
+};
+
+export const useResetPassword = () => {
+  return useMutation({
+    mutationFn: ({
+      token,
+      password,
+      confirmPassword,
+    }: {
+      token: string;
+      password: string;
+      confirmPassword: string;
+    }) => resetPassword(token, { password, confirmPassword }),
   });
 };

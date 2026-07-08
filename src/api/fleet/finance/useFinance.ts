@@ -4,12 +4,15 @@ import {
   addBankAccount,
   deleteBankAccount,
   getBankList,
+  getFinanceOverview,
   getPayout,
   getPayouts,
   getVerifyAccount,
   inflowHistory,
   outflowHistory,
   requestWithdrawal,
+  type GetFleetFinanceHistoryParams,
+  type GetFleetPayoutsParams,
 } from "./finance";
 import { toast } from "sonner";
 
@@ -68,17 +71,24 @@ export const useWalletDetails = () => {
   });
 };
 
-export const useInflow = () => {
+export const useFinanceOverview = () => {
   return useQuery({
-    queryKey: ["inflow"],
-    queryFn: inflowHistory,
+    queryKey: ["fleet-finance-overview"],
+    queryFn: getFinanceOverview,
   });
 };
 
-export const useOutflow = () => {
+export const useInflow = (params?: GetFleetFinanceHistoryParams) => {
   return useQuery({
-    queryKey: ["outflow"],
-    queryFn: outflowHistory,
+    queryKey: ["fleet-inflow", params],
+    queryFn: () => inflowHistory(params),
+  });
+};
+
+export const useOutflow = (params?: GetFleetFinanceHistoryParams) => {
+  return useQuery({
+    queryKey: ["fleet-outflow", params],
+    queryFn: () => outflowHistory(params),
   });
 };
 
@@ -94,10 +104,10 @@ export const useRequestWithdrawal = () => {
   });
 };
 
-export const useGetPayouts = () => {
+export const useGetPayouts = (params?: GetFleetPayoutsParams) => {
   return useQuery({
-    queryKey: ["payouts"],
-    queryFn: getPayouts,
+    queryKey: ["fleet-payouts", params],
+    queryFn: () => getPayouts(params),
   });
 };
 
