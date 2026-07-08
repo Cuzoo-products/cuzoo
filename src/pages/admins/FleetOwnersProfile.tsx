@@ -339,7 +339,7 @@ export default function FleetOwnersProfile() {
                   </Button>
                   <Button asChild>
                     <Link to={`/admins/fleet_managers/${routeId}/rides`}>
-                      Riders' rides
+                      Riders' orders
                     </Link>
                   </Button>
                 </CardContent>

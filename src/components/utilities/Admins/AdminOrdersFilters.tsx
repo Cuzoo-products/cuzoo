@@ -114,13 +114,17 @@ function FilterField({
 type AdminOrdersFiltersProps = {
   initialValues?: AdminOrdersFilterFormValues;
   onApply: (params: GetAdminOrdersParams) => void;
+  hiddenFields?: Array<keyof AdminOrdersFilterFormValues>;
 };
 
 export default function AdminOrdersFilters({
   initialValues = emptyAdminOrdersFilterForm,
   onApply,
+  hiddenFields = [],
 }: AdminOrdersFiltersProps) {
   const [form, setForm] = useState<AdminOrdersFilterFormValues>(initialValues);
+  const hide = (field: keyof AdminOrdersFilterFormValues) =>
+    hiddenFields.includes(field);
 
   const update = <K extends keyof AdminOrdersFilterFormValues>(
     key: K,
@@ -178,6 +182,7 @@ export default function AdminOrdersFilters({
             />
           </FilterField>
 
+          {!hide("userId") && (
           <FilterField label="User ID">
             <Input
               value={form.userId}
@@ -186,7 +191,9 @@ export default function AdminOrdersFilters({
               className="h-10"
             />
           </FilterField>
+          )}
 
+          {!hide("companyId") && (
           <FilterField label="Company ID">
             <Input
               value={form.companyId}
@@ -195,7 +202,9 @@ export default function AdminOrdersFilters({
               className="h-10"
             />
           </FilterField>
+          )}
 
+          {!hide("riderId") && (
           <FilterField label="Rider ID">
             <Input
               value={form.riderId}
@@ -204,6 +213,7 @@ export default function AdminOrdersFilters({
               className="h-10"
             />
           </FilterField>
+          )}
         </div>
 
         <div className="flex flex-wrap gap-2">

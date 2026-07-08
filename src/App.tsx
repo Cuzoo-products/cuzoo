@@ -82,7 +82,7 @@ function App() {
               },
             }),
           );
-
+          console.log(user);
           const accountType = userDetails.data.type;
           const isApproved = userDetails.data.approvalStatus === "approved";
           const kycSubmitted = hasSubmittedKyc(

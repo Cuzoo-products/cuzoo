@@ -105,13 +105,23 @@ export const getOrdersForAdminByUserId = async (
   });
 };
 
+export const getOrdersForAdminByCompanyId = async (
+  companyId: string,
+  params?: Omit<GetAdminOrdersParams, "companyId">,
+) => {
+  return getOrdersForAdmin({
+    ...params,
+    companyId,
+  });
+};
+
+/** @deprecated Use getOrdersForAdminByCompanyId without orderType for all company orders. */
 export const getOrderForAdminByFleetId = async (
   orderType: string,
   fleetId: string,
 ) => {
-  return getOrdersForAdmin({
+  return getOrdersForAdminByCompanyId(fleetId, {
     orderType: orderType as AdminOrderType,
-    companyId: fleetId,
   });
 };
 

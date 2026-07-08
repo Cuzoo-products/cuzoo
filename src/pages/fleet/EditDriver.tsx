@@ -126,7 +126,10 @@ function EditDriver() {
   if (error || !rider?.data) {
     return (
       <div className="space-y-5">
-        <PageHeader title="Edit driver" subtitle="Unable to load driver details" />
+        <PageHeader
+          title="Edit driver"
+          subtitle="Unable to load driver details"
+        />
       </div>
     );
   }
@@ -157,11 +160,7 @@ function EditDriver() {
                   <FormItem>
                     <FormLabel>First Name</FormLabel>
                     <FormControl>
-                      <Input
-                        className="h-11"
-                        placeholder="John"
-                        {...field}
-                      />
+                      <Input className="h-11" placeholder="John" {...field} />
                     </FormControl>
                     <FormMessage className="text-red-600" />
                   </FormItem>
@@ -175,11 +174,7 @@ function EditDriver() {
                   <FormItem>
                     <FormLabel>Last Name</FormLabel>
                     <FormControl>
-                      <Input
-                        className="h-11"
-                        placeholder="Doe"
-                        {...field}
-                      />
+                      <Input className="h-11" placeholder="Doe" {...field} />
                     </FormControl>
                     <FormMessage className="text-red-600" />
                   </FormItem>
@@ -286,8 +281,7 @@ function EditDriver() {
                   </FormControl>
                   <FormMessage className="text-red-600" />
                   <p className="text-sm text-muted-foreground">
-                    Select an address from the dropdown suggestions. The place
-                    ID will be sent to the backend.
+                    Select an address from the dropdown suggestions.
                   </p>
                 </FormItem>
               )}

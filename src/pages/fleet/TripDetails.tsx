@@ -1,126 +1,112 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  CalendarClock,
-  MapPin,
-  Truck,
-  User,
-  AlertTriangle,
-} from "lucide-react";
-import { useParams } from "react-router";
 import PageHeader from "@/components/admin/PageHeader";
 import StatusBadge from "@/components/admin/StatusBadge";
-import { DetailShell } from "@/components/admin/DetailShell";
+import { DetailShell, GridItem, Section } from "@/components/admin/DetailShell";
+import { Separator } from "@/components/ui/separator";
+import Loader from "@/components/utilities/Loader";
 import { useGetFleetTripById } from "@/api/fleet/trips/useTrips";
+import { useParams } from "react-router";
+
+type PhoneNumber = {
+  internationalFormat?: string;
+  number?: string;
+};
+
+type Address = {
+  formatted_address?: string;
+  description?: string;
+  landMark?: string;
+  country?: string;
+  state?: string;
+};
+
+type TripAmountDetails = {
+  amount?: number;
+  serviceCharge?: number;
+  totalAmount?: number;
+  totalDistance?: number;
+  cuzooCommission?: number;
+};
 
 type TripDetailsResponse = {
-  success: boolean;
-  statusCode: number;
-  data: {
-    pickup: {
-      customerName: string;
-      phoneNumber: string;
-      email: string;
-      pickupAddress: {
-        formatted_address: string;
-        description: string;
-        landMark: string;
-        country: string;
-        state: string;
+  data?: {
+    id?: string;
+    status?: string;
+    orderType?: string;
+    transportType?: string;
+    country?: string;
+    createdAt?: string;
+    otp?: string;
+    paid?: boolean;
+    paidAt?: string;
+    pickedUp?: boolean;
+    pickedUpAt?: string;
+    arrived?: boolean;
+    riderArrivedAt?: string;
+    riderAcceptedAt?: string;
+    completed?: boolean;
+    completedAt?: string;
+    cancelled?: boolean;
+    cancelledAt?: string;
+    cancelledBy?: {
+      role?: string;
+      firstName?: string;
+      lastName?: string;
+      email?: string;
+    };
+    pickUpTime?: { pickUpType?: string };
+    paymentMethod?: { method?: string } | string;
+    pickup?: {
+      customerName?: string;
+      phoneNumber?: string;
+      email?: string;
+      pickupAddress?: Address;
+    };
+    userDetails?: {
+      userId?: string;
+      email?: string;
+      fullName?: string;
+      phoneNumber?: PhoneNumber;
+    };
+    riderDetails?: {
+      email?: string;
+      fullName?: string;
+      riderId?: string;
+      phoneNumber?: PhoneNumber;
+      companyName?: string;
+      vehicle?: {
+        color?: string;
+        model?: string;
+        type?: string;
+        plateNumber?: string;
       };
     };
-    pickUpTime: {
-      pickUpType: string;
-    };
-    paymentMethod: {
-      method: string;
-    };
-    paid: boolean;
-    paidAt: string;
-    status: string;
-    pickedUp: boolean;
-    pickedUpAt: string;
-    completed: boolean;
-    completedAt: string;
-    country: string;
-    otp: string;
-    userDetails: {
-      userId: string;
-      email: string;
-      fullName: string;
-    };
-    cardDetails: {
-      brand: string;
-      last4Digit: string;
-      bank: string;
-    };
-    chats: { message: string }[];
-    cancelled: boolean;
-    cancelledAt: string;
-    cancelledBy: {
-      role: string;
-      firstName: string;
-      lastName: string;
-      email: string;
-    };
-    transportType: string;
-    rated: boolean;
-    arrived: boolean;
-    riderArrivedAt: string;
-    riderDetails: {
-      email: string;
-      fullName: string;
-      riderId: string;
-      phoneNumber: {
-        internationalFormat: string;
+    destinations?: Array<{
+      id?: string;
+      recipientName?: string;
+      phoneNumber?: string;
+      email?: string;
+      packageDetails?: {
+        name?: string;
+        weight?: number;
+        weightUnit?: string;
       };
-      vehicle: {
-        color: string;
-        model: string;
-        type: string;
-        plateNumber: string;
-      };
-      companyName: string;
+      destinationAddress?: Address;
+      arrived?: boolean;
+      arrivedAt?: string;
+      delivered?: boolean;
+      deliveredAt?: string;
+    }>;
+    amount?: number | TripAmountDetails;
+    percentages?: {
+      cuzooCompanyPercentage?: number;
+      cuzooPercentage?: number;
     };
-    orderType: string;
-    destinations: {
-      recipientName: string;
-      phoneNumber: string;
-      email: string;
-      packageDetails: {
-        name: string;
-        weight: number;
-        weightUnit: string;
-      };
-      destinationAddress: {
-        formatted_address: string;
-        description: string;
-        landMark: string;
-        country: string;
-        state: string;
-      };
-      otpRequestedAt: string;
-      arrived: boolean;
-      arrivedAt: string;
-      delivered: boolean;
-      deliveredAt: string;
-      id: string;
-    }[];
-    percentages: {
-      cuzooCompanyPercentage: number;
-      cuzooPercentage: number;
-    };
-    amount: {
-      serviceCharge: number;
-      totalAmount: number;
-      totalDistance: number;
-      cuzooCommission: number;
-    };
-    riderAcceptedAt: string;
+    chats?: Array<{ message?: string }>;
   };
 };
 
-const formatDateTime = (value?: string) => {
-  if (!value) return "-";
+const formatDate = (value?: string) => {
+  if (!value) return "—";
   try {
     return new Date(value).toLocaleString("en-NG", {
       day: "2-digit",
@@ -134,355 +120,402 @@ const formatDateTime = (value?: string) => {
   }
 };
 
+const formatNaira = (value?: number) =>
+  `₦${(value ?? 0).toLocaleString("en-NG", { maximumFractionDigits: 2 })}`;
+
+function getTripAmount(amount?: number | TripAmountDetails): number {
+  if (typeof amount === "number" && !Number.isNaN(amount)) return amount;
+  if (!amount || typeof amount !== "object") return 0;
+
+  if (typeof amount.amount === "number" && !Number.isNaN(amount.amount)) {
+    return amount.amount;
+  }
+
+  const total = amount.totalAmount;
+  const service = amount.serviceCharge;
+  if (
+    typeof total === "number" &&
+    !Number.isNaN(total) &&
+    typeof service === "number" &&
+    !Number.isNaN(service)
+  ) {
+    return total - service;
+  }
+
+  return typeof total === "number" && !Number.isNaN(total) ? total : 0;
+}
+
+function getAmountDetails(
+  amount?: number | TripAmountDetails,
+): TripAmountDetails | undefined {
+  if (!amount || typeof amount !== "object") return undefined;
+  return amount;
+}
+
+const formatPhone = (phone?: string | PhoneNumber) => {
+  if (!phone) return "—";
+  if (typeof phone === "string") return phone || "—";
+  return phone.internationalFormat || phone.number || "—";
+};
+
+const formatAddress = (address?: Address) =>
+  address?.formatted_address || address?.description || "—";
+
 export default function TripDetails() {
-  const { id } = useParams<{ id: string }>();
+  const { id: routeId } = useParams<{ id: string }>();
+  const id =
+    routeId && routeId !== "undefined" && routeId !== "null"
+      ? routeId
+      : undefined;
 
-  const {
-    data,
-    isLoading,
-    error,
-  } = useGetFleetTripById(id ?? "") as {
-    data?: TripDetailsResponse;
-    isLoading: boolean;
-    error: unknown;
-  };
-
-  const trip = data?.data;
+  const { data: payload, isLoading, error } = useGetFleetTripById(id ?? "");
 
   const tripsBack = "/fleet/trips";
   const crumbs = [
     { label: "Dashboard", href: "/fleet/dashboard" },
     { label: "Trips", href: tripsBack },
-    { label: "Trip" },
+    { label: id ?? "Trip" },
   ];
 
   if (!id) {
     return (
-      <DetailShell backHref={tripsBack} backLabel="Trips" crumbs={crumbs}>
-        <PageHeader title="Trip details" subtitle="No trip ID provided." />
+      <DetailShell
+        backHref={tripsBack}
+        backLabel="Trips"
+        crumbs={[...crumbs.slice(0, 2), { label: "Error" }]}
+      >
+        <PageHeader title="Trip Details" subtitle="No trip ID provided." />
       </DetailShell>
     );
   }
 
-  if (isLoading) {
-    return (
-      <DetailShell backHref={tripsBack} backLabel="Trips" crumbs={crumbs}>
-        <PageHeader title="Trip details" subtitle="Loading trip details..." />
-      </DetailShell>
-    );
-  }
+  if (isLoading) return <Loader />;
+
+  const trip = (payload as TripDetailsResponse | undefined)?.data;
 
   if (error || !trip) {
     return (
-      <DetailShell backHref={tripsBack} backLabel="Trips" crumbs={crumbs}>
-        <PageHeader title="Trip details" subtitle="Unable to load trip details." />
+      <DetailShell
+        backHref={tripsBack}
+        backLabel="Trips"
+        crumbs={[...crumbs.slice(0, 2), { label: "Error" }]}
+      >
+        <PageHeader
+          title="Trip Details"
+          subtitle="Unable to load trip details."
+        />
       </DetailShell>
     );
   }
 
-  const primaryDestination = trip.destinations[0];
+  const paymentLabel =
+    typeof trip.paymentMethod === "object" && trip.paymentMethod
+      ? trip.paymentMethod.method
+      : typeof trip.paymentMethod === "string"
+        ? trip.paymentMethod
+        : "—";
+
+  const statusLabel = trip.completed
+    ? "Completed"
+    : trip.cancelled
+      ? "Cancelled"
+      : (trip.status ?? "—");
+
+  const amountDetails = getAmountDetails(trip.amount);
+  const tripAmount = getTripAmount(trip.amount);
+  const destinations = trip.destinations ?? [];
+  const chats = trip.chats ?? [];
+  const pickupLabel = formatAddress(trip.pickup?.pickupAddress);
+  const firstDest = destinations[0];
+  const dropoffLabel = formatAddress(firstDest?.destinationAddress);
 
   return (
     <DetailShell backHref={tripsBack} backLabel="Trips" crumbs={crumbs}>
       <PageHeader
-        title="Trip details"
-        subtitle={`Order type: ${trip.orderType} • Transport: ${trip.transportType}`}
-        actions={<StatusBadge status={trip.status} />}
+        title="Trip Details"
+        subtitle={`${trip.orderType ?? "Package"} · ${trip.transportType ?? "Delivery"}`}
+        actions={<StatusBadge status={statusLabel} />}
       />
 
-      <div className="portal-detail-panel space-y-4">
-        {/* Top layout: summary + payment */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          {/* Trip Summary */}
-          <Card className="border border-line-1 bg-background rounded-lg lg:col-span-2">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center justify-between text-base md:text-lg">
-                <span className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4" />
-                  {trip.pickup.pickupAddress.formatted_address ||
-                    trip.pickup.pickupAddress.description ||
-                    "Pickup"}
-                </span>
-                <span className="text-xs md:text-sm text-muted-foreground">
-                  {primaryDestination?.destinationAddress.formatted_address ||
-                    primaryDestination?.destinationAddress.description ||
-                    "Destination"}
-                </span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 text-sm md:text-base">
-              <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-muted-foreground">
-                <CalendarClock className="w-4 h-4 shrink-0" />
-                <span>
-                  Pickup time:{" "}
-                  <strong>{trip.pickUpTime.pickUpType}</strong> •{" "}
-                  {formatDateTime(trip.pickedUpAt)}
-                </span>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs md:text-sm text-muted-foreground">
-                <div>
-                  <p className="font-semibold text-foreground">Status</p>
-                  <p>
-                    {trip.completed
-                      ? "Completed"
-                      : trip.cancelled
-                      ? "Cancelled"
-                      : trip.status}
-                  </p>
-                </div>
-                <div>
-                  <p className="font-semibold text-foreground">Paid</p>
-                  <p>
-                    {trip.paid ? "Yes" : "No"}{" "}
-                    {trip.paidAt && `• ${formatDateTime(trip.paidAt)}`}
-                  </p>
-                </div>
-                <div>
-                  <p className="font-semibold text-foreground">Country</p>
-                  <p>{trip.country || "-"}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+      <div className="mx-auto max-w-5xl space-y-4">
+        <Section title="Overview">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <GridItem label="Trip ID" value={id} />
+            <GridItem label="Created" value={formatDate(trip.createdAt)} />
+            <GridItem label="Amount" value={formatNaira(tripAmount)} />
+            <GridItem
+              label="Payment"
+              value={`${paymentLabel} · ${trip.paid ? "Paid" : "Unpaid"}`}
+            />
+          </div>
 
-          {/* Payment summary */}
-          <Card className="border border-line-1 bg-background rounded-lg">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base md:text-lg">
-                Payment Summary
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2 text-sm text-muted-foreground">
-              <div className="flex items-center justify-between">
-                <span>Method</span>
-                <span className="font-medium text-foreground">
-                  {trip.paymentMethod.method}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span>Total Amount</span>
-                <span className="font-semibold text-foreground">
-                  ₦{trip.amount.totalAmount.toLocaleString()}
-                </span>
-              </div>
-              <div className="flex items-center justify-between text-xs md:text-sm">
-                <span>Service Charge</span>
-                <span>
-                  ₦{trip.amount.serviceCharge.toLocaleString()} • Cuzoo{" "}
-                  {trip.percentages.cuzooPercentage}%
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+          <Separator className="my-4" />
 
-        {/* Middle layout: customer, rider, user */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <Card className="border border-line-1 bg-background rounded-lg lg:col-span-1">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2 text-base md:text-lg">
-                <User className="w-4 h-4" />
-                Customer
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-1 text-sm text-muted-foreground">
-              <p>
-                <span className="font-semibold text-foreground">Name:</span>{" "}
-                {trip.pickup.customerName}
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="rounded-lg border border-[var(--admin-border)] bg-[var(--admin-bg-card-alt)] p-4">
+              <p className="mb-1 text-[12px] uppercase tracking-wide text-[var(--admin-text-muted)]">
+                Pickup
               </p>
-              <p>
-                <span className="font-semibold text-foreground">Phone:</span>{" "}
-                {trip.pickup.phoneNumber}
+              <p className="text-sm font-medium text-[var(--admin-text-primary)]">
+                {pickupLabel}
               </p>
-              <p className="truncate">
-                <span className="font-semibold text-foreground">Email:</span>{" "}
-                {trip.pickup.email}
-              </p>
-              <p className="mt-2">
-                <span className="font-semibold text-foreground">
-                  Pickup Address:
-                </span>{" "}
-                {trip.pickup.pickupAddress.formatted_address ||
-                  trip.pickup.pickupAddress.description}
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="border border-line-1 bg-background rounded-lg lg:col-span-1">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2 text-base md:text-lg">
-                <Truck className="w-4 h-4" />
-                Rider & Vehicle
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-1 text-sm text-muted-foreground">
-              <p>
-                <span className="font-semibold text-foreground">Rider:</span>{" "}
-                {trip.riderDetails.fullName}
-              </p>
-              <p>
-                <span className="font-semibold text-foreground">Phone:</span>{" "}
-                {trip.riderDetails.phoneNumber.internationalFormat}
-              </p>
-              <p>
-                <span className="font-semibold text-foreground">Vehicle:</span>{" "}
-                {trip.riderDetails.vehicle.model} •{" "}
-                {trip.riderDetails.vehicle.color}
-              </p>
-              <p>
-                <span className="font-semibold text-foreground">Plate:</span>{" "}
-                {trip.riderDetails.vehicle.plateNumber}
-              </p>
-              <p className="mt-2">
-                <span className="font-semibold text-foreground">Company:</span>{" "}
-                {trip.riderDetails.companyName}
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="border border-line-1 bg-background rounded-lg lg:col-span-1">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base md:text-lg">
-                User Account
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-1 text-sm text-muted-foreground">
-              <p>
-                <span className="font-semibold text-foreground">Name:</span>{" "}
-                {trip.userDetails.fullName}
-              </p>
-              <p>
-                <span className="font-semibold text-foreground">Email:</span>{" "}
-                {trip.userDetails.email}
-              </p>
-              <p>
-                <span className="font-semibold text-foreground">User ID:</span>{" "}
-                {trip.userDetails.userId}
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Destinations & timeline */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <Card className="border border-line-1 bg-background rounded-lg lg:col-span-2">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base md:text-lg">
-                Destinations
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 text-sm text-muted-foreground">
-              {trip.destinations.map((dest) => (
-                <div
-                  key={dest.id}
-                  className="border border-dashed border-line-1 rounded-md p-3 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2"
-                >
-                  <div className="space-y-1">
-                    <p>
-                      <span className="font-semibold text-foreground">
-                        Recipient:
-                      </span>{" "}
-                      {dest.recipientName}
-                    </p>
-                    <p>
-                      <span className="font-semibold text-foreground">
-                        Package:
-                      </span>{" "}
-                      {dest.packageDetails.name} • {dest.packageDetails.weight}
-                      {dest.packageDetails.weightUnit}
-                    </p>
-                    <p>
-                      <span className="font-semibold text-foreground">
-                        Address:
-                      </span>{" "}
-                      {dest.destinationAddress.formatted_address ||
-                        dest.destinationAddress.description}
-                    </p>
-                  </div>
-                  <div className="text-xs md:text-sm text-right space-y-1 min-w-[140px]">
-                    <p>
-                      <span className="font-semibold text-foreground">
-                        Arrived:
-                      </span>{" "}
-                      {dest.arrived ? "Yes" : "No"}
-                    </p>
-                    <p>
-                      <span className="font-semibold text-foreground">
-                        Delivered:
-                      </span>{" "}
-                      {dest.delivered ? "Yes" : "No"}
-                    </p>
-                    <p>{formatDateTime(dest.deliveredAt)}</p>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-
-          <Card className="border border-line-1 bg-background rounded-lg lg:col-span-1">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base md:text-lg">
-                Trip Timeline
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2 text-xs md:text-sm text-muted-foreground">
-              <p>
-                <span className="font-semibold text-foreground">
-                  Rider Accepted:
-                </span>{" "}
-                {formatDateTime(trip.riderAcceptedAt)}
-              </p>
-              <p>
-                <span className="font-semibold text-foreground">
-                  Rider Arrived:
-                </span>{" "}
-                {formatDateTime(trip.riderArrivedAt)}
-              </p>
-              <p>
-                <span className="font-semibold text-foreground">
-                  Picked Up:
-                </span>{" "}
-                {formatDateTime(trip.pickedUpAt)}
-              </p>
-              <p>
-                <span className="font-semibold text-foreground">
-                  Completed:
-                </span>{" "}
-                {formatDateTime(trip.completedAt)}
-              </p>
-              {trip.cancelled && (
-                <p className="text-destructive">
-                  <span className="font-semibold text-foreground">
-                    Cancelled:
-                  </span>{" "}
-                  {formatDateTime(trip.cancelledAt)} by{" "}
-                  {trip.cancelledBy.firstName} {trip.cancelledBy.lastName} (
-                  {trip.cancelledBy.role})
+              {(trip.pickup?.pickupAddress?.state ||
+                trip.pickup?.pickupAddress?.country) && (
+                <p className="mt-1 text-xs text-[var(--admin-text-muted)]">
+                  {[
+                    trip.pickup?.pickupAddress?.state,
+                    trip.pickup?.pickupAddress?.country,
+                  ]
+                    .filter(Boolean)
+                    .join(", ")}
                 </p>
               )}
-            </CardContent>
-          </Card>
+            </div>
+            <div className="rounded-lg border border-[var(--admin-border)] bg-[var(--admin-bg-card-alt)] p-4">
+              <p className="mb-1 text-[12px] uppercase tracking-wide text-[var(--admin-text-muted)]">
+                Primary destination
+              </p>
+              <p className="text-sm font-medium text-[var(--admin-text-primary)]">
+                {dropoffLabel}
+              </p>
+              {(firstDest?.destinationAddress?.state ||
+                firstDest?.destinationAddress?.country) && (
+                <p className="mt-1 text-xs text-[var(--admin-text-muted)]">
+                  {[
+                    firstDest?.destinationAddress?.state,
+                    firstDest?.destinationAddress?.country,
+                  ]
+                    .filter(Boolean)
+                    .join(", ")}
+                </p>
+              )}
+            </div>
+          </div>
+        </Section>
+
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+          <Section title="Customer">
+            <div className="space-y-2 text-sm">
+              <GridItem
+                label="Name"
+                value={
+                  trip.userDetails?.fullName ||
+                  trip.pickup?.customerName ||
+                  "—"
+                }
+              />
+              <GridItem
+                label="Email"
+                value={trip.userDetails?.email || trip.pickup?.email || "—"}
+              />
+              <GridItem
+                label="Phone"
+                value={
+                  formatPhone(trip.userDetails?.phoneNumber) !== "—"
+                    ? formatPhone(trip.userDetails?.phoneNumber)
+                    : trip.pickup?.phoneNumber || "—"
+                }
+              />
+            </div>
+          </Section>
+
+          <Section title="Rider">
+            <div className="space-y-2 text-sm">
+              <GridItem
+                label="Name"
+                value={trip.riderDetails?.fullName || "—"}
+              />
+              <GridItem
+                label="Phone"
+                value={formatPhone(trip.riderDetails?.phoneNumber)}
+              />
+              <GridItem
+                label="Company"
+                value={trip.riderDetails?.companyName || "—"}
+              />
+            </div>
+          </Section>
+
+          <Section title="Vehicle">
+            <div className="space-y-2 text-sm">
+              <GridItem
+                label="Model"
+                value={
+                  [
+                    trip.riderDetails?.vehicle?.model,
+                    trip.riderDetails?.vehicle?.color,
+                  ]
+                    .filter(Boolean)
+                    .join(" · ") || "—"
+                }
+              />
+              <GridItem
+                label="Plate"
+                value={trip.riderDetails?.vehicle?.plateNumber || "—"}
+              />
+              <GridItem
+                label="Type"
+                value={trip.riderDetails?.vehicle?.type || "—"}
+              />
+            </div>
+          </Section>
         </div>
 
-        <Card className="border border-line-1 bg-background rounded-lg">
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-base md:text-lg">
-              <AlertTriangle className="w-4 h-4" />
-              Notes & Messages
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2 text-sm text-muted-foreground">
-            {trip.chats.length === 0 && <p>No messages for this trip yet.</p>}
-            {trip.chats.map((chat, index) => (
-              <div
-                key={index}
-                className="border border-line-1 rounded-md p-2 bg-muted/40"
-              >
-                {chat.message}
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+        <Section
+          title="Destinations"
+          subtitle={
+            destinations.length
+              ? `${destinations.length} stop${destinations.length === 1 ? "" : "s"}`
+              : undefined
+          }
+        >
+          {destinations.length === 0 ? (
+            <p className="text-sm text-[var(--admin-text-muted)]">
+              No destinations on this trip.
+            </p>
+          ) : (
+            <div className="space-y-3">
+              {destinations.map((dest, index) => (
+                <div
+                  key={dest.id ?? `${dest.recipientName}-${index}`}
+                  className="rounded-lg border border-[var(--admin-border)] bg-[var(--admin-bg-card-alt)] p-4"
+                >
+                  <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                    <p className="text-sm font-semibold text-[var(--admin-text-primary)]">
+                      Stop {index + 1}
+                      {dest.recipientName ? ` · ${dest.recipientName}` : ""}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      <StatusBadge
+                        status={dest.arrived ? "Arrived" : "Not arrived"}
+                      />
+                      <StatusBadge
+                        status={dest.delivered ? "Delivered" : "Pending"}
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+                    <GridItem
+                      label="Package"
+                      value={
+                        dest.packageDetails?.name
+                          ? `${dest.packageDetails.name}${
+                              dest.packageDetails.weight != null
+                                ? ` · ${dest.packageDetails.weight}${dest.packageDetails.weightUnit ?? ""}`
+                                : ""
+                            }`
+                          : "—"
+                      }
+                    />
+                    <GridItem
+                      label="Phone"
+                      value={dest.phoneNumber || "—"}
+                    />
+                    <GridItem
+                      label="Delivered at"
+                      value={formatDate(dest.deliveredAt)}
+                    />
+                  </div>
+                  <p className="mt-3 text-sm text-[var(--admin-text-primary)]">
+                    {formatAddress(dest.destinationAddress)}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
+        </Section>
+
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          <Section title="Payment">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <GridItem label="Method" value={paymentLabel} />
+              <GridItem
+                label="Paid at"
+                value={formatDate(trip.paidAt)}
+              />
+              <GridItem
+                label="Service charge"
+                value={formatNaira(amountDetails?.serviceCharge)}
+              />
+              <GridItem
+                label="Commission"
+                value={formatNaira(amountDetails?.cuzooCommission)}
+              />
+              {amountDetails?.totalDistance != null && (
+                <GridItem
+                  label="Distance"
+                  value={`${amountDetails.totalDistance} km`}
+                />
+              )}
+              {trip.percentages?.cuzooPercentage != null && (
+                <GridItem
+                  label="Cuzoo %"
+                  value={`${trip.percentages.cuzooPercentage}%`}
+                />
+              )}
+            </div>
+          </Section>
+
+          <Section title="Timeline">
+            <div className="space-y-2 text-sm">
+              <p>
+                <span className="text-[var(--admin-text-muted)]">
+                  Pickup type:{" "}
+                </span>
+                {trip.pickUpTime?.pickUpType || "—"}
+              </p>
+              <p>
+                <span className="text-[var(--admin-text-muted)]">
+                  Rider accepted:{" "}
+                </span>
+                {formatDate(trip.riderAcceptedAt)}
+              </p>
+              <p>
+                <span className="text-[var(--admin-text-muted)]">
+                  Rider arrived:{" "}
+                </span>
+                {formatDate(trip.riderArrivedAt)}
+              </p>
+              <p>
+                <span className="text-[var(--admin-text-muted)]">
+                  Picked up:{" "}
+                </span>
+                {formatDate(trip.pickedUpAt)}
+              </p>
+              <p>
+                <span className="text-[var(--admin-text-muted)]">
+                  Completed:{" "}
+                </span>
+                {formatDate(trip.completedAt)}
+              </p>
+              {trip.cancelled && (
+                <p className="text-[var(--admin-danger,#ef4444)]">
+                  Cancelled {formatDate(trip.cancelledAt)}
+                  {trip.cancelledBy
+                    ? ` by ${[trip.cancelledBy.firstName, trip.cancelledBy.lastName]
+                        .filter(Boolean)
+                        .join(" ")} (${trip.cancelledBy.role ?? "—"})`
+                    : ""}
+                </p>
+              )}
+            </div>
+          </Section>
+        </div>
+
+        {chats.length > 0 && (
+          <Section title="Notes & Messages">
+            <div className="space-y-2">
+              {chats.map((chat, index) => (
+                <div
+                  key={index}
+                  className="rounded-lg border border-[var(--admin-border)] bg-[var(--admin-bg-card-alt)] p-3 text-sm text-[var(--admin-text-primary)]"
+                >
+                  {chat.message || "—"}
+                </div>
+              ))}
+            </div>
+          </Section>
+        )}
       </div>
     </DetailShell>
   );

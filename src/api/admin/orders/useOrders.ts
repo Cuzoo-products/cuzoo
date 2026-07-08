@@ -1,8 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import {
   getOrderForAdmin,
-  getOrderForAdminByFleetId,
   getOrdersForAdmin,
+  getOrdersForAdminByCompanyId,
   getOrdersForAdminByRiderId,
   getOrdersForAdminByUserId,
   getOrdersForAdminByVendorId,
@@ -43,17 +43,17 @@ export const useGetOrdersForAdminByUserId = (
 };
 
 export const useGetOrdersForAdminByCompanyId = (
-  orderType: string,
   companyId: string | undefined,
+  params?: Omit<GetAdminOrdersParams, "companyId">,
 ) => {
   const safe =
     companyId && companyId !== "" && companyId !== "undefined" && companyId !== "null"
       ? companyId
       : undefined;
   return useQuery({
-    queryKey: ["admin-orders-by-company", orderType, safe],
-    queryFn: () => getOrderForAdminByFleetId(orderType, safe as string),
-    enabled: Boolean(safe && orderType),
+    queryKey: ["admin-orders-by-company", safe, params],
+    queryFn: () => getOrdersForAdminByCompanyId(safe as string, params),
+    enabled: Boolean(safe),
   });
 };
 

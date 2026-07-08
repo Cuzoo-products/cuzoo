@@ -1,19 +1,30 @@
-import { useMemo } from "react";
-import { useParams } from "react-router";
+import { useEffect, useMemo, useState } from "react";
+import { useParams, useSearchParams } from "react-router";
 import NestedAdminPage from "@/components/admin/NestedAdminPage";
+import BackendCursorPagination from "@/components/admin/BackendCursorPagination";
 import { DataTable } from "@/components/ui/data-table";
+import { createViewActionsColumn } from "@/components/ui/data-table-actions-column";
 import {
-  columns,
+  adminTripsListColumns,
   type AdminTripData,
 } from "@/components/utilities/Admins/AdminTripsDataTable";
-import { useGetOrdersForAdminByRiderId } from "@/api/admin/orders/useOrders";
+import AdminOrdersFilters, {
+  adminOrdersParamsToSearchParams,
+  adminOrdersSearchParamsToForm,
+  adminOrdersSearchParamsToParams,
+} from "@/components/utilities/Admins/AdminOrdersFilters";
+import { useGetOrdersForAdmin } from "@/api/admin/orders/useOrders";
+import {
+  parseAdminOrdersListMeta,
+  type GetAdminOrdersParams,
+} from "@/api/admin/orders/orders";
 import {
   parseAdminTripsPayload,
   type AdminTripListItem,
 } from "@/api/admin/trips/trips";
 import Loader from "@/components/utilities/Loader";
 
-const PACKAGE_ORDER_TYPE = "Package";
+const DEFAULT_LIMIT = 20;
 
 function formatWhen(iso?: string): string {
   if (!iso) return "—";
@@ -32,43 +43,6 @@ function naira(n: number): string {
   return `₦${n.toLocaleString("en-NG", { maximumFractionDigits: 2 })}`;
 }
 
-function buildDetails(row: AdminTripListItem): string {
-  const t = row.orderType?.toLowerCase() ?? "";
-
-  if (t === "package") {
-    const from = row.from?.trim() || "—";
-    const dest =
-      row.destinations?.filter(Boolean).length ?? 0
-        ? row.destinations!.join(", ")
-        : "—";
-    return `From: ${from}\nDestinations: ${dest}`;
-  }
-
-  if (t === "shopping") {
-    const lines: string[] = [];
-    if (row.customer) lines.push(`Customer: ${row.customer}`);
-    if (row.vendor) lines.push(`Vendor: ${row.vendor}`);
-    if (row.paymentMethod) lines.push(`Payment: ${row.paymentMethod}`);
-    if (row.items?.length) {
-      const itemsLines = row.items.map((i) => {
-        const q = i.quantity != null ? String(i.quantity) : "";
-        const n = i.name ?? "";
-        return q ? `${q}× ${n}` : n;
-      });
-      lines.push(`Items:\n${itemsLines.join("\n")}`);
-    }
-    return lines.length ? lines.join("\n") : "—";
-  }
-
-  const generic = [
-    row.from ? `From: ${row.from}` : "",
-    row.destinations?.length ? `To: ${row.destinations.join(", ")}` : "",
-    row.customer ? `Customer: ${row.customer}` : "",
-    row.vendor ? `Vendor: ${row.vendor}` : "",
-  ].filter(Boolean);
-  return generic.length ? generic.join("\n") : "—";
-}
-
 function buildSchedule(row: AdminTripListItem): string {
   const s = row.startTime ? formatWhen(row.startTime) : "—";
   const e = row.endTime ? formatWhen(row.endTime) : "—";
@@ -82,11 +56,17 @@ function mapRow(row: AdminTripListItem): AdminTripData {
     orderType: row.orderType ?? "—",
     status: row.status ?? "—",
     createdAt: formatWhen(row.createdAt ?? row.date),
-    details: buildDetails(row),
-    driver: row.driver?.trim() || "—",
     amount: naira(row.amount),
     schedule: buildSchedule(row),
   };
+}
+
+function viewPath(row: AdminTripData): string {
+  const t = row.orderType?.toLowerCase() ?? "";
+  if (t === "package") {
+    return `/admins/trips/${row.id}`;
+  }
+  return `/admins/orders/${row.id}`;
 }
 
 export default function IndivdualDriverTrips() {
@@ -96,25 +76,100 @@ export default function IndivdualDriverTrips() {
       ? routeId
       : undefined;
 
-  const { data: payload, isLoading, isError } =
-    useGetOrdersForAdminByRiderId(PACKAGE_ORDER_TYPE, driverId);
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const trips = useMemo(() => parseAdminTripsPayload(payload), [payload]);
+  const urlFilters = useMemo(
+    () => ({
+      ...adminOrdersSearchParamsToParams(searchParams),
+      ...(driverId ? { riderId: driverId } : {}),
+    }),
+    [searchParams, driverId],
+  );
+  const filterFormFromUrl = useMemo(
+    () => adminOrdersSearchParamsToForm(searchParams),
+    [searchParams],
+  );
 
-  const meta = useMemo(() => {
-    const root = payload as
-      | { data?: { count?: number; limit?: number; lastCursor?: number } }
-      | undefined;
-    return {
-      count: root?.data?.count,
-      limit: root?.data?.limit,
+  const [appliedFilters, setAppliedFilters] =
+    useState<GetAdminOrdersParams>(urlFilters);
+  const [limit, setLimit] = useState(DEFAULT_LIMIT);
+  const [cursorStack, setCursorStack] = useState<
+    (number | string | undefined)[]
+  >([undefined]);
+
+  useEffect(() => {
+    setAppliedFilters(urlFilters);
+    setCursorStack([undefined]);
+  }, [urlFilters]);
+
+  const currentCursor = cursorStack[cursorStack.length - 1];
+
+  const queryParams = useMemo<GetAdminOrdersParams>(() => {
+    const params: GetAdminOrdersParams = {
+      ...appliedFilters,
+      riderId: driverId,
+      limit,
     };
-  }, [payload]);
+
+    if (currentCursor != null && currentCursor !== "") {
+      params.cursor = currentCursor;
+    }
+
+    return params;
+  }, [appliedFilters, currentCursor, driverId, limit]);
+
+  const { data, isLoading, isFetching, isError } =
+    useGetOrdersForAdmin(driverId ? queryParams : undefined);
+
+  const trips = useMemo(() => parseAdminTripsPayload(data), [data]);
+  const meta = useMemo(() => parseAdminOrdersListMeta(data), [data]);
 
   const tableData: AdminTripData[] = useMemo(
-    () => trips.map(mapRow),
+    () => trips.map(mapRow).filter((row) => row.id !== ""),
     [trips],
   );
+
+  const pageIndex = cursorStack.length - 1;
+  const hasPrevious = pageIndex > 0;
+  const hasNext =
+    meta?.lastCursor != null &&
+    meta.lastCursor !== "" &&
+    trips.length >= limit;
+
+  const resetPagination = () => {
+    setCursorStack([undefined]);
+  };
+
+  const handleApplyFilters = (filters: GetAdminOrdersParams) => {
+    const next = { ...filters, riderId: driverId };
+    setAppliedFilters(next);
+    resetPagination();
+    setSearchParams(adminOrdersParamsToSearchParams(filters), {
+      replace: true,
+    });
+  };
+
+  const columns = useMemo(() => {
+    const viewColumn = createViewActionsColumn<AdminTripData>({
+      getHref: viewPath,
+    });
+    return [...adminTripsListColumns.slice(0, -1), viewColumn];
+  }, []);
+
+  const handleLimitChange = (nextLimit: number) => {
+    setLimit(nextLimit);
+    resetPagination();
+  };
+
+  const handlePrevious = () => {
+    if (!hasPrevious) return;
+    setCursorStack((prev) => prev.slice(0, -1));
+  };
+
+  const handleNext = () => {
+    if (!hasNext || meta?.lastCursor == null) return;
+    setCursorStack((prev) => [...prev, meta.lastCursor as number | string]);
+  };
 
   const driverLabel = useMemo(() => {
     const name = trips[0]?.driver?.trim();
@@ -159,9 +214,9 @@ export default function IndivdualDriverTrips() {
     );
   }
 
-  const subtitle = `Package trips assigned to this driver${
-    meta.count != null ? ` · ${meta.count} total` : ""
-  }${meta.limit != null ? ` (limit ${meta.limit})` : ""}`;
+  const subtitle = `Shopping and package orders assigned to this driver${
+    meta?.count != null ? ` · ${meta.count.toLocaleString("en-NG")} total` : ""
+  }`;
 
   return (
     <NestedAdminPage
@@ -171,12 +226,34 @@ export default function IndivdualDriverTrips() {
       title={`${driverLabel} trips`}
       subtitle={subtitle}
     >
-      <DataTable
-        adminVariant
-        searchPlaceholder="Search..."
-        columns={columns}
-        data={tableData}
-      />
+      <div className="space-y-5">
+        <AdminOrdersFilters
+          key={searchParams.toString()}
+          initialValues={filterFormFromUrl}
+          onApply={handleApplyFilters}
+          hiddenFields={["riderId"]}
+        />
+
+        <DataTable
+          adminVariant
+          hidePagination
+          searchPlaceholder="Search this page..."
+          columns={columns}
+          data={tableData}
+        />
+
+        <BackendCursorPagination
+          count={meta?.count}
+          limit={limit}
+          pageIndex={pageIndex}
+          hasPrevious={hasPrevious}
+          hasNext={hasNext}
+          isLoading={isFetching}
+          onPrevious={handlePrevious}
+          onNext={handleNext}
+          onLimitChange={handleLimitChange}
+        />
+      </div>
     </NestedAdminPage>
   );
 }

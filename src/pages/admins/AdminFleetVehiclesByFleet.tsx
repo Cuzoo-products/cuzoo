@@ -1,6 +1,7 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Link, useParams } from "react-router";
 import NestedAdminPage from "@/components/admin/NestedAdminPage";
+import BackendCursorPagination from "@/components/admin/BackendCursorPagination";
 import StatusBadge from "@/components/admin/StatusBadge";
 import { Section } from "@/components/admin/DetailShell";
 import {
@@ -12,8 +13,15 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { useGetVehicleByFleetId } from "@/api/admin/vehicle/useVehicle";
+import { useGetVehicles } from "@/api/admin/vehicle/useVehicle";
+import {
+  parseVehiclesListMeta,
+  parseVehiclesListPayload,
+  type GetVehiclesParams,
+} from "@/api/admin/vehicle/vehicle";
 import Loader from "@/components/utilities/Loader";
+
+const DEFAULT_LIMIT = 20;
 
 type FleetVehicleApi = {
   id?: string;
@@ -28,27 +36,6 @@ type FleetVehicleApi = {
   status?: string;
   image?: { path?: string; url?: string; type?: string };
 };
-
-type FleetVehiclesListResponse = {
-  success?: boolean;
-  statusCode?: number;
-  data?: {
-    count?: number;
-    lastCursor?: number;
-    limit?: number;
-    data?: FleetVehicleApi[];
-  };
-};
-
-function parseFleetVehicleList(payload: unknown): FleetVehicleApi[] {
-  if (payload == null || typeof payload !== "object") return [];
-  const root = payload as { data?: { data?: unknown } };
-  const list = root.data?.data;
-  if (!Array.isArray(list)) return [];
-  return list.filter(
-    (x) => x != null && typeof x === "object",
-  ) as FleetVehicleApi[];
-}
 
 function rowId(v: FleetVehicleApi, index: number): string {
   const raw =
@@ -68,29 +55,89 @@ function hasAssignedRiderId(v: FleetVehicleApi): boolean {
 }
 
 export default function AdminFleetVehiclesByFleet() {
-  const { id } = useParams<{ id: string }>();
-  const fleetId = id ?? "";
-  const fleetBack = `/admins/fleet_managers/${encodeURIComponent(fleetId)}`;
+  const { id: routeId } = useParams<{ id: string }>();
+  const fleetId =
+    routeId && routeId !== "undefined" && routeId !== "null"
+      ? routeId
+      : undefined;
 
-  const { data: payload, isLoading, isError } = useGetVehicleByFleetId(fleetId);
+  const [limit, setLimit] = useState(DEFAULT_LIMIT);
+  const [cursorStack, setCursorStack] = useState<
+    (number | string | undefined)[]
+  >([undefined]);
 
-  const meta = useMemo(() => {
-    const p = payload as FleetVehiclesListResponse | undefined;
-    return {
-      count: p?.data?.count,
-      lastCursor: p?.data?.lastCursor,
-      limit: p?.data?.limit,
+  const currentCursor = cursorStack[cursorStack.length - 1];
+
+  const queryParams = useMemo<GetVehiclesParams>(() => {
+    const params: GetVehiclesParams = {
+      companyId: fleetId,
+      limit,
     };
+
+    if (currentCursor != null && currentCursor !== "") {
+      params.cursor = currentCursor;
+    }
+
+    return params;
+  }, [currentCursor, fleetId, limit]);
+
+  const { data: payload, isLoading, isFetching, isError } = useGetVehicles(
+    fleetId ? queryParams : undefined,
+  );
+
+  const meta = useMemo(() => parseVehiclesListMeta(payload), [payload]);
+
+  const vehicles = useMemo(() => {
+    return parseVehiclesListPayload(payload) as FleetVehicleApi[];
   }, [payload]);
 
-  const vehicles = useMemo(() => parseFleetVehicleList(payload), [payload]);
+  const pageIndex = cursorStack.length - 1;
+  const hasPrevious = pageIndex > 0;
+  const hasNext =
+    meta?.lastCursor != null &&
+    meta.lastCursor !== "" &&
+    vehicles.length >= limit;
 
+  const resetPagination = () => {
+    setCursorStack([undefined]);
+  };
+
+  const handleLimitChange = (nextLimit: number) => {
+    setLimit(nextLimit);
+    resetPagination();
+  };
+
+  const handlePrevious = () => {
+    if (!hasPrevious) return;
+    setCursorStack((prev) => prev.slice(0, -1));
+  };
+
+  const handleNext = () => {
+    if (!hasNext || meta?.lastCursor == null) return;
+    setCursorStack((prev) => [...prev, meta.lastCursor as number | string]);
+  };
+
+  const fleetBack = `/admins/fleet_managers/${fleetId ?? ""}`;
   const crumbs = [
     { label: "Dashboard", href: "/admins/dashboard" },
     { label: "Fleet Managers", href: "/admins/fleet_managers" },
     { label: "Fleet", href: fleetBack },
     { label: "Vehicles" },
   ];
+
+  if (!fleetId) {
+    return (
+      <NestedAdminPage
+        backHref="/admins/fleet_managers"
+        backLabel="Fleet Managers"
+        crumbs={crumbs}
+        title="Fleet vehicles"
+        subtitle="No fleet ID in the URL."
+      >
+        <></>
+      </NestedAdminPage>
+    );
+  }
 
   if (isLoading) return <Loader />;
 
@@ -109,8 +156,8 @@ export default function AdminFleetVehiclesByFleet() {
   }
 
   const subtitle = `Vehicles linked to this fleet manager${
-    meta.count != null ? ` · ${meta.count} total` : ""
-  }${meta.limit != null ? ` (limit ${meta.limit})` : ""}`;
+    meta?.count != null ? ` · ${meta.count.toLocaleString("en-NG")} total` : ""
+  }`;
 
   return (
     <NestedAdminPage
@@ -120,77 +167,91 @@ export default function AdminFleetVehiclesByFleet() {
       title="Fleet vehicles"
       subtitle={subtitle}
     >
-      <Section
-        title="Vehicles"
-        subtitle={`Company ID ${fleetId}`}
-      >
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Plate</TableHead>
-                <TableHead>Model</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Year</TableHead>
-                <TableHead>Color</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Assigned</TableHead>
-                <TableHead className="text-right">Action</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {vehicles.length === 0 ? (
+      <div className="space-y-5">
+        <Section
+          title="Vehicles"
+          subtitle={`Company ID ${fleetId}`}
+        >
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell
-                    colSpan={8}
-                    className="py-10 text-center text-[var(--admin-text-muted)]"
-                  >
-                    No vehicles for this fleet.
-                  </TableCell>
+                  <TableHead>Plate</TableHead>
+                  <TableHead>Model</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Year</TableHead>
+                  <TableHead>Color</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Assigned</TableHead>
+                  <TableHead className="text-right">Action</TableHead>
                 </TableRow>
-              ) : (
-                vehicles.map((v, index) => {
-                  const vid = rowId(v, index);
-                  return (
-                    <TableRow key={vid}>
-                      <TableCell className="font-mono text-sm">
-                        {v.plateNumber ?? "—"}
-                      </TableCell>
-                      <TableCell>{v.model ?? "—"}</TableCell>
-                      <TableCell className="capitalize">
-                        {v.type ?? "—"}
-                      </TableCell>
-                      <TableCell>
-                        {v.year != null ? String(v.year) : "—"}
-                      </TableCell>
-                      <TableCell>{v.color ?? "—"}</TableCell>
-                      <TableCell>
-                        {v.status ? (
-                          <StatusBadge status={v.status} />
-                        ) : (
-                          "—"
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {hasAssignedRiderId(v) ? "Yes" : "No"}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Button variant="outline" size="sm" asChild>
-                          <Link
-                            to={`/admins/vehicles/${encodeURIComponent(vid)}`}
-                          >
-                            View
-                          </Link>
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
-              )}
-            </TableBody>
-          </Table>
-        </div>
-      </Section>
+              </TableHeader>
+              <TableBody>
+                {vehicles.length === 0 ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={8}
+                      className="py-10 text-center text-[var(--admin-text-muted)]"
+                    >
+                      No vehicles for this fleet.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  vehicles.map((v, index) => {
+                    const vid = rowId(v, index);
+                    return (
+                      <TableRow key={vid}>
+                        <TableCell className="font-mono text-sm">
+                          {v.plateNumber ?? "—"}
+                        </TableCell>
+                        <TableCell>{v.model ?? "—"}</TableCell>
+                        <TableCell className="capitalize">
+                          {v.type ?? "—"}
+                        </TableCell>
+                        <TableCell>
+                          {v.year != null ? String(v.year) : "—"}
+                        </TableCell>
+                        <TableCell>{v.color ?? "—"}</TableCell>
+                        <TableCell>
+                          {v.status ? (
+                            <StatusBadge status={v.status} />
+                          ) : (
+                            "—"
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {hasAssignedRiderId(v) ? "Yes" : "No"}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button variant="outline" size="sm" asChild>
+                            <Link
+                              to={`/admins/vehicles/${encodeURIComponent(vid)}`}
+                            >
+                              View
+                            </Link>
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </Section>
+
+        <BackendCursorPagination
+          count={meta?.count}
+          limit={limit}
+          pageIndex={pageIndex}
+          hasPrevious={hasPrevious}
+          hasNext={hasNext}
+          isLoading={isFetching}
+          onPrevious={handlePrevious}
+          onNext={handleNext}
+          onLimitChange={handleLimitChange}
+        />
+      </div>
     </NestedAdminPage>
   );
 }

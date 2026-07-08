@@ -272,15 +272,12 @@ function UserDetails() {
               <CardHeader>
                 <CardTitle>User Links</CardTitle>
                 <CardDescription>
-                  View only this user's orders and rides.
+                  View only this user's orders.
                 </CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col sm:flex-row gap-2">
-                <Button asChild variant="outline">
-                  <Link to={`/admins/users/${id}/orders`}>User orders</Link>
-                </Button>
                 <Button asChild>
-                  <Link to={`/admins/users/${id}/rides`}>User rides</Link>
+                  <Link to={`/admins/users/${id}/orders`}>User orders</Link>
                 </Button>
               </CardContent>
             </Card>

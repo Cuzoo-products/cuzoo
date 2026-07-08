@@ -9,8 +9,6 @@ import { DataTableIdCell } from "@/components/ui/data-table-id-cell";
 export type TripData = {
   id: string;
   refNo: string;
-  to: string;
-  fro: string;
   date: string;
   startTime: string;
   endTime: string;
@@ -30,18 +28,6 @@ export const columns: ColumnDef<TripData>[] = [
     accessorKey: "date",
     header: ({ column }) => {
       return <DataTableColumnHeader column={column} title="Date" />;
-    },
-  },
-  {
-    accessorKey: "fro",
-    header: ({ column }) => {
-      return <DataTableColumnHeader column={column} title="From" />;
-    },
-  },
-  {
-    accessorKey: "to",
-    header: ({ column }) => {
-      return <DataTableColumnHeader column={column} title="Destination" />;
     },
   },
   {

@@ -45,7 +45,6 @@ import AdminDetails from "@/pages/admins/AdminDetails";
 import Users from "@/pages/admins/Users";
 import UserDetails from "@/pages/admins/UserDetails";
 import AdminUserOrdersByUser from "@/pages/admins/AdminUserOrdersByUser";
-import AdminUserRidesByUser from "@/pages/admins/AdminUserRidesByUser";
 import DriversInAdmin from "@/pages/admins/Drivers";
 import AdminDriverDetails from "@/pages/admins/AdminDriverDetails";
 import AdminTrips from "@/pages/admins/AdminTrips";
@@ -357,10 +356,6 @@ export const routes = createBrowserRouter([
       {
         path: "users/:id/orders",
         element: <AdminUserOrdersByUser />,
-      },
-      {
-        path: "users/:id/rides",
-        element: <AdminUserRidesByUser />,
       },
       {
         path: "drivers",

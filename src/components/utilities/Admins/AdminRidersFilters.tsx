@@ -180,13 +180,17 @@ function TriStateSelect({
 type AdminRidersFiltersProps = {
   initialValues?: RidersFilterFormValues;
   onApply: (params: GetRidersParams) => void;
+  hiddenFields?: Array<keyof RidersFilterFormValues>;
 };
 
 export default function AdminRidersFilters({
   initialValues = emptyRidersFilterForm,
   onApply,
+  hiddenFields = [],
 }: AdminRidersFiltersProps) {
   const [form, setForm] = useState<RidersFilterFormValues>(initialValues);
+  const hide = (field: keyof RidersFilterFormValues) =>
+    hiddenFields.includes(field);
 
   const update = <K extends keyof RidersFilterFormValues>(
     key: K,
@@ -251,6 +255,7 @@ export default function AdminRidersFilters({
             </Select>
           </FilterField>
 
+          {!hide("companyId") && (
           <FilterField label="Company ID">
             <Input
               value={form.companyId}
@@ -259,6 +264,7 @@ export default function AdminRidersFilters({
               className="h-10"
             />
           </FilterField>
+          )}
 
           <FilterField label="Country">
             <Input

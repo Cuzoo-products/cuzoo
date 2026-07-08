@@ -38,11 +38,6 @@ const TRIP_STATUSES: { value: FleetTripStatus; label: string }[] = [
 
 function mapTripToRow(trip: Record<string, unknown>): TripData {
   const id = String(trip.id ?? "").trim();
-  const destinations = Array.isArray(trip.destinations)
-    ? trip.destinations.map((d) => String(d))
-    : [];
-  const destination =
-    destinations.length > 0 ? destinations[destinations.length - 1] : "";
 
   const createdAt =
     trip.createdAt != null ? String(trip.createdAt) : undefined;
@@ -64,8 +59,6 @@ function mapTripToRow(trip: Record<string, unknown>): TripData {
   return {
     id,
     refNo: id,
-    to: destination || "—",
-    fro: trip.from != null ? String(trip.from) : "—",
     date: formattedDate,
     startTime: trip.startTime != null ? String(trip.startTime) : "—",
     endTime: trip.endTime != null ? String(trip.endTime) : "—",
