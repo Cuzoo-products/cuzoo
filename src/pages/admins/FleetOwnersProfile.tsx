@@ -315,7 +315,6 @@ export default function FleetOwnersProfile() {
             <>
               <ContactNotificationCard
                 entityId={routeId}
-                recipient="fleet"
                 mode="email-only"
                 description="Send an email to this fleet manager."
               />

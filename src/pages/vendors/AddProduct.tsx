@@ -59,7 +59,13 @@ function AddProduct() {
   const { mutate: createProduct, isPending } = useCreateProduct();
 
   function onSubmit(data: z.infer<typeof ProductFormSchema>) {
-    createProduct(data, {
+    const payload = Object.fromEntries(
+      Object.entries(data).filter(
+        ([_, values]) =>
+          values !== null && values !== "" && values !== undefined,
+      ),
+    );
+    createProduct(payload, {
       onSuccess: () => {
         navigate("/vendor/products");
       },
@@ -74,237 +80,237 @@ function AddProduct() {
           <p>add to your list of products</p>
         </div>
         <div className="vendor-form-card">
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-6"
-          >
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Product Name</FormLabel>
-                  <FormControl>
-                    <Input
-                      className="vendor-form-control"
-                      placeholder="e.g Iphone 11"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage className="text-red-600" />
-                </FormItem>
-              )}
-            />
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Product Name</FormLabel>
+                    <FormControl>
+                      <Input
+                        className="vendor-form-control"
+                        placeholder="e.g Iphone 11"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage className="text-red-600" />
+                  </FormItem>
+                )}
+              />
 
-            <FormField
-              control={form.control}
-              name="price"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Price</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      className="vendor-form-control"
-                      {...field}
-                      placeholder="100000"
-                    />
-                  </FormControl>
-                  <FormMessage className="text-red-600" />
-                </FormItem>
-              )}
-            />
+              <FormField
+                control={form.control}
+                name="price"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Price</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        className="vendor-form-control"
+                        {...field}
+                        placeholder="100000"
+                      />
+                    </FormControl>
+                    <FormMessage className="text-red-600" />
+                  </FormItem>
+                )}
+              />
 
-            <FormField
-              control={form.control}
-              name="stock"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Stock</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      placeholder="10"
-                      className="vendor-form-control"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage className="text-red-600" />
-                </FormItem>
-              )}
-            />
+              <FormField
+                control={form.control}
+                name="stock"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Stock</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder="10"
+                        className="vendor-form-control"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage className="text-red-600" />
+                  </FormItem>
+                )}
+              />
 
-            <FormField
-              control={form.control}
-              name="categoryId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Select Category</FormLabel>
-                  <FormControl>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger className="vendor-form-control w-full">
-                        <SelectValue placeholder="Select category" />
-                      </SelectTrigger>
-                      <SelectContent className="vendor-select-menu">
-                        {(categories?.data || []).map(
-                          (cat: { id: string; name: string }) => (
-                            <SelectItem key={cat.id} value={cat.id}>
-                              {cat.name}
-                            </SelectItem>
-                          ),
-                        )}
-                      </SelectContent>
-                    </Select>
-                  </FormControl>
-                  <FormMessage className="text-red-600" />
-                </FormItem>
-              )}
-            />
+              <FormField
+                control={form.control}
+                name="categoryId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Select Category</FormLabel>
+                    <FormControl>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <SelectTrigger className="vendor-form-control w-full">
+                          <SelectValue placeholder="Select category" />
+                        </SelectTrigger>
+                        <SelectContent className="vendor-select-menu">
+                          {(categories?.data || []).map(
+                            (cat: { id: string; name: string }) => (
+                              <SelectItem key={cat.id} value={cat.id}>
+                                {cat.name}
+                              </SelectItem>
+                            ),
+                          )}
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    <FormMessage className="text-red-600" />
+                  </FormItem>
+                )}
+              />
 
-            <FormField
-              control={form.control}
-              name="shortDescription"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Short Description</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="short description of products"
-                      className="vendor-form-control"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage className="text-red-600" />
-                </FormItem>
-              )}
-            />
+              <FormField
+                control={form.control}
+                name="shortDescription"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Short Description</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="short description of products"
+                        className="vendor-form-control"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage className="text-red-600" />
+                  </FormItem>
+                )}
+              />
 
-            <FormField
-              control={form.control}
-              name="longDescription"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Long Description</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Long description of product"
-                      className="vendor-form-control min-h-[7rem]"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage className="text-red-600" />
-                </FormItem>
-              )}
-            />
+              <FormField
+                control={form.control}
+                name="longDescription"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Long Description</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Long description of product"
+                        className="vendor-form-control min-h-[7rem]"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage className="text-red-600" />
+                  </FormItem>
+                )}
+              />
 
-            <FormField
-              control={form.control}
-              name="image1"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Image 1 (required)</FormLabel>
-                  <FormControl>
-                    <VendorFileInput
-                      onFileSelect={async (file) => {
-                        if (!file) return;
-                        try {
-                          const base64 = await fileToBase64(file);
-                          field.onChange(base64);
-                        } catch (error) {
-                          toast.error("Error processing passport image");
-                          console.error("Error:", error);
-                        }
-                      }}
-                    />
-                  </FormControl>
-                  <FormMessage className="text-red-600" />
-                </FormItem>
-              )}
-            />
+              <FormField
+                control={form.control}
+                name="image1"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Image 1 (required)</FormLabel>
+                    <FormControl>
+                      <VendorFileInput
+                        onFileSelect={async (file) => {
+                          if (!file) return;
+                          try {
+                            const base64 = await fileToBase64(file);
+                            field.onChange(base64);
+                          } catch (error) {
+                            toast.error("Error processing product image");
+                            console.error("Error:", error);
+                          }
+                        }}
+                      />
+                    </FormControl>
+                    <FormMessage className="text-red-600" />
+                  </FormItem>
+                )}
+              />
 
-            <FormField
-              control={form.control}
-              name="image2"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Image 2 (required)</FormLabel>
-                  <FormControl>
-                    <VendorFileInput
-                      onFileSelect={async (file) => {
-                        if (!file) return;
-                        try {
-                          const base64 = await fileToBase64(file);
-                          field.onChange(base64);
-                        } catch (error) {
-                          toast.error("Error processing passport image");
-                          console.error("Error:", error);
-                        }
-                      }}
-                    />
-                  </FormControl>
-                  <FormMessage className="text-red-600" />
-                </FormItem>
-              )}
-            />
+              <FormField
+                control={form.control}
+                name="image2"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Image 2 (required)</FormLabel>
+                    <FormControl>
+                      <VendorFileInput
+                        onFileSelect={async (file) => {
+                          if (!file) return;
+                          try {
+                            const base64 = await fileToBase64(file);
+                            field.onChange(base64);
+                          } catch (error) {
+                            toast.error("Error processing product image");
+                            console.error("Error:", error);
+                          }
+                        }}
+                      />
+                    </FormControl>
+                    <FormMessage className="text-red-600" />
+                  </FormItem>
+                )}
+              />
 
-            <FormField
-              control={form.control}
-              name="image3"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Image 3 (required)</FormLabel>
-                  <FormControl>
-                    <VendorFileInput
-                      onFileSelect={async (file) => {
-                        if (!file) return;
-                        try {
-                          const base64 = await fileToBase64(file);
-                          field.onChange(base64);
-                        } catch (error) {
-                          toast.error("Error processing passport image");
-                          console.error("Error:", error);
-                        }
-                      }}
-                    />
-                  </FormControl>
-                  <FormMessage className="text-red-600" />
-                </FormItem>
-              )}
-            />
+              <FormField
+                control={form.control}
+                name="image3"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Image 3 (optional)</FormLabel>
+                    <FormControl>
+                      <VendorFileInput
+                        onFileSelect={async (file) => {
+                          if (!file) return;
+                          try {
+                            const base64 = await fileToBase64(file);
+                            field.onChange(base64);
+                          } catch (error) {
+                            toast.error("Error processing product image");
+                            console.error("Error:", error);
+                          }
+                        }}
+                      />
+                    </FormControl>
+                    <FormMessage className="text-red-600" />
+                  </FormItem>
+                )}
+              />
 
-            <FormField
-              control={form.control}
-              name="image4"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Image 4 (required)</FormLabel>
-                  <FormControl>
-                    <VendorFileInput
-                      onFileSelect={async (file) => {
-                        if (!file) return;
-                        try {
-                          const base64 = await fileToBase64(file);
-                          field.onChange(base64);
-                        } catch (error) {
-                          toast.error("Error processing passport image");
-                          console.error("Error:", error);
-                        }
-                      }}
-                    />
-                  </FormControl>
-                  <FormMessage className="text-red-600" />
-                </FormItem>
-              )}
-            />
+              <FormField
+                control={form.control}
+                name="image4"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Image 4 (optional)</FormLabel>
+                    <FormControl>
+                      <VendorFileInput
+                        onFileSelect={async (file) => {
+                          if (!file) return;
+                          try {
+                            const base64 = await fileToBase64(file);
+                            field.onChange(base64);
+                          } catch (error) {
+                            toast.error("Error processing product image");
+                            console.error("Error:", error);
+                          }
+                        }}
+                      />
+                    </FormControl>
+                    <FormMessage className="text-red-600" />
+                  </FormItem>
+                )}
+              />
 
-            <Button
-              type="submit"
-              className="vendor-form-submit"
-              disabled={isPending}
-            >
-              {isPending ? "Submitting..." : "Submit"}
-            </Button>
+              <Button
+                type="submit"
+                className="vendor-form-submit"
+                disabled={isPending}
+              >
+                {isPending ? "Submitting..." : "Submit"}
+              </Button>
             </form>
           </Form>
         </div>

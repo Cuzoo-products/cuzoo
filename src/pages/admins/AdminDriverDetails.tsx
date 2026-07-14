@@ -258,12 +258,16 @@ export default function AdminDriverDetails() {
 
                 <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-muted-foreground">Account</span>
+                    <span className="text-xs text-muted-foreground">
+                      Account
+                    </span>
                     <StatusBadge status={driver.status} />
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-muted-foreground">Wallet</span>
+                    <span className="text-xs text-muted-foreground">
+                      Wallet
+                    </span>
                     <StatusBadge status={driver.walletStatus} />
                   </div>
                 </div>
@@ -538,7 +542,11 @@ export default function AdminDriverDetails() {
                             </p>
                           ) : null}
                           {v.id ? (
-                            <Button asChild variant="link" className="h-auto p-0 mt-1">
+                            <Button
+                              asChild
+                              variant="link"
+                              className="h-auto p-0 mt-1"
+                            >
                               <Link to={`/admins/vehicles/${v.id}`}>
                                 View vehicle
                               </Link>

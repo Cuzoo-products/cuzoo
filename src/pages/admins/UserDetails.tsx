@@ -41,7 +41,6 @@ import PageHeader from "@/components/admin/PageHeader";
 import StatusBadge from "@/components/admin/StatusBadge";
 import { DetailShell } from "@/components/admin/DetailShell";
 
-
 type InfoRowProps = {
   icon: ReactNode;
   label: string;
@@ -53,8 +52,9 @@ function UserDetails() {
   const { data: userData, isLoading } = useUser(id as string);
   const userAccountMutation = useUserAccountAction(id ?? "");
   const userWalletMutation = useUserWalletAction(id ?? "");
- const { mutate: sendOneNotification, isPending: isSendingOneNotification } = useSendOneNotification();
-  
+  const { mutate: sendOneNotification, isPending: isSendingOneNotification } =
+    useSendOneNotification();
+
   const user = userData?.data;
 
   const defaultAccountActive = useMemo(
@@ -213,9 +213,7 @@ function UserDetails() {
         title={`${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim()}
         subtitle={user?.email}
         actions={
-          <StatusBadge
-            status={user.emailVerified ? "verified" : "pending"}
-          />
+          <StatusBadge status={user.emailVerified ? "verified" : "pending"} />
         }
       />
       <div className="mx-auto grid max-w-7xl grid-cols-1 gap-8 lg:grid-cols-3">
@@ -271,9 +269,7 @@ function UserDetails() {
             <Card className="bg-secondary py-4">
               <CardHeader>
                 <CardTitle>User Links</CardTitle>
-                <CardDescription>
-                  View only this user's orders.
-                </CardDescription>
+                <CardDescription>View only this user's orders.</CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col sm:flex-row gap-2">
                 <Button asChild>
@@ -293,9 +289,7 @@ function UserDetails() {
             <CardContent className="space-y-4">
               <RadioGroup
                 value={messageType}
-                onValueChange={(v) =>
-                  setMessageType(v as "email" | "push")
-                }
+                onValueChange={(v) => setMessageType(v as "email" | "push")}
                 className="flex space-x-4"
               >
                 <div className="flex items-center space-x-2">

@@ -56,7 +56,10 @@ function AddCategory() {
       <div className="vendor-form-shell">
         <div className="vendor-form-header">
           <h1>Add Category</h1>
-          <p>add to your Category</p>
+          <p>
+            A category is a group for your products (like Snacks or Drinks). You
+            can create as many as you need and add products under each one.
+          </p>
         </div>
         <div className="vendor-form-card">
           <Form {...form}>

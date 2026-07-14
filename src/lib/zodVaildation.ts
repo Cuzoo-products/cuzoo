@@ -87,14 +87,14 @@ export const AddDriverFormSchema = z.object({
     .min(1, "Passport image is required.")
     .refine(
       (val) => val.startsWith("data:image/"),
-      "Please upload a valid image file."
+      "Please upload a valid image file.",
     ),
   driversLicense: z
     .string()
     .min(1, "Driver's license image is required.")
     .refine(
       (val) => val.startsWith("data:image/"),
-      "Please upload a valid image file."
+      "Please upload a valid image file.",
     ),
   address: z
     .string()
@@ -118,7 +118,7 @@ export const AddVehicleFormSchema = z.object({
     .min(1, "Vehicle image is required.")
     .refine(
       (val) => val.startsWith("data:image/"),
-      "Please upload a valid image file."
+      "Please upload a valid image file.",
     ),
   year: z
     .number()
@@ -140,7 +140,7 @@ export const EditVehicleFormSchema = z.object({
     .optional()
     .refine(
       (val) => !val || val.startsWith("data:image/") || val.startsWith("http"),
-      "Please upload a valid image file or keep existing image."
+      "Please upload a valid image file or keep existing image.",
     ),
   year: z
     .number()
@@ -163,14 +163,14 @@ export const EditDriverFormSchema = z.object({
     .optional()
     .refine(
       (val) => !val || val.startsWith("data:image/") || val.startsWith("http"),
-      "Please upload a valid image file or keep existing image."
+      "Please upload a valid image file or keep existing image.",
     ),
   driversLicense: z
     .string()
     .optional()
     .refine(
       (val) => !val || val.startsWith("data:image/") || val.startsWith("http"),
-      "Please upload a valid image file or keep existing image."
+      "Please upload a valid image file or keep existing image.",
     ),
   address: z
     .string()
@@ -277,29 +277,29 @@ export const ProductFormSchema = z.object({
     .string()
     .min(1, "Image 1 is required")
     .refine(
-      (val) => val.startsWith("data:image/"),
-      "Please upload a valid image file."
+      (val) => !val || val.startsWith("data:image/") || val.startsWith("http"),
+      "Please upload a valid image file or keep existing image.",
     ),
   image2: z
     .string()
     .min(1, "Image 2 is required")
     .refine(
-      (val) => val.startsWith("data:image/"),
-      "Please upload a valid image file."
+      (val) => !val || val.startsWith("data:image/") || val.startsWith("http"),
+      "Please upload a valid image file or keep existing image.",
     ),
   image3: z
     .string()
-    .min(1, "Image 3 is required")
+    .optional()
     .refine(
-      (val) => val.startsWith("data:image/"),
-      "Please upload a valid image file."
+      (val) => !val || val.startsWith("data:image/") || val.startsWith("http"),
+      "Please upload a valid image file or keep existing image.",
     ),
   image4: z
     .string()
-    .min(1, "Image 4 is required")
+    .optional()
     .refine(
-      (val) => val.startsWith("data:image/"),
-      "Please upload a valid image file."
+      (val) => !val || val.startsWith("data:image/") || val.startsWith("http"),
+      "Please upload a valid image file or keep existing image.",
     ),
 });
 
