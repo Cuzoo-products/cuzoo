@@ -33,6 +33,23 @@ import { STATIC_SITE_URL } from "@/lib/siteUrls";
 const AUTH_INPUT_CLASS =
   "h-12 w-full rounded-lg border border-[var(--auth-border)] bg-[var(--auth-bg-card-alt)] px-4 text-sm text-[var(--auth-text-primary)] placeholder:text-[var(--auth-text-muted)] focus:border-[var(--auth-accent)] focus:outline-none";
 
+/** e.g. "Firebase: Error (auth/invalid-credential)." → "invalid-credential" */
+function formatFirebaseAuthError(error: unknown): string {
+  const code =
+    error && typeof error === "object" && "code" in error
+      ? String((error as { code?: string }).code ?? "")
+      : "";
+  if (code.startsWith("auth/")) {
+    return code.slice("auth/".length);
+  }
+
+  const message = error instanceof Error ? error.message : "";
+  const match = message.match(/auth\/([a-z0-9-]+)/i);
+  if (match?.[1]) return match[1];
+
+  return message || "Login failed";
+}
+
 function App() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -134,7 +151,7 @@ function App() {
       await refetchUserDetails();
       toast.success("Login successful! Welcome back!");
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Login failed";
+      const errorMessage = formatFirebaseAuthError(err);
       toast.error(errorMessage);
       setError(errorMessage);
     } finally {
